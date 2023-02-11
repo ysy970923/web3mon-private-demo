@@ -9,7 +9,6 @@ import {
 import {
   mainBackgroundImage,
   foregroundImage,
-  battleBackgroundImage,
 } from '../js/load'
 import { ws } from '../network/websocket'
 import {
@@ -45,14 +44,6 @@ export let foreground = new Sprite({
     y: offset.y,
   },
   image: foregroundImage,
-})
-
-export let battleBackground = new Sprite({
-  position: {
-    x: 0,
-    y: 0,
-  },
-  image: battleBackgroundImage,
 })
 
 export function transferMapTo(toMap) {
