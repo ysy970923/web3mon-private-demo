@@ -1,0 +1,104 @@
+.battle_modal {
+  position: fixed;
+  top: calc(50vh - 300px);
+  z-index: 5;
+  border-radius: 4px;
+  background-color: white;
+  padding: 25px 25px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.battleCard {
+  color: #111111;
+  // width: 400px;
+  margin: auto;
+  text-align: center;
+  left: calc(50% - 200px);
+  z-index: 9;
+  display: none;
+}
+
+#skill_box_temp {
+  display: none;
+  flex-direction: column;
+  color: black;
+  box-shadow: var(--card-shadow);
+  text-align: center;
+  font-family: Pretendard;
+  left: calc(50vw - 410px);
+  z-index: 5;
+
+  .title {
+    font-weight: 700;
+    font-size: 1.2em;
+  }
+
+  .attack_skill_box,
+  .defense_skill_box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+
+    .one_atk_skill_box {
+      width: 90px;
+      height: 90px;
+      margin: 4px;
+      padding: 5px;
+      outline: 3px solid rgba(30, 30, 30, 0.1);
+      transition: 0.3s ease;
+      border-radius: 6px;
+      background-color: rgba(0, 0, 0, 0.01);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-weight: 700;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+        outline: 2px solid rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    .skill_hover_tooltip {
+      background: rgba(255, 255, 255, 1);
+      border-radius: 5px;
+      box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.2);
+      position: absolute;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      top: 97px;
+      left: 0px;
+      padding: 10px;
+      min-width: 250px;
+      min-height: 200px;
+      z-index: 4;
+      font-weight: 500;
+    }
+  }
+}
+
+#selectTypeBtn {
+  width: 100%;
+  border-radius: 6px;
+  padding: 13px 0px;
+  border: none;
+  background-color: #ccd5dfaa;
+  font-weight: 700;
+  margin-top: 15px;
+  &:hover {
+    background-color: #b3bfcdaa;
+  }
+  &:focus {
+    border: none;
+    outline: 3px solid rgba(0, 0, 0, 0.1);
+  }
+}
+
+#wait_modal {
+  display: none;
+  left: calc(50% - 200px);
+}
