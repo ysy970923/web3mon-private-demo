@@ -55,7 +55,7 @@ export function animateBattle() {
   )
 
   document.getElementById('battle_left_time').innerText = `00:${Math.floor(
-    (battle.data.pick_until - Date.now()) / 1000
+    (battle.data.pick_until_time - Date.now()) / 1000
   )}`
 
   battleBackground.draw()

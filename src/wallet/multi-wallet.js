@@ -1,8 +1,9 @@
 import { NearWallet } from './near-wallet'
 import { TerraWallet } from './terra-wallet'
 
-export class MultiWallet {
+class MultiWallet {
   wallets
+  selectedChain
 
   constructor() {
     this.wallets = {}
@@ -19,8 +20,8 @@ export class MultiWallet {
   }
 
   getAccountId() {
-    if (window.chain === undefined) return undefined
-    return this.wallets[window.chain].accountId
+    if (this.selectedChain === undefined) return ''
+    return this.wallets[this.selectedChain].accountId
   }
 
   signIn() {
@@ -30,18 +31,21 @@ export class MultiWallet {
   }
 
   signOut() {
-    this.wallets[window.chain].signOut()
+    this.wallets[this.selectedChain].signOut()
   }
 
   async viewMethod(kargs) {
-    return await this.wallets[window.chain].viewMethod(kargs)
+    return await this.wallets[this.selectedChain].viewMethod(kargs)
   }
 
   async callMethod(kargs) {
-    return await this.wallets[window.chain].callMethod(kargs)
+    return await this.wallets[this.selectedChain].callMethod(kargs)
   }
 
   async verifyOwner(collection, token_id) {
-    return await this.wallets[window.chain].verifyOwner(collection, token_id)
+    return await this.wallets[this.selectedChain].verifyOwner(collection, token_id)
   }
 }
+
+export const wallet = new MultiWallet()
+wallet.startUp()

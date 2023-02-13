@@ -4,8 +4,8 @@ import { renderState, setUpNextSetting } from './battleScene'
 import { safe_send } from '../network/websocket'
 import { selectedSkill, selectedDefenceSkills } from '../web/initialSetting'
 import { BattleState } from './battleState'
-import { addBattleSkillBox } from '../web/initialSetting'
 import { enterBattle } from './enterBattle'
+import { wallet } from '../wallet/multi-wallet'
 
 export const BATTLE_CONTRACT = 'game0.web3mon.testnet'
 const FT_CONTRACT = 'usdc.web3mon.testnet' // USDC.e contract ID
@@ -19,13 +19,13 @@ const resume_data = {
 }
 class BattleClient {
   data
-  wallet
+  keyManager
   receiveQueue
   types
   mode
 
   constructor() {
-    this.wallet = ethers.Wallet.createRandom()
+    this.keyManager = ethers.Wallet.createRandom()
     this.receiveQueue = []
     this.data = { status: 'send' }
     this.started = false
@@ -36,7 +36,7 @@ class BattleClient {
     safe_send({
       BattlePropose: {
         receiver_player_id: receiver_player_id,
-        battle_pub_key: this.wallet.publicKey,
+        battle_pub_key: this.keyManager.publicKey,
       },
     })
     this.data.opponent_id = receiver_player_id
@@ -49,7 +49,7 @@ class BattleClient {
     safe_send({
       BattleAccept: {
         battle_id: battle_id,
-        battle_pub_key: battle.wallet.publicKey,
+        battle_pub_key: this.keyManager.publicKey,
       },
     })
     this.data.opponent_id = proposer_player_id
@@ -74,19 +74,19 @@ class BattleClient {
     if (battle_id === 'bot')
       var battleInfo = {
         expires_at: Date.now() + 60 * 1000 * 999,
-        player_pk: [this.wallet.publicKey, this.wallet.publicKey],
-        manager_pk: this.wallet.publicKey,
-        players_account: [window.wallet.accountId, 'bot'],
+        player_pk: [this.keyManager.publicKey, this.keyManager.publicKey],
+        manager_pk: this.keyManager.publicKey,
+        players_account: [wallet.accountId, 'bot'],
       }
     else
       var battleInfo = {
         expires_at: Date.now() + 60 * 1000 * 999,
-        player_pk: [this.wallet.publicKey, op_pub_key],
-        manager_pk: this.wallet.publicKey,
-        players_account: [window.wallet.accountId, 'bot'],
+        player_pk: [this.keyManager.publicKey, op_pub_key],
+        manager_pk: this.keyManager.publicKey,
+        players_account: [wallet.accountId, 'bot'],
       }
-    //   var battleInfo = await window.wallet.viewMethod({
-    //     contractId: window.collection,
+    //   var battleInfo = await wallet.viewMethod({
+    //     contractId: BATTLE_CONTRACT,
     //     method: 'get_battle',
     //     args: { battle_id: battle_id },
     //   })
@@ -95,8 +95,8 @@ class BattleClient {
 
     var my_index
 
-    if (battleInfo.player_pk[0] === this.wallet.publicKey) my_index = 0
-    else if (battleInfo.player_pk[1] === this.wallet.publicKey) my_index = 1
+    if (battleInfo.player_pk[0] === this.keyManager.publicKey) my_index = 0
+    else if (battleInfo.player_pk[1] === this.keyManager.publicKey) my_index = 1
     else return false
 
     this.battleState = new BattleState(battleInfo)
@@ -114,13 +114,13 @@ class BattleClient {
       manager_signature: '',
       op_pk: battleInfo.player_pk[1 - my_index],
       manager_pk: battleInfo.manager_pk,
-      my_sk: this.wallet.privateKey,
+      my_sk: this.keyManager.privateKey,
       player_init_lp: this.battleState.player_lp,
-      pick_until: 0,
+      pick_until_time: Date.now() + 1000 * 100,
     }
 
-    // this.types = await window.wallet.viewMethod({
-    //   contractId: window.collection,
+    // this.types = await wallet.viewMethod({
+    //   contractId: BATTLE_CONTRACT,
     //   method: 'get_types',
     //   args: {},
     // })
@@ -133,7 +133,7 @@ class BattleClient {
     // location.reload()
 
     // moving funds to battle contract
-    await window.wallet.callMethod({
+    await wallet.callMethod({
       contractId: FT_CONTRACT,
       method: 'ft_transfer_call',
       args: {
@@ -157,7 +157,7 @@ class BattleClient {
     delete this.data['battle_state']
     setInterval(() => this.timer(), 1000)
     this.started = true
-    this.wallet = new ethers.Wallet(this.data.my_sk)
+    this.keyManager = new ethers.Wallet(this.data.my_sk)
 
     document.getElementById('skill_box_temp').style.display = 'block'
     document.getElementById('wait_modal').style.display = 'none'
@@ -186,6 +186,10 @@ class BattleClient {
 
   chooseAction(action) {
     console.log(action)
+    if (this.data.pick_until_time < Date.now()) {
+      window.alert('Time is Over.')
+      return
+    }
     if (action.attacks === undefined) {
       this.data.actions[this.data.my_index] = {
         action_index: parseInt(action),
@@ -226,7 +230,7 @@ class BattleClient {
     // var my_index = this.data.my_index
     // // player win
     // if (player_state[my_index].hp !== 0 && player_state[1 - my_index].hp === 0)
-    //   await window.wallet.callMethod({
+    //   await wallet.callMethod({
     //     contractId: BATTLE_CONTRACT,
     //     method: 'close_battle',
     //     args: {
@@ -284,7 +288,7 @@ class BattleClient {
     var message = new Uint8Array(a.length + b.length)
     message.set(a)
     message.set(b, a.length)
-    var signature = await this.wallet.signMessage(message)
+    var signature = await this.keyManager.signMessage(message)
     console.log(this.data.mode)
     if (this.data.mode === 'channel') {
       if (this.data.battleId === 'bot') {
@@ -298,7 +302,7 @@ class BattleClient {
         var message = new Uint8Array(a.length + b.length)
         message.set(a)
         message.set(b, a.length)
-        var signature = await this.wallet.signMessage(message)
+        var signature = await this.keyManager.signMessage(message)
         this.receiveQueue.push(
           JSON.stringify({ commit: commit, signature: signature })
         )
@@ -328,7 +332,7 @@ class BattleClient {
       }
     } else {
       // send to chain
-      await window.wallet.callMethod({
+      await wallet.callMethod({
         contractId: BATTLE_CONTRACT,
         method: 'commit',
         args: {
@@ -391,7 +395,7 @@ class BattleClient {
       }
     } else {
       // send to chain
-      await window.wallet.callMethod({
+      await wallet.callMethod({
         contractId: BATTLE_CONTRACT,
         method: 'reveal',
         args: {
@@ -437,7 +441,7 @@ class BattleClient {
     var message = await ethers.utils.keccak256(
       ethers.utils.toUtf8Bytes(JSON.stringify(battleState))
     )
-    var signature = await this.wallet.signMessage(message)
+    var signature = await this.keyManager.signMessage(message)
     if (this.data.battleId === 'bot')
       this.receiveQueue.push(
         JSON.stringify({
@@ -459,8 +463,8 @@ class BattleClient {
 
   // chain only (query chain to get battle)
   async getBattle() {
-    // var res = await window.wallet.viewMethod({
-    //   contractId: window.collection,
+    // var res = await wallet.viewMethod({
+    //   contractId: BATTLE_CONTRACT,
     //   method: 'get_battle',
     //   args: { battle_id: this.data.battleId },
     // })
@@ -475,7 +479,7 @@ class BattleClient {
     var signature = msg.consensus_signature
     // var expires_at = msg.expires_at
     var expires_at = Date.now() + 10000
-    this.data.pick_until = Date.now() + 30 * 1000
+    this.data.pick_until_time = Date.now() + 59 * 1000
 
     // next state is valid only until 2.5 minute from now
     // if (!(expires_at < Date.now() + 150 * 1000)) return

@@ -11,7 +11,7 @@ import { clickEvent } from '../battle/battleStart'
 import { clothesList } from './clothes'
 import { moveToXDirection } from '../control/move'
 import { lastKey } from '../control/move'
-import { setPlayerUrl, setTokenId, tokenId } from '../web/logIn'
+import { setNFTInfo, setPlayerUrl, collection } from '../web/logIn'
 import { playerUrl } from '../web/logIn'
 import { chosenCloth } from '../web/initialSetting'
 import { turnToGameScreen } from '../web/logIn'
@@ -305,7 +305,7 @@ if (resume_data !== null) {
   document.getElementById('resumePopUp').style.display = 'block'
   document.getElementById('resumeButton').addEventListener('click', (e) => {
     resume_data = JSON.parse(resume_data)
-    setTokenId(resume_data.tokenId)
+    setNFTInfo(resume_data.collection, resume_data.tokenId)
     setPlayerUrl(resume_data.playerUrl)
     player.baseImage = new Image()
     worker.postMessage({
@@ -314,7 +314,7 @@ if (resume_data !== null) {
       rightSource: clothesList.find((doc) => doc.id === chosenCloth).right,
       downSource: clothesList.find((doc) => doc.id === chosenCloth).down,
       upSource: clothesList.find((doc) => doc.id === chosenCloth).up,
-      contractAddress: window.collection,
+      contractAddress: collection,
       id: '-1',
     })
     battle.resume(resume_data.battle_data)

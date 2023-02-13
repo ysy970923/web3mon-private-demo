@@ -1,6 +1,8 @@
 import { others, connect } from '../network/websocket'
 import { player } from './index'
 import { animate } from '../animate'
+import { wallet } from '../wallet/multi-wallet'
+import { collection, setNFTInfo, setPlayerUrl } from '../web/logIn'
 
 export const worker = new Worker('./worker.js')
 
@@ -36,11 +38,9 @@ worker.onerror = function (err) {
 export async function findMyNFT() {
   document.getElementById('chain_containers').style.display = 'none'
   document.getElementById('loading_container').style.display = 'block'
-
-  if (window.chain === '' || window.accountId === '') return
-
+  if (wallet.selectedChain === '' || wallet.getAccountId() === '') return
   // 체인이 니어일 때
-  if (window.chain === 'near') {
+  if (wallet.selectedChain === 'near') {
     var nft_contract_list = [
       'asac.web3mon.testnet',
       'nearnauts.web3mon.testnet',
@@ -54,7 +54,7 @@ export async function findMyNFT() {
       //   'mrbrownproject.near',
     ]
     var args = {
-      account_id: window.wallet.getAccountId(),
+      account_id: wallet.getAccountId(),
       from_index: '0',
       limit: 50,
     }
@@ -64,11 +64,11 @@ export async function findMyNFT() {
     let imgs = []
 
     for (var contract_id of nft_contract_list) {
-      var metadata = await window.wallet.viewMethod({
+      var metadata = await wallet.viewMethod({
         contractId: contract_id,
         method: 'nft_metadata',
       })
-      var data = await window.wallet.viewMethod({
+      var data = await wallet.viewMethod({
         contractId: contract_id,
         method: 'nft_tokens_for_owner',
         args: args,
@@ -103,7 +103,7 @@ export async function findMyNFT() {
   }
 
   // terra
-  if (window.chain === 'terra') {
+  if (wallet.seletedChain === 'terra') {
     var nft_contract_list = [
       'terra16ds898j530kn4nnlc7xlj6hcxzqpcxxk4mj8gkcl3vswksu6s3zszs8kp2',
       'terra17vysjt8ws64v8w696mavjpqs8mksf8s993qghlust9yey8qcmppqnhgw0e',
@@ -113,9 +113,9 @@ export async function findMyNFT() {
     var imgs = []
     for (var contract_id of nft_contract_list) {
       var args = {
-        owner: window.wallet.getAccountId(),
+        owner: wallet.getAccountId(),
       }
-      var res = await window.wallet.viewMethod({
+      var res = await wallet.viewMethod({
         contractId: contract_id,
         method: 'tokens',
         args: args,
@@ -125,7 +125,7 @@ export async function findMyNFT() {
       for (var i in res.data[key]) {
         var nft = res.data[key][i]
         var args = { token_id: nft }
-        var nft_data = await window.wallet.viewMethod({
+        var nft_data = await wallet.viewMethod({
           contractId: contract_id,
           method: 'nft_info',
           args: args,
@@ -164,7 +164,7 @@ export async function findMyNFT() {
   }
 
   // 체인이 알고랜드일 때
-  if (window.chain === 'algo') {
+  if (wallet.seletedChain === 'algo') {
     const base_url =
       'https://broken-spring-moon.algorand-mainnet.discover.quiknode.pro/index/v2/'
     const url = `accounts/${window.accountId}/assets`
@@ -198,7 +198,7 @@ export async function findMyNFT() {
       })
       nft_data = await nft_data.json()
       if (nft_data.asset.params['unit-name'] === undefined) continue
-      if (nft_data.asset.params['unit-name'].startsWith(window.collection)) {
+      if (nft_data.asset.params['unit-name'].startsWith(collection)) {
         let img = document.createElement('img')
         console.log(nft['asset-id'])
 
@@ -225,9 +225,11 @@ function onImgClick(e) {
   if (prevSelect !== undefined) prevSelect.style.opacity = 0.5
   e.target.style.opacity = 1.0
   prevSelect = e.target
-  window.imgUrl = e.target.src
+  setPlayerUrl(e.target.src)
 
   window.name = e.target.getAttribute('name')
-  window.tokenId = e.target.getAttribute('asset_id')
-  window.collection = e.target.getAttribute('collection')
+  setNFTInfo(
+    e.target.getAttribute('collection'),
+    e.target.getAttribute('asset_id')
+  )
 }

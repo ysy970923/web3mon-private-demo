@@ -1,6 +1,7 @@
 import { login } from './logIn'
 import * as nearAPI from 'near-api-js'
 import { findMyNFT } from '../js/utils'
+import { wallet } from '../wallet/multi-wallet'
 
 function clickOutSideEvent1(e) {
   if (!document.getElementById('guidanceCard').contains(e.target)) {
@@ -26,11 +27,11 @@ export function clickOutSideProfileEvent(e) {
 }
 
 export function clickOutSideHistoryEvent(e) {
-    if (!document.getElementById('battleHistoryLog').contains(e.target)) {
-      document.body.removeEventListener('click', clickOutSideHistoryEvent, true)
-      document.getElementById('battleHistoryLog').style.display = 'none'
-    }
+  if (!document.getElementById('battleHistoryLog').contains(e.target)) {
+    document.body.removeEventListener('click', clickOutSideHistoryEvent, true)
+    document.getElementById('battleHistoryLog').style.display = 'none'
   }
+}
 
 export function clickOutSideBattleCardEvent(e) {
   if (
@@ -54,7 +55,9 @@ document.getElementById('profileButton').addEventListener('click', (e) => {
   document.body.addEventListener('click', clickOutSideProfileEvent, true)
 })
 
-document.getElementById('battleHistoryButton').addEventListener('click', (e) => {
+document
+  .getElementById('battleHistoryButton')
+  .addEventListener('click', (e) => {
     document.getElementById('battleHistoryLog').style.display = 'block'
     document.body.addEventListener('click', clickOutSideHistoryEvent, true)
   })
@@ -77,28 +80,9 @@ for (let i = 0; i < guideBtns.length; i++) {
 }
 
 document.getElementById('start_login_button').addEventListener('click', (e) => {
-  window.wallet.signIn()
+  wallet.signIn()
 })
 
 document.getElementById('sign_out').addEventListener('click', (e) => {
-  window.wallet.signOut()
-})
-
-const cols = document.querySelectorAll('.one_collection')
-;[].forEach.call(cols, (col) => {
-  col.addEventListener('click', (e) => {
-    console.log('클클릭', e.currentTarget.value)
-    window.collection = e.currentTarget.value
-
-    // document.getElementById('chain_containers').style.display = 'none'
-    // document.getElementById('nft_choose_container').style.display = 'flex'
-
-    cols.forEach((doc) => {
-      if (doc.value === window.collection) {
-        doc.style.backgroundColor = 'rgba(250, 250, 250, 0.2)'
-      } else {
-        doc.style.backgroundColor = 'rgba(250, 250, 250, 0)'
-      }
-    })
-  })
+  wallet.signOut()
 })

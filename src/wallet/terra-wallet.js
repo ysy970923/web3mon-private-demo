@@ -18,6 +18,7 @@ import {
 } from '@terra-money/wallet-controller'
 
 import { Subscription, combineLatest } from 'rxjs'
+import { wallet } from './multi-wallet'
 
 const THIRTY_TGAS = '30000000000000'
 const NO_DEPOSIT = '0'
@@ -81,21 +82,21 @@ export class TerraWallet {
             balance.value = coins
           })
           this.accountId = _connectedWallet.terraAddress
-          window.chain = 'terra'
+          wallet.selectedChain = 'terra'
           document.querySelector('#find_my_nft').style.display = 'block'
           document.querySelector('#sign_out').style.display = 'block'
-          window.wallet.signIn()
+          wallet.signIn()
         } else {
           balance.value = null
         }
-        this.signIn()
+        this.setUpSignInModal()
         document
           .querySelector('#start_login_button')
           .removeAttribute('disabled')
       })
   }
 
-  signIn() {
+  setUpSignInModal() {
     document.querySelector('#terraWallets').innerHTML = ''
     this.availableConnections.value.forEach((e) => {
       if (e.name[0] !== 'V') {

@@ -18,6 +18,7 @@ import { setupMyNearWallet } from '@near-wallet-selector/my-near-wallet'
 import { setupNearWallet } from '@near-wallet-selector/near-wallet'
 import { sha256 } from 'js-sha256'
 import axios from 'axios'
+import { wallet } from './multi-wallet'
 
 const THREEHUN_TGAS = '300000000000000'
 const NO_DEPOSIT = '0'
@@ -56,18 +57,18 @@ export class NearWallet {
       this.wallet = await this.walletSelector.wallet()
       this.accountId =
         this.walletSelector.store.getState().accounts[0].accountId
-      window.chain = 'near'
+      wallet.selectedChain = 'near'
       document.querySelector('#find_my_nft').style.display = 'block'
       document.querySelector('#sign_out').style.display = 'block'
-      window.wallet.signIn()
+      wallet.signIn()
     }
-    this.signIn()
+    this.setUpSignInModal()
     document.querySelector('#start_login_button').removeAttribute('disabled')
     return isSignedIn
   }
 
   // Sign-in method
-  signIn() {
+  setUpSignInModal() {
     const description = 'Please select a wallet to sign in.'
     const modal = setupModal(this.walletSelector, {
       contractId: this.createAccessKeyFor,

@@ -3,9 +3,11 @@ import { worker } from '../js/utils'
 import { MultiWallet } from '../wallet/multi-wallet'
 import { chosenCloth } from './initialSetting'
 import { clothesList } from '../js/clothes'
+import { wallet } from '../wallet/multi-wallet'
 
 export let playerUrl
 export let tokenId
+export let collection
 
 function truncate(input, length) {
   if (input.length > length) {
@@ -13,11 +15,10 @@ function truncate(input, length) {
   }
   return input
 }
-window.wallet = new MultiWallet()
-window.wallet.startUp()
 
-export function setTokenId(token_id) {
-  tokenId = token_id
+export function setNFTInfo(nft_collection, nft_tokenId) {
+  tokenId = nft_tokenId
+  collection = nft_collection
 }
 
 export function setPlayerUrl(url) {
@@ -25,22 +26,18 @@ export function setPlayerUrl(url) {
 }
 
 export const login = async () => {
-  var verified = await window.wallet.verifyOwner(
-    window.collection,
-    window.tokenId
-  )
+  var verified = await wallet.verifyOwner(collection, tokenId)
   if (!verified) {
     window.alert('Owner Verification Fail')
     // return
   }
-  player.name = truncate(window.wallet.getAccountId(), 20)
-  playerUrl = window.imgUrl
+  player.name = truncate(wallet.getAccountId(), 20)
   document.getElementById('chatOpenBtn').style.display = 'block'
   // document.getElementById('loginDiv').style.display = 'none'
   document.getElementById('profileName').innerHTML = window.name
   document.getElementById('profileNFT').innerHTML = player.name
   document.getElementById('profileImg').src = playerUrl
-  if (window.chain === 'near') {
+  if (wallet.selectedChain === 'near') {
     document.getElementById('parasUrl').addEventListener('click', (e) => {
       window
         .open(
@@ -59,7 +56,7 @@ export const login = async () => {
     rightSource: clothesList.find((doc) => doc.id === chosenCloth).right,
     downSource: clothesList.find((doc) => doc.id === chosenCloth).down,
     upSource: clothesList.find((doc) => doc.id === chosenCloth).up,
-    contractAddress: window.collection,
+    contractAddress: collection,
     id: '-1',
   })
 
@@ -78,7 +75,7 @@ export const turnToGameScreen = () => {
 }
 
 export const logout = () => {
-  window.walletConnection.signOut()
+  wallet.signOut()
   // reload page
   window.location.replace(window.location.origin + window.location.pathname)
 }
