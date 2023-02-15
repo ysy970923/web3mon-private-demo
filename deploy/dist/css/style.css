@@ -905,13 +905,14 @@ img {
   top: calc(50vh - 300px);
   z-index: 5;
   border-radius: 4px;
-  background-color: white;
+  background-color: rgba(23, 23, 23, 0.89);
   padding: 25px 25px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  color: rgba(242, 242, 242, 0.93);
 }
 
 .battleCard {
-  color: #111111;
+  color: rgba(242, 242, 242, 0.93);
   margin: auto;
   text-align: center;
   left: calc(50% - 200px);
@@ -922,7 +923,6 @@ img {
 #skill_box_temp {
   display: none;
   flex-direction: column;
-  color: black;
   box-shadow: var(--card-shadow);
   text-align: center;
   font-family: Pretendard;
@@ -945,9 +945,9 @@ img {
 #skill_box_temp .defense_skill_box .one_atk_skill_box {
   width: 90px;
   height: 90px;
-  margin: 4px;
+  margin: 6px;
   padding: 5px;
-  outline: 3px solid rgba(30, 30, 30, 0.1);
+  outline: 3px solid rgba(242, 242, 242, 0.5);
   transition: 0.3s ease;
   border-radius: 6px;
   background-color: rgba(0, 0, 0, 0.01);

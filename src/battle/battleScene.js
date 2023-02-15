@@ -115,23 +115,15 @@ export function endBattle(result) {
  * 진짜 배틀 시작, 배틀 맵으로 이동
  */
 export function initBattle() {
-  //   canva.width = window.innerWidth
-  //   canva.height = window.innerHeight
-  console.log(battle.data)
   document.querySelector('#joyDiv').style.display = 'none'
   document.querySelector('#userInterface').style.display = 'block'
   document.querySelector('#enemyHealthBar').style.width = '100%'
   document.querySelector('#playerHealthBar').style.width = '100%'
-  // document.querySelector('#attacksBox').replaceChildren()
   document.querySelector('#battleMyName').innerHTML = `me(${users[myID].name})`
   document.querySelector('#battleOpponentName').innerHTML = `opponent(${
     users[battle.data.opponent_id].name
   })`
 
-  //   if (!my_attack) {
-  // document.querySelector('#dialogueBox').style.display = 'block'
-  // document.querySelector('#dialogueBox').innerHTML = 'Wait For your turn'
-  //   }
   var battleState = battle.battleState
   const opponentUser = {
     isEnemy: true,

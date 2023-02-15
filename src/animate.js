@@ -58,5 +58,3 @@ export const animate = () => {
     moveToXDirection(moving, 'right', 1, passedTime)
   }
 }
-// animate()
-var previousAnimate = false

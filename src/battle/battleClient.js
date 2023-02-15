@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { playerUrl, tokenId } from '../user/logIn'
+import { playerUrl, selectedClothId, tokenId } from '../user/logIn'
 import { renderState, setUpNextSetting } from './battleScene'
 import { safe_send } from '../network/websocket'
 import { selectedSkill, selectedDefenceSkills } from '../web/initialSetting'
@@ -15,6 +15,7 @@ const resume_data = {
   jwt: '',
   playerUrl: '',
   token_id: '',
+  clothId: '',
   opponentId: '',
 }
 class BattleClient {
@@ -127,6 +128,7 @@ class BattleClient {
     resume_data.battle_data = this.data
     resume_data.battle_data.battle_state = this.battleState.write()
     resume_data.playerUrl = playerUrl
+    resume_data.clothId = selectedClothId
     resume_data.token_id = tokenId
     sessionStorage.setItem('resume-data', JSON.stringify(resume_data))
 

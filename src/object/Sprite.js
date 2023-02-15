@@ -27,20 +27,23 @@ export class Sprite {
   setImage(image) {
     this.shouldDraw = false
     this.image = image
-    this.image.onload = () => {
-      this.width = (image.width / this.frames.max) * this.scale
-      this.height = image.height * this.scale
-      this.shouldDraw = true
-    }
-    if (image.complete) {
-      this.width = (image.width / this.frames.max) * this.scale
-      this.height = image.height * this.scale
-      this.shouldDraw = true
-    }
+  }
+
+  setScale(scale) {
+    this.shouldDraw = false
+    this.scale = scale
   }
 
   draw() {
-    if (!this.shouldDraw) return
+    if (!this.shouldDraw) {
+      if (this.image !== undefined)
+        if (this.image.complete) {
+          this.width = (this.image.width / this.frames.max) * this.scale
+          this.height = this.image.height * this.scale
+          this.shouldDraw = true
+        } else return
+      else return
+    }
     canva.save()
     canva.translate(
       this.position.x + this.width / 2,
@@ -58,20 +61,17 @@ export class Sprite {
         x: this.frames.val * this.width,
         y: 0,
       },
-      width: this.image.width / this.frames.max,
-      height: this.image.height,
     }
-
     canva.drawImage(
       this.image,
       crop.position.x,
       crop.position.y,
-      crop.width,
-      crop.height,
+      this.width / this.scale,
+      this.height / this.scale,
       this.position.x,
       this.position.y,
-      this.width * this.scale,
-      this.height * this.scale
+      this.width,
+      this.height
     )
 
     canva.restore()

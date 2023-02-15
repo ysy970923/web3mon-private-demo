@@ -34,7 +34,7 @@ const skillBoxAdd = () => {
 
     skillBox.onclick = (e) => {
       if (selectedSkill.includes(i)) {
-        skillBox.style.background = 'white'
+        skillBox.style.background = null
         selectedSkill = selectedSkill.filter((doc) => doc !== i)
       } else {
         console.log(selectedSkill, 'Qq')

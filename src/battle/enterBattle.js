@@ -49,14 +49,21 @@ export function enterBattle() {
 export function animateBattle() {
   battleAnimationId = window.requestAnimationFrame(animateBattle)
 
-  battleBackground.scale = Math.max(
-    window.innerWidth / battleBackground.width,
-    window.innerHeight / battleBackground.height
-  )
-
   document.getElementById('battle_left_time').innerText = `00:${Math.floor(
     (battle.data.pick_until_time - Date.now()) / 1000
   )}`
+
+  battleBackground.setScale(
+    Math.max(
+      window.innerWidth / battleBackground.image.width,
+      window.innerHeight / battleBackground.image.height
+    )
+  )
+
+  battleBackground.position = {
+    x: window.innerWidth / 2 - battleBackground.width / 2,
+    y: window.innerHeight / 2 - battleBackground.height / 2,
+  }
 
   battleBackground.draw()
 
@@ -65,7 +72,7 @@ export function animateBattle() {
     queue.shift()
   }
 
-  for (const key in renderedSprites) {
-    renderedSprites[key].draw()
-  }
+    for (const key in renderedSprites) {
+      renderedSprites[key].draw()
+    }
 }

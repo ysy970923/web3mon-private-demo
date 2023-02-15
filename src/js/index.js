@@ -3,10 +3,9 @@ import { battleZonesData } from '../data/battleZones'
 import { charactersMapData } from '../data/characters'
 import { Boundary } from '../object/Boundary'
 import { Sprite } from '../object/Sprite'
-import { rectangularCollision } from '../utils/checkCollision'
 import { background, foreground } from '../data/map'
 import { clickEvent } from '../battle/battleStart'
-import { setNFTInfo, setPlayerUrl, collection } from '../user/logIn'
+import { setNFTInfo, setPlayerUrl, collection, setClothId } from '../user/logIn'
 import { battle } from '../battle/battleClient'
 import { users, myID } from '../user/user'
 import { connect } from '../network/websocket'
@@ -204,20 +203,6 @@ export function local_position(position) {
   }
 }
 
-export function checkCollision(a, b) {
-  const overlappingArea =
-    (Math.min(a.position.x + a.width, b.position.x + b.width) -
-      Math.max(a.position.x, b.position.x)) *
-    (Math.min(a.position.y + a.height, b.position.y + b.height) -
-      Math.max(a.position.y, b.position.y))
-  return (
-    rectangularCollision({
-      rectangle1: a,
-      rectangle2: b,
-    }) && overlappingArea > (a.width * a.height) / 10
-  )
-}
-
 initalSetting()
 
 function initalSetting() {
@@ -233,6 +218,7 @@ if (resume_data !== null) {
     resume_data = JSON.parse(resume_data)
     setNFTInfo(resume_data.collection, resume_data.tokenId)
     setPlayerUrl(resume_data.playerUrl)
+    setClothId(resume_data.clothId)
     connect()
     battle.resume(resume_data.battle_data)
     document.getElementById('resumePopUp').style = 'none'

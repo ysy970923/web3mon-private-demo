@@ -5,7 +5,7 @@ import { transferMapTo } from '../data/map'
 import {
   checkForCharacterCollision,
   rectangularCollision,
-} from '../utils/checkCollision'
+} from './checkCollision'
 import { boundaries, movables, characters } from '../js/index'
 import { users, myID } from '../user/user'
 
@@ -147,7 +147,7 @@ export function moveToXDirection(moving, direction, num = 1, passedTime) {
   const isX = (direction === 'left') | (direction === 'right') ? 1 : 0
   const isY = (direction === 'up') | (direction === 'down') ? 1 : 0
 
-  const speed = num * passedTime / 5
+  const speed = (num * passedTime) / 5
 
   users[myID].setMoving(true)
   switch (direction) {
@@ -162,7 +162,7 @@ export function moveToXDirection(moving, direction, num = 1, passedTime) {
 
   checkForCharacterCollision({
     characters,
-    player: users[myID],
+    player: users[myID].sprite,
     characterOffset: {
       x: speed * plusOrNot * isX,
       y: speed * plusOrNot * isY,
@@ -173,7 +173,7 @@ export function moveToXDirection(moving, direction, num = 1, passedTime) {
     const boundary = boundaries[i]
     if (
       rectangularCollision({
-        rectangle1: users[myID],
+        rectangle1: users[myID].sprite,
         rectangle2: {
           ...boundary,
           position: {

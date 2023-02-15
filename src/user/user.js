@@ -2,6 +2,8 @@ import { Sprite } from '../object/Sprite'
 import { startMoveSender } from '../control/move'
 import { canva } from '../js/index'
 import { selectedClothId, playerUrl } from './logIn'
+import { animate } from '../animate'
+
 const clothStorageLink = 'https://web3mon.s3.amazonaws.com/nftv1/'
 
 export const worker = new Worker('./worker.js')
@@ -20,6 +22,26 @@ nearLogo.src = './../img/near.png'
 
 export function setMyID(id) {
   myID = id
+}
+
+worker.onmessage = function (event) {
+  console.log(event.data.id === myID)
+  if (event.data) {
+    users[event.data.id].setSpriteImages('up', event.data.up)
+    users[event.data.id].setSpriteImages('down', event.data.down)
+    users[event.data.id].setSpriteImages('left', event.data.left)
+    users[event.data.id].setSpriteImages('right', event.data.right)
+    users[event.data.id].setSpriteImages('base', event.data.base)
+    users[event.data.id].setDirection('down')
+
+    if (event.data.id === myID) {
+      document.getElementById('loading').style.display = 'none'
+      animate()
+    }
+  }
+}
+worker.onerror = function (err) {
+  console.log(err)
 }
 
 export class User {

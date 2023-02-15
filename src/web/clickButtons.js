@@ -1,6 +1,6 @@
 import { login } from '../user/logIn'
 import * as nearAPI from 'near-api-js'
-import { findMyNFT } from '../js/utils'
+import { findMyNFT } from '../user/findNFT'
 import { wallet } from '../wallet/multi-wallet'
 
 function clickOutSideEvent1(e) {

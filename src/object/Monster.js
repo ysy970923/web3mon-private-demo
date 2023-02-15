@@ -14,13 +14,13 @@ export class Monster extends Sprite {
     var position
     if (isEnemy)
       position = {
-        x: 650,
-        y: 100,
+        x: window.innerWidth * 0.9 - 200,
+        y: window.innerHeight * 0.1 + 200,
       }
     else
       position = {
-        x: 250,
-        y: 305,
+        x: window.innerWidth * 0.1 + 200,
+        y: window.innerHeight * 0.9 - 200,
       }
     super({
       position,
@@ -52,5 +52,19 @@ export class Monster extends Sprite {
     gsap.to(healthBar, {
       width: (100 * this.health) / this.initialHealth + '%',
     })
+  }
+
+  draw() {
+    if (this.isEnemy)
+      super.position = {
+        x: window.innerWidth * 0.9 - 200,
+        y: window.innerHeight * 0.1 + 200,
+      }
+    else
+      super.position = {
+        x: window.innerWidth * 0.1 + 200,
+        y: window.innerHeight * 0.9 - 200,
+      }
+    super.draw()
   }
 }

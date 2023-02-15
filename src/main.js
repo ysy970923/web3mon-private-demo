@@ -1,7 +1,7 @@
 import './web/clickButtons'
 import './user/logIn'
 import './js/index'
-import './js/utils'
+import './user/findNFT'
 import './control/move'
 import './web/eventListener'
 import './chat/chatForm'

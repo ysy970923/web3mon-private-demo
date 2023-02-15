@@ -1,28 +1,7 @@
 import { connect } from '../network/websocket'
 import { animate } from '../animate'
 import { wallet } from '../wallet/multi-wallet'
-import { collection, setClothId, setClothUrl, setNFTInfo, setPlayerUrl } from '../user/logIn'
-import { myID, users, worker } from '../user/user'
-
-worker.onmessage = function (event) {
-  console.log(event.data.id === myID)
-  if (event.data) {
-    users[event.data.id].setSpriteImages('up', event.data.up)
-    users[event.data.id].setSpriteImages('down', event.data.down)
-    users[event.data.id].setSpriteImages('left', event.data.left)
-    users[event.data.id].setSpriteImages('right', event.data.right)
-    users[event.data.id].setSpriteImages('base', event.data.base)
-    users[event.data.id].setDirection('down')
-
-    if (event.data.id === myID) {
-      document.getElementById('loading').style.display = 'none'
-      animate()
-    }
-  }
-}
-worker.onerror = function (err) {
-  console.log(err)
-}
+import { collection, setClothId, setClothUrl, setNFTInfo, setPlayerUrl } from './logIn'
 
 export async function findMyNFT() {
   document.getElementById('chain_containers').style.display = 'none'
@@ -246,6 +225,5 @@ function onClothClick(e) {
   if (prevSelectCloth !== undefined) prevSelectCloth.style.opacity = 0.5
   e.target.style.opacity = 1.0
   prevSelectCloth = e.target
-  console.log(e.target.getAttribute('asset_id'))
   setClothId(e.target.getAttribute('asset_id'))
 }
