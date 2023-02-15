@@ -1,35 +1,8 @@
-export let chosenCloth = 1
-import { clothesList } from '../js/clothes'
 import { battle } from '../battle/battleClient'
-import { ATTACKS, DEFENCES, SKILL_DESCRIPTIONS } from '../js/skills'
+import { ATTACKS, DEFENCES, SKILL_DESCRIPTIONS } from '../battle/skills'
 
 export let selectedSkill = []
 export let selectedDefenceSkills = []
-
-const renderClothes = () => {
-  document.querySelector('#clothesBox').innerHTML = ''
-
-  clothesList.forEach((item) => {
-    let img = document.createElement('img')
-    img.src = item.source
-    img.style.width = 'min(100px, 15%)'
-    img.style.transition = 'all 0.2s'
-    img.style.background =
-      chosenCloth === item.id
-        ? 'rgba(255,255,255,0.35)'
-        : 'rgba(255,255,255,0.15)'
-    img.style.boxShadow = '0 8px 32px 0 rgba( 31, 38, 135, 0.37 )'
-    img.style.backdropFilter = 'blur( 5px )'
-    img.style.borderRadius = '2px'
-    img.style.border = '0.6px solid rgba( 255, 255, 255, 0.18 )'
-    img.style.margin = '3px'
-    img.onclick = () => {
-      chosenCloth = item.id
-      renderClothes()
-    }
-    document.querySelector('#clothesBox').append(img)
-  })
-}
 
 /**
  * Choose which skill to bring in battle
@@ -78,7 +51,7 @@ const skillBoxAdd = () => {
     div.append(doc)
   })
 
-//   document.querySelector('#skill_box_wrapper').append(div)
+  //   document.querySelector('#skill_box_wrapper').append(div)
 
   // defence add.
   let defdiv = document.querySelector('.defense_skill_box')
@@ -125,7 +98,7 @@ const skillBoxAdd = () => {
     defdiv.append(doc)
   })
 
-//   document.querySelector('#skill_box_wrapper').append(defdiv)
+  //   document.querySelector('#skill_box_wrapper').append(defdiv)
 }
 
 export const addBattleSkillBox = () => {
@@ -141,12 +114,13 @@ export const addBattleSkillBox = () => {
   let defenseSkills = []
   for (let i = 0; i < 3; i++) {
     let skillBox = document.createElement('div')
-    var skillName = ATTACKS[selectedSkill[i]]
+    var skillName =
+      battle.battleState.player_skills[battle.data.my_index][i].name
     skillBox.className = `battle_one_skill a${i} atk_skill_buttons`
     skillBox.innerHTML = `
     <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}" />
     `
-    skillBox.id =  `Box-${skillName}`
+    skillBox.id = `Box-${skillName}`
     skillBox.value = i
     skillBox.onmouseover = (e) => {
       hoverTooltip(e.currentTarget.id.substring(4), tooltip, skillBox)
@@ -163,7 +137,7 @@ export const addBattleSkillBox = () => {
 
       battle.chooseAction(e.currentTarget.value)
       document.querySelector('#actionContent').innerText =
-        '공격 스킬 사용!' + e.currentTarget.id.substring(4)
+        'Used ' + e.currentTarget.id.substring(4)
       document.querySelector('#battlePopUpCard').style.display = 'block'
       setTimeout(() => {
         document.querySelector('#battlePopUpCard').style.display = 'none'
@@ -176,12 +150,13 @@ export const addBattleSkillBox = () => {
   // 방어 스킬들 넣기
   for (let i = 0; i < 3; i++) {
     let skillBox = document.createElement('div')
-    var skillName = DEFENCES[selectedSkill[i]]
+    var skillName =
+      battle.battleState.player_skills[battle.data.my_index][i + 3].name
     skillBox.className = `battle_one_skill a${i} def_skill_buttons`
     skillBox.innerHTML = `
     <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}" />
     `
-    skillBox.id =  `Box-${skillName}`
+    skillBox.id = `Box-${skillName}`
     skillBox.value = i + 3
     skillBox.onmouseover = (e) => {
       hoverTooltip(e.currentTarget.id.substring(4), tooltip, skillBox)
@@ -197,7 +172,7 @@ export const addBattleSkillBox = () => {
       }
       battle.chooseAction(e.currentTarget.value)
       document.querySelector('#actionContent').innerText =
-        '방어 스킬 사용!' + e.currentTarget.id.substring(4)
+        'Used ' + e.currentTarget.id.substring(4)
       document.querySelector('#battlePopUpCard').style.display = 'block'
       setTimeout(() => {
         document.querySelector('#battlePopUpCard').style.display = 'none'
@@ -229,7 +204,6 @@ const hoverTooltip = (skillName, tooltip, skillBox) => {
 }
 
 skillBoxAdd()
-renderClothes()
 // addBattleSkillBox()
 // 배틀화면 테스트 용도
 // document.getElementById('login_screen').style.display = 'none'

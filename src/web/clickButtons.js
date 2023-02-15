@@ -1,4 +1,4 @@
-import { login } from './logIn'
+import { login } from '../user/logIn'
 import * as nearAPI from 'near-api-js'
 import { findMyNFT } from '../js/utils'
 import { wallet } from '../wallet/multi-wallet'

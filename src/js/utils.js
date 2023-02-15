@@ -1,33 +1,22 @@
-import { others, connect } from '../network/websocket'
-import { player } from './index'
+import { connect } from '../network/websocket'
 import { animate } from '../animate'
 import { wallet } from '../wallet/multi-wallet'
-import { collection, setNFTInfo, setPlayerUrl } from '../web/logIn'
-
-export const worker = new Worker('./worker.js')
+import { collection, setClothId, setClothUrl, setNFTInfo, setPlayerUrl } from '../user/logIn'
+import { myID, users, worker } from '../user/user'
 
 worker.onmessage = function (event) {
+  console.log(event.data.id === myID)
   if (event.data) {
-    if (event.data.id === '-1') {
-      player.sprites.up.src = event.data.up
-      player.sprites.down.src = event.data.down
-      player.sprites.left.src = event.data.left
-      player.sprites.right.src = event.data.right
-      player.baseImage.src = event.data.baseImage
-      player.image = player.sprites.down
+    users[event.data.id].setSpriteImages('up', event.data.up)
+    users[event.data.id].setSpriteImages('down', event.data.down)
+    users[event.data.id].setSpriteImages('left', event.data.left)
+    users[event.data.id].setSpriteImages('right', event.data.right)
+    users[event.data.id].setSpriteImages('base', event.data.base)
+    users[event.data.id].setDirection('down')
+
+    if (event.data.id === myID) {
       document.getElementById('loading').style.display = 'none'
       animate()
-      connect()
-    } else {
-      console.log(event.data)
-      others[event.data.id].sprite.sprites.up.src = event.data.up
-      others[event.data.id].sprite.sprites.down.src = event.data.down
-      others[event.data.id].sprite.sprites.left.src = event.data.left
-      others[event.data.id].sprite.sprites.right.src = event.data.right
-      others[event.data.id].baseImage.src = event.data.baseImage
-      others[event.data.id].sprite.image =
-        others[event.data.id].sprite.sprites.down
-      others[event.data.id].draw = true
     }
   }
 }
@@ -44,6 +33,7 @@ export async function findMyNFT() {
     var nft_contract_list = [
       'asac.web3mon.testnet',
       'nearnauts.web3mon.testnet',
+      'nftv1.web3mon.testnet',
       //   'near-punks.near',
       //   'nearnautnft.near',
       //   'asac.near',
@@ -62,6 +52,7 @@ export async function findMyNFT() {
     document.querySelector('#nftListBox').innerHTML = ''
     document.getElementById('tokenId').value = ''
     let imgs = []
+    let clothes = []
 
     for (var contract_id of nft_contract_list) {
       var metadata = await wallet.viewMethod({
@@ -81,24 +72,41 @@ export async function findMyNFT() {
             img.src = nft.metadata.media
           else img.src = metadata.base_uri + '/' + nft.metadata.media
 
-          const name = metadata.name + ' #' + (Number(nft.metadata.title) + 1)
+          const name = `${metadata.name} #${nft.metadata.title}`
 
           img.style = 'width: min(100px, 15%); opacity: 0.5;'
           img.setAttribute('collection', contract_id)
           img.setAttribute('asset_id', nft.token_id)
           img.setAttribute('name', name)
-          img.onclick = onImgClick
-          imgs.push(img)
+          if (contract_id === 'nftv1.web3mon.testnet') {
+            clothes.push(img)
+            img.onclick = onClothClick
+          } else {
+            imgs.push(img)
+            img.onclick = onImgClick
+          }
         })
       }
     }
+
     imgs.forEach((i) => {
       document.querySelector('#nftListBox').appendChild(i)
     })
+
+    clothes.forEach((i) => {
+      document.querySelector('#clothesBox').appendChild(i)
+    })
+
     if (imgs.length === 0) {
       let p = document.createElement('p')
       p.innerHTML = 'There is no NFT'
       document.querySelector('#nftListBox').appendChild(p)
+    }
+
+    if (clothes.length === 0) {
+      let p = document.createElement('p')
+      p.innerHTML = 'There are no Clothes'
+      document.querySelector('#clothesBox').appendChild(p)
     }
   }
 
@@ -221,15 +229,23 @@ export async function findMyNFT() {
 }
 
 let prevSelect = undefined
+let prevSelectCloth = undefined
+
 function onImgClick(e) {
   if (prevSelect !== undefined) prevSelect.style.opacity = 0.5
   e.target.style.opacity = 1.0
   prevSelect = e.target
   setPlayerUrl(e.target.src)
-
-  window.name = e.target.getAttribute('name')
   setNFTInfo(
     e.target.getAttribute('collection'),
     e.target.getAttribute('asset_id')
   )
+}
+
+function onClothClick(e) {
+  if (prevSelectCloth !== undefined) prevSelectCloth.style.opacity = 0.5
+  e.target.style.opacity = 1.0
+  prevSelectCloth = e.target
+  console.log(e.target.getAttribute('asset_id'))
+  setClothId(e.target.getAttribute('asset_id'))
 }

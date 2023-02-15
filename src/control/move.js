@@ -1,13 +1,13 @@
 import { JoyStick } from './joystick'
 import { ws } from '../network/websocket'
-import { player, global_position } from '../js/index'
+import { global_position } from '../js/index'
 import { transferMapTo } from '../data/map'
 import {
   checkForCharacterCollision,
   rectangularCollision,
 } from '../utils/checkCollision'
 import { boundaries, movables, characters } from '../js/index'
-import { others } from '../network/websocket'
+import { users, myID } from '../user/user'
 
 export let lastKey = ''
 
@@ -98,9 +98,9 @@ export function joyToKey() {
   joyStickMoving = moving
 }
 
-export function moveUser(position, direction) {
+export function moveUser(position) {
   if (
-    player.map === 'MAIN' &&
+    users[myID].map === 'MAIN' &&
     global_position().x < 2200 &&
     global_position().x > 2150 &&
     global_position().y > 650 &&
@@ -109,7 +109,7 @@ export function moveUser(position, direction) {
     console.log('테스트 맵으로 이동합니다.')
     transferMapTo('TEST')
   } else if (
-    player.map === 'TEST' &&
+    users[myID].map === 'TEST' &&
     global_position().x > 1870 &&
     global_position().x < 1900 &&
     global_position().y < 730 &&
@@ -142,30 +142,30 @@ export function stopUser(position) {
   ws.send(msg)
 }
 
-export function moveToXDirection(moving, direction, num = 1) {
-  const plusOrNot = (direction === 'w') | (direction === 'a') ? 1 : -1
-  const isX = (direction === 'a') | (direction === 'd') ? 1 : 0
-  const isY = (direction === 'w') | (direction === 's') ? 1 : 0
+export function moveToXDirection(moving, direction, num = 1, passedTime) {
+  const plusOrNot = (direction === 'up') | (direction === 'left') ? 1 : -1
+  const isX = (direction === 'left') | (direction === 'right') ? 1 : 0
+  const isY = (direction === 'up') | (direction === 'down') ? 1 : 0
 
-  player.animate = true
-  player.image =
-    direction === 'w'
-      ? player.sprites.up
-      : direction === 'a'
-      ? player.sprites.left
-      : direction === 'd'
-      ? player.sprites.right
-      : player.sprites.down
+  const speed = num * passedTime / 5
 
-  player.direction =
-    direction === 'w' ? 0 : direction === 'a' ? 1 : direction === 'd' ? 3 : 2
+  users[myID].setMoving(true)
+  switch (direction) {
+    case 'w':
+      break
+
+    default:
+      break
+  }
+
+  users[myID].setDirection(direction)
 
   checkForCharacterCollision({
     characters,
-    player,
+    player: users[myID],
     characterOffset: {
-      x: 3 * num * plusOrNot * isX,
-      y: 3 * num * plusOrNot * isY,
+      x: speed * plusOrNot * isX,
+      y: speed * plusOrNot * isY,
     },
   })
 
@@ -173,12 +173,12 @@ export function moveToXDirection(moving, direction, num = 1) {
     const boundary = boundaries[i]
     if (
       rectangularCollision({
-        rectangle1: player,
+        rectangle1: users[myID],
         rectangle2: {
           ...boundary,
           position: {
-            x: boundary.position.x + 3 * num * plusOrNot * isX,
-            y: boundary.position.y + 3 * num * plusOrNot * isY,
+            x: boundary.position.x + speed * plusOrNot * isX,
+            y: boundary.position.y + speed * plusOrNot * isY,
           },
         },
       })
@@ -190,13 +190,16 @@ export function moveToXDirection(moving, direction, num = 1) {
 
   if (moving)
     movables.forEach((movable) => {
-      movable.position.x += 3 * num * plusOrNot * isX
-      movable.position.y += 3 * num * plusOrNot * isY
+      movable.position.x += speed * plusOrNot * isX
+      movable.position.y += speed * plusOrNot * isY
     })
   if (moving)
-    for (const key in others) {
-      others[key].sprite.position.x += 3 * num * plusOrNot * isX
-      others[key].sprite.position.y += 3 * num * plusOrNot * isY
+    for (const key in users) {
+      if (key !== myID)
+        users[key].setPosition({
+          x: users[key].position.x + speed * plusOrNot * isX,
+          y: users[key].position.y + speed * plusOrNot * isY,
+        })
     }
 }
 
@@ -205,8 +208,23 @@ export function moveToPosition(x, y) {
     movable.position.x += 3 * x
     movable.position.y += 3 * y
   })
-  for (const key in others) {
-    others[key].sprite.position.x += 3 * x
-    others[key].sprite.position.y += 3 * y
+  for (const key in users) {
+    if (key !== myID)
+      users[key].setPosition({
+        x: users[key].position.x + 3 * x,
+        y: users[key].position.y + 3 * y,
+      })
   }
+}
+var previousAnimate = false
+export function startMoveSender() {
+  setInterval(() => {
+    if (users[myID].moving === true) {
+      moveUser(global_position())
+      previousAnimate = users[myID].moving
+    } else if (previousAnimate === true) {
+      stopUser(global_position())
+      previousAnimate = false
+    }
+  }, 50)
 }

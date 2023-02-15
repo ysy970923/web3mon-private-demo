@@ -63,7 +63,7 @@ async function makeChracterImage(url, contractAddress, lis, ris, ups, downs) {
 
   var sprite = {}
 
-  sprite.baseImage = await image.getBase64Async('image/png')
+  sprite.base = await image.getBase64Async('image/png')
 
   if (contractAddress === 'nearnautnft.near')
     image = image.crop(25, 0, 150, 150)

@@ -1,7 +1,7 @@
-import { log, safe_send, myID } from '../network/websocket'
-import { player } from '../js/index'
+import { log, safe_send } from '../network/websocket'
 import { closeForm } from './chatForm'
 import { CHAT } from '../network/callType'
+import { myID, users } from '../user/user'
 
 document
   .getElementById('sendChatBtn')
@@ -16,7 +16,7 @@ export function sendChat() {
   console.log('클릭은됨')
 
   const chat = document.querySelector('#chat').value
-  player.chat = chat
+  users[myID].showChat(chat)
 
   safe_send({
     BoardCastChat: {
@@ -40,7 +40,7 @@ export function sendWhisperChat(receiver_id) {
 
 export function sendMapChat() {
   const chat = document.querySelector('#chat').value
-  player.chat = chat
+  users[myID].showChat(chat)
 
   safe_send({
     MapChat: {

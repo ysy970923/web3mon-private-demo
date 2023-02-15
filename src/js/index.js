@@ -3,32 +3,21 @@ import { battleZonesData } from '../data/battleZones'
 import { charactersMapData } from '../data/characters'
 import { Boundary } from '../object/Boundary'
 import { Sprite } from '../object/Sprite'
-import { others, send } from '../network/websocket'
-import { worker } from './utils'
 import { rectangularCollision } from '../utils/checkCollision'
 import { background, foreground } from '../data/map'
 import { clickEvent } from '../battle/battleStart'
-import { clothesList } from './clothes'
-import { moveToXDirection } from '../control/move'
-import { lastKey } from '../control/move'
-import { setNFTInfo, setPlayerUrl, collection } from '../web/logIn'
-import { playerUrl } from '../web/logIn'
-import { chosenCloth } from '../web/initialSetting'
-import { turnToGameScreen } from '../web/logIn'
+import { setNFTInfo, setPlayerUrl, collection } from '../user/logIn'
 import { battle } from '../battle/battleClient'
+import { users, myID } from '../user/user'
+import { connect } from '../network/websocket'
 
 // 최초로 지갑 연결
 // connectWallets(nearAPI)
-
-// export const playerDownImage = playerDownImages
 
 export let stopAllPlay = false
 export const setStopAllPlay = (bol) => {
   stopAllPlay = bol
 }
-
-export const playerDownImage = new Image()
-playerDownImage.src = './../img/playerDown.png'
 
 export const canvas = document.querySelector('canvas')
 clickEvent()
@@ -41,16 +30,16 @@ body.addEventListener('keydown', (event) => {
   }
   let key = event.code
   let keyCode = event.keyCode
-  if (key === 'Space' || keyCode === 32) {
-    moveToXDirection(true, lastKey, 4)
-    moveToXDirection(true, lastKey, 4)
-    const time = setTimeout(() => {
-      moveToXDirection(true, lastKey, 4)
-      moveToXDirection(true, lastKey, 4)
-      clearTimeout(time)
-    }, 100)
-    event.preventDefault()
-  }
+  //   if (key === 'Space' || keyCode === 32) {
+  //     moveToXDirection(true, lastKey, 4)
+  //     moveToXDirection(true, lastKey, 4)
+  //     const time = setTimeout(() => {
+  //       moveToXDirection(true, lastKey, 4)
+  //       moveToXDirection(true, lastKey, 4)
+  //       clearTimeout(time)
+  //     }, 100)
+  //     event.preventDefault()
+  //   }
 })
 
 export const canva = canvas.getContext('2d')
@@ -176,28 +165,6 @@ charactersMap.forEach((row, i) => {
   })
 })
 
-export const player = new Sprite({
-  position: {
-    x: window.innerWidth / 2 - 192 / 4 / 2,
-    y: window.innerHeight / 2 - 102 / 2,
-  },
-  image: playerDownImage,
-  frames: {
-    max: 4,
-    hold: 10,
-  },
-  sprites: {
-    up: new Image(),
-    left: new Image(),
-    right: new Image(),
-    down: new Image(),
-  },
-  name: '',
-  direction: 0,
-  nftName: 'Npunks',
-  myCharacter: true,
-})
-
 setBoundaries(mainMapBoundaries)
 
 export let movables = [
@@ -213,7 +180,6 @@ export let renderables = [
   ...boundaries,
   ...battleZones,
   ...characters,
-  player,
   foreground,
 ]
 
@@ -226,8 +192,8 @@ export const setRenderables = (rend) => {
 
 export function global_position() {
   return {
-    x: player.position.x - background.position.x,
-    y: player.position.y - background.position.y,
+    x: users[myID].position.x - background.position.x,
+    y: users[myID].position.y - background.position.y,
   }
 }
 
@@ -252,45 +218,6 @@ export function checkCollision(a, b) {
   )
 }
 
-// Jaewon NPC 생성
-const makeNPC = () => {
-  others['250'] = {
-    draw: true,
-    collection: 'asac.near',
-    skillType: 1,
-    sprite: new Sprite({
-      position: {
-        x: 100,
-        y: 200,
-      },
-      image: playerDownImage,
-      frames: {
-        max: 4,
-        hold: 10,
-      },
-      sprites: {
-        up: new Image(),
-        left: new Image(),
-        right: new Image(),
-        down: new Image(),
-      },
-      name: 'jaewon.near (BOT)',
-    }),
-  }
-
-  others['250'].baseImage = new Image()
-
-  worker.postMessage({
-    url: 'https://ipfs.io/ipfs/bafybeicj5zfhe3ytmfleeiindnqlj7ydkpoyitxm7idxdw2kucchojf7v4/129.png',
-    contractAddress: 'asac.near',
-    id: '250',
-    leftSource: clothesList[0].left,
-    rightSource: clothesList[0].right,
-    upSource: clothesList[0].up,
-    downSource: clothesList[0].down,
-  })
-}
-
 initalSetting()
 
 function initalSetting() {
@@ -299,7 +226,6 @@ function initalSetting() {
 }
 
 // make other charaters or objects.
-makeNPC()
 var resume_data = sessionStorage.getItem('resume-data')
 if (resume_data !== null) {
   document.getElementById('resumePopUp').style.display = 'block'
@@ -307,18 +233,8 @@ if (resume_data !== null) {
     resume_data = JSON.parse(resume_data)
     setNFTInfo(resume_data.collection, resume_data.tokenId)
     setPlayerUrl(resume_data.playerUrl)
-    player.baseImage = new Image()
-    worker.postMessage({
-      url: playerUrl,
-      leftSource: clothesList.find((doc) => doc.id === chosenCloth).left,
-      rightSource: clothesList.find((doc) => doc.id === chosenCloth).right,
-      downSource: clothesList.find((doc) => doc.id === chosenCloth).down,
-      upSource: clothesList.find((doc) => doc.id === chosenCloth).up,
-      contractAddress: collection,
-      id: '-1',
-    })
+    connect()
     battle.resume(resume_data.battle_data)
-    turnToGameScreen()
     document.getElementById('resumePopUp').style = 'none'
   })
   document.getElementById('notResumeButton').addEventListener('click', (e) => {

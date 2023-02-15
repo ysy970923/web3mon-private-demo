@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { playerUrl, tokenId } from '../web/logIn'
+import { playerUrl, tokenId } from '../user/logIn'
 import { renderState, setUpNextSetting } from './battleScene'
 import { safe_send } from '../network/websocket'
 import { selectedSkill, selectedDefenceSkills } from '../web/initialSetting'
@@ -130,22 +130,22 @@ class BattleClient {
     resume_data.token_id = tokenId
     sessionStorage.setItem('resume-data', JSON.stringify(resume_data))
 
-    // location.reload()
+    location.reload()
 
     // moving funds to battle contract
-    await wallet.callMethod({
-      contractId: FT_CONTRACT,
-      method: 'ft_transfer_call',
-      args: {
-        receiver_id: BATTLE_CONTRACT,
-        amount: BET_AMOUNT,
-        msg: JSON.stringify({
-          battle_id: battle_id,
-          player_index: my_index,
-        }),
-      },
-      deposit: 1,
-    })
+    // await wallet.callMethod({
+    //   contractId: FT_CONTRACT,
+    //   method: 'ft_transfer_call',
+    //   args: {
+    //     receiver_id: BATTLE_CONTRACT,
+    //     amount: BET_AMOUNT,
+    //     msg: JSON.stringify({
+    //       battle_id: battle_id,
+    //       player_index: my_index,
+    //     }),
+    //   },
+    //   deposit: 1,
+    // })
 
     this.started = true
     return true

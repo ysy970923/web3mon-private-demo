@@ -1,6 +1,6 @@
-import { others } from '../network/websocket'
 import { canvas, stopAllPlay } from '../js/index'
 import { battle } from './battleClient'
+import { myID, users } from '../user/user'
 import {
   clickOutSideProfileEvent,
   clickOutSideBattleCardEvent,
@@ -15,16 +15,17 @@ export function clickEvent() {
     if (battle.started) return
     if (stopAllPlay) return
 
-    for (const key in others) {
-      var x = e.offsetX - others[key].sprite.width / 2
-      var y = e.offsetY - others[key].sprite.height / 2
+    for (const key in users) {
+      if (key === myID) return
+      var x = e.offsetX - users[key].sprite.width / 2
+      var y = e.offsetY - users[key].sprite.height / 2
 
       // 상대방을 클릭한지에 대한 체크
       if (
-        Math.abs(others[key].sprite.position.x - x) <
-          others[key].sprite.width / 2 &&
-        Math.abs(others[key].sprite.position.y - y) <
-          others[key].sprite.height / 2
+        Math.abs(users[key].position.x - x) <
+        users[key].sprite.width / 2 &&
+        Math.abs(users[key].position.y - y) <
+        users[key].sprite.height / 2
       ) {
         clickToStartBattle(key)
         break
@@ -80,5 +81,5 @@ export const displayBattleAcceptPopup = (key) => {
 
   document.getElementById('acceptBattleCard').style.display = 'block'
   document.getElementById('battleOpponentName2').innerText =
-    'Opponent: ' + others[key].sprite.name
+    'Opponent: ' + users[key].sprite.name
 }

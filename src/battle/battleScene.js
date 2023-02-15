@@ -1,15 +1,13 @@
 import { animate } from '../animate'
 import { Sprite } from '../object/Sprite'
-import { others, attack } from '../network/websocket'
 import { player, canva } from '../js/index'
 import { battle } from './battleClient'
 import { Monster } from '../object/Monster'
 import { gsap } from 'gsap'
 import { battleAnimationId } from './enterBattle'
-import { playerUrl } from '../web/logIn'
-import { userDummy } from '../object/makeOthers'
-import { ATTACKS, DEFENCES, SKILL_DESCRIPTIONS } from '../js/skills'
+import { ATTACKS, DEFENCES, SKILL_DESCRIPTIONS } from './skills'
 import { selectedSkill, selectedDefenceSkills } from '../web/initialSetting'
+import { users, myID } from '../user/user'
 
 const battleBackgroundImage = new Image()
 battleBackgroundImage.src = './../img/Beach sunset.jpg'
@@ -19,12 +17,12 @@ export const battleBackground = new Sprite({
     x: 0,
     y: 0,
   },
-  image: battleBackgroundImage,
 })
+battleBackground.setImage(battleBackgroundImage)
 
 export let opponent
 export let myMonster
-export let renderedSprites
+export let renderedSprites = {}
 export let queue
 
 /** 공격이 들어와서 내가 공격을 받음 */
@@ -125,9 +123,9 @@ export function initBattle() {
   document.querySelector('#enemyHealthBar').style.width = '100%'
   document.querySelector('#playerHealthBar').style.width = '100%'
   // document.querySelector('#attacksBox').replaceChildren()
-  document.querySelector('#battleMyName').innerHTML = `me(${player.name})`
+  document.querySelector('#battleMyName').innerHTML = `me(${users[myID].name})`
   document.querySelector('#battleOpponentName').innerHTML = `opponent(${
-    others[battle.data.opponent_id].sprite.name
+    users[battle.data.opponent_id].name
   })`
 
   //   if (!my_attack) {
@@ -136,36 +134,29 @@ export function initBattle() {
   //   }
   var battleState = battle.battleState
   const opponentUser = {
-    image: others[battle.data.opponent_id].baseImage,
     isEnemy: true,
-    name: others[battle.data.opponent_id].sprite.name,
+    name: users[battle.data.opponent_id].sprite.name,
     health: battle.data.player_init_lp[1 - battle.data.my_index],
     skills: battleState.player_skills[1 - battle.data.my_index],
   }
 
   opponent = new Monster(opponentUser)
+  opponent.setImage(users[battle.data.opponent_id].spriteImgs.base)
   opponent.adjustHealth(battleState.player_lp[1 - battle.data.my_index])
 
-  // const myCharacter = {
-  //   image: player.baseImage,
-  //   isEnemy: false,
-  //   name: player.name,
-  //   health: skillTypes[mySkillType].health,
-  //   attacks: JSON.parse(JSON.stringify(skillTypes[mySkillType].atk)),
-  //   defenses: skillTypes[mySkillType].def,
-  // }
   const myCharacter = {
-    image: player.baseImage,
     isEnemy: false,
-    name: player.name,
+    name: users[myID].name,
     health: battle.data.player_init_lp[battle.data.my_index],
     skills: battleState.player_skills[battle.data.my_index],
   }
 
   myMonster = new Monster(myCharacter)
+  myMonster.setImage(users[myID].spriteImgs.base)
   myMonster.adjustHealth(battleState.player_lp[battle.data.my_index])
 
-  renderedSprites = [opponent, myMonster]
+  renderedSprites['op'] = opponent
+  renderedSprites['me'] = myMonster
 
   queue = []
 
@@ -178,12 +169,15 @@ export function initBattle() {
 // document.querySelector('.main_container').style.display = 'none'
 
 const enterImageAnimation = () => {
-  document.getElementById('enter_img').src = playerUrl
-  document.getElementById('opp_enter_img').src = userDummy.userImageUrl
-  document.getElementById('enter_collection').innerText = player.nftName
-  document.getElementById('enter_name').innerText = player.name
+  document.getElementById('enter_img').src = users[myID].nftUrl
+  document.getElementById('opp_enter_img').src =
+    users[battle.data.opponent_id].nftUrl
+  document.getElementById('enter_collection').innerText =
+    users[myID].nftCollection
+  document.getElementById('enter_name').innerText = users[myID].name
   for (var i = 0; i < 3; i++) {
-    var skillName = ATTACKS[selectedSkill[i]]
+    var skillName =
+      battle.battleState.player_skills[battle.data.my_index][i].name
     var desc_item = document.createElement('div')
     desc_item.setAttribute('class', 'desc_item')
     var skill_label = document.createElement('div')
@@ -199,7 +193,8 @@ const enterImageAnimation = () => {
     desc_item.append(skill_img_container)
     document.getElementById('selected_attack_skills').append(desc_item)
 
-    var skillName = DEFENCES[selectedSkill[i]]
+    var skillName =
+      battle.battleState.player_skills[battle.data.my_index][i + 3].name
     var desc_item = document.createElement('div')
     desc_item.setAttribute('class', 'desc_item')
     var skill_label = document.createElement('div')
@@ -215,12 +210,47 @@ const enterImageAnimation = () => {
     desc_item.append(skill_img_container)
     document.getElementById('selected_defence_skills').append(desc_item)
   }
-  console.log('열리는 실행')
+
+  for (var i = 0; i < 3; i++) {
+    var skillName =
+      battle.battleState.player_skills[1 - battle.data.my_index][i].name
+    var desc_item = document.createElement('div')
+    desc_item.setAttribute('class', 'desc_item')
+    var skill_label = document.createElement('div')
+    skill_label.setAttribute('class', 'skill_label')
+    skill_label.innerText = `Attack ${i + 1}`
+    desc_item.append(skill_label)
+    var skill_img_container = document.createElement('div')
+    skill_img_container.setAttribute('class', 'skill_img_container')
+    var skill_img = document.createElement('img')
+    skill_img.setAttribute('class', 'skill_img')
+    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}`
+    skill_img_container.append(skill_img)
+    desc_item.append(skill_img_container)
+    document.getElementById('op_selected_attack_skills').append(desc_item)
+
+    var skillName =
+      battle.battleState.player_skills[1 - battle.data.my_index][i + 3].name
+    var desc_item = document.createElement('div')
+    desc_item.setAttribute('class', 'desc_item')
+    var skill_label = document.createElement('div')
+    skill_label.setAttribute('class', 'skill_label')
+    skill_label.innerText = `Attack ${i + 1}`
+    desc_item.append(skill_label)
+    var skill_img_container = document.createElement('div')
+    skill_img_container.setAttribute('class', 'skill_img_container')
+    var skill_img = document.createElement('img')
+    skill_img.setAttribute('class', 'skill_img')
+    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}`
+    skill_img_container.append(skill_img)
+    desc_item.append(skill_img_container)
+    document.getElementById('op_selected_defence_skills').append(desc_item)
+  }
+
   document.querySelector('#battle_enter').style.transition = 'all 0s ease-out'
   document.querySelector('#battle_enter').style.opacity = 1
   document.querySelector('#battle_enter').style.zIndex = 1000
   setTimeout(() => {
-    console.log('닫히는게 실행')
     document.querySelector('#battle_enter').style.transition =
       'all 1.2s ease-out'
     document.querySelector('#battle_enter').style.opacity = 0

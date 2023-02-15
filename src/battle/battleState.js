@@ -1,4 +1,4 @@
-import { ATTACKS, DEFENCES, Skill } from '../js/skills'
+import { ATTACKS, DEFENCES, Skill } from './skills'
 
 const P1 = 9973
 const P2 = 6947

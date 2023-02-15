@@ -3,7 +3,6 @@ import {
   battleMapBoundaries,
   canvas,
   mainMapBoundaries,
-  player,
   setBoundaries,
 } from '../js/index'
 import {
@@ -19,6 +18,7 @@ import {
   setRenderables,
 } from '../js/index'
 import { moveToPosition, moveToXDirection } from '../control/move'
+import { users, myID } from '../user/user'
 
 const offset = {
   x: window.innerWidth / 2 - 3360 / 2,
@@ -35,23 +35,22 @@ export let background = new Sprite({
     x: offset.x,
     y: offset.y,
   },
-  image: mainBackgroundImage,
 })
+background.setImage(mainBackgroundImage)
 
 export let foreground = new Sprite({
   position: {
     x: offset.x,
     y: offset.y,
   },
-  image: foregroundImage,
 })
+foreground.setImage(foregroundImage)
 
 export function transferMapTo(toMap) {
   // map 이동의 효과 : 뭐가 있을까?
   // map UI 자체 변경 -> renderables, movables, boundaries 가 바뀌는 것
   // map에 존재하는 유저들 변경
-  player.map = toMap
-  player.chat = '맵이동' + toMap
+  users[myID].map = toMap
 
   showMapLoading()
 
@@ -82,7 +81,7 @@ export function transferMapTo(toMap) {
       foreground,
     ])
 
-    moveToXDirection(true, 'w', 20)
+    moveToXDirection(true, 'up', 20)
 
     const body = {
       MapTransfer: {

@@ -1,5 +1,5 @@
 import './web/clickButtons'
-import './web/logIn'
+import './user/logIn'
 import './js/index'
 import './js/utils'
 import './control/move'

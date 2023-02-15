@@ -375,6 +375,9 @@ img {
   margin-top: min(20px, 1%);
   text-align: center;
 }
+#nftListBox img {
+  margin: 6px;
+}
 
 .battleNameTag {
   background-color: white;

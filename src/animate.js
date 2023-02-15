@@ -1,12 +1,14 @@
 import { joyToKey } from './control/move'
 import { player, renderables, global_position, stopAllPlay } from './js/index'
-import { others } from './network/websocket'
 import { keys, lastKey } from './control/move'
 import { moveUser, stopUser } from './control/move'
 import { moveToXDirection } from './control/move'
 import { battle } from './battle/battleClient'
+import { myID, users } from './user/user'
 
 export const npcId = '250'
+
+let previousTime
 
 const npcTalk = (animationId) => {
   // if (animationId % 600 < 200) others['250'].sprite.chat = 'Come in'
@@ -26,14 +28,14 @@ export const animate = () => {
   // NPC가 말하는거
   npcTalk(animationId)
 
-  for (const key in others) {
-    if (others[key].draw === true) others[key].sprite.draw()
+  for (const key in users) {
+    users[key].draw()
   }
 
   joyToKey()
 
   let moving = true
-  player.animate = false
+  users[myID].setMoving(false)
 
   if (battle.started) return
 
@@ -41,30 +43,20 @@ export const animate = () => {
   if (document.getElementById('chatForm').style.display !== 'none') return
 
   // 아래부터는 나의 이동
+  var newTime = performance.now()
+  var passedTime = newTime - previousTime
+  previousTime = newTime
+
   if (stopAllPlay) return
   if (keys.w.pressed && lastKey === 'w') {
-    player.direction = 1
-    moveToXDirection(moving, 'w', 1)
+    moveToXDirection(moving, 'up', 1, passedTime)
   } else if (keys.a.pressed && lastKey === 'a') {
-    player.direction = 2
-    moveToXDirection(moving, 'a', 1)
+    moveToXDirection(moving, 'left', 1, passedTime)
   } else if (keys.s.pressed && lastKey === 's') {
-    player.direction = 3
-    moveToXDirection(moving, 's', 1)
+    moveToXDirection(moving, 'down', 1, passedTime)
   } else if (keys.d.pressed && lastKey === 'd') {
-    player.direction = 0
-    moveToXDirection(moving, 'd', 1)
+    moveToXDirection(moving, 'right', 1, passedTime)
   }
 }
 // animate()
 var previousAnimate = false
-
-setInterval(() => {
-  if (player.animate === true) {
-    moveUser(global_position(), player.direction)
-    previousAnimate = player.animate
-  } else if (previousAnimate === true) {
-    stopUser(global_position())
-    previousAnimate = false
-  }
-}, 50)

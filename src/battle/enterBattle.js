@@ -65,7 +65,7 @@ export function animateBattle() {
     queue.shift()
   }
 
-  renderedSprites.forEach((sprite) => {
-    sprite.draw()
-  })
+  for (const key in renderedSprites) {
+    renderedSprites[key].draw()
+  }
 }

@@ -3,9 +3,7 @@ import { gsap } from 'gsap'
 
 export class Monster extends Sprite {
   constructor({
-    image,
     frames = { max: 1, hold: 10 },
-    sprites,
     animate = false,
     rotation = 0,
     name,
@@ -26,9 +24,7 @@ export class Monster extends Sprite {
       }
     super({
       position,
-      image,
       frames,
-      sprites,
       animate,
       rotation,
       name,

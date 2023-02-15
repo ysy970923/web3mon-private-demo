@@ -32,7 +32,6 @@ canvas {
   height: 100%;
 }
 
-
 .main_container {
   display: inline-block;
   position: relative;
@@ -70,7 +69,7 @@ canvas {
 }
 
 .game_button_container {
-    margin: 10px;
+  margin: 10px;
 }
 
 .chat-popup {
@@ -217,29 +216,29 @@ canvas {
 }
 
 #battle_banner {
-    color: #111111;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-    margin: auto;
-    text-align: center;
-    background-color: white;
-    position: absolute;
-    top: 10px;
-    left: calc(50% - 75px);
-    z-index: 129;
-    width: 150px;
-    padding: 20px;
-    padding-top: 10px;
-    overflow: hidden;
-    display: none;
-  
-    /* From https://css.glass */
-    background: rgba(23, 23, 23, 0.89);
-    border-radius: 4px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(14.2px);
-    -webkit-backdrop-filter: blur(14.2px);
-    border: 1px solid rgba(23, 23, 23, 0.67);
-    color: rgba(242, 242, 242, 0.93);
+  color: #111111;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  margin: auto;
+  text-align: center;
+  background-color: white;
+  position: absolute;
+  top: 10px;
+  left: calc(50% - 75px);
+  z-index: 129;
+  width: 150px;
+  padding: 20px;
+  padding-top: 10px;
+  overflow: hidden;
+  display: none;
+
+  /* From https://css.glass */
+  background: rgba(23, 23, 23, 0.89);
+  border-radius: 4px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(14.2px);
+  -webkit-backdrop-filter: blur(14.2px);
+  border: 1px solid rgba(23, 23, 23, 0.67);
+  color: rgba(242, 242, 242, 0.93);
 }
 
 .guideCard {
@@ -404,6 +403,9 @@ img {
 #nftListBox {
   margin-top: min(20px, 1%);
   text-align: center;
+  img {
+    margin: 6px;
+  }
 }
 
 .battleNameTag {
@@ -590,7 +592,7 @@ img {
 }
 
 .modal-right {
-    display: none;
+  display: none;
 }
 
 .login_main_container {
