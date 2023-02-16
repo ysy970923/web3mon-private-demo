@@ -14,19 +14,19 @@ export function clickEvent() {
     // need to be ready and not currently battling and in BATTLE map
     if (battle.started) return
     if (stopAllPlay) return
+    console.log('1')
 
     for (const key in users) {
-      if (key === myID) return
+      if (key === myID) continue
       var x = e.offsetX - users[key].sprite.width / 2
       var y = e.offsetY - users[key].sprite.height / 2
-
+      console.log('2')
       // 상대방을 클릭한지에 대한 체크
       if (
-        Math.abs(users[key].position.x - x) <
-        users[key].sprite.width / 2 &&
-        Math.abs(users[key].position.y - y) <
-        users[key].sprite.height / 2
+        Math.abs(users[key].position.x - x) < users[key].sprite.width / 2 &&
+        Math.abs(users[key].position.y - y) < users[key].sprite.height / 2
       ) {
+        console.log('3')
         clickToStartBattle(key)
         break
       }

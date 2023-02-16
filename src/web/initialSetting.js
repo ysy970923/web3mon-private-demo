@@ -8,7 +8,6 @@ export let selectedDefenceSkills = []
  * Choose which skill to bring in battle
  */
 const skillBoxAdd = () => {
-  console.log('스킬 박스 생성')
   let div = document.querySelector('.attack_skill_box')
   let attackSkills = []
 
@@ -50,8 +49,6 @@ const skillBoxAdd = () => {
   attackSkills.forEach((doc) => {
     div.append(doc)
   })
-
-  //   document.querySelector('#skill_box_wrapper').append(div)
 
   // defence add.
   let defdiv = document.querySelector('.defense_skill_box')
@@ -97,8 +94,6 @@ const skillBoxAdd = () => {
   defenceSkills.forEach((doc) => {
     defdiv.append(doc)
   })
-
-  //   document.querySelector('#skill_box_wrapper').append(defdiv)
 }
 
 export const addBattleSkillBox = () => {
@@ -123,7 +118,7 @@ export const addBattleSkillBox = () => {
     skillBox.id = `Box-${skillName}`
     skillBox.value = i
     skillBox.onmouseover = (e) => {
-      hoverTooltip(e.currentTarget.id.substring(4), tooltip, skillBox)
+      hoverBattleToolTip(e.currentTarget.value, tooltip, skillBox)
     }
     skillBox.onmouseleave = (e) => {
       tooltip.style.display = 'none'
@@ -159,7 +154,7 @@ export const addBattleSkillBox = () => {
     skillBox.id = `Box-${skillName}`
     skillBox.value = i + 3
     skillBox.onmouseover = (e) => {
-      hoverTooltip(e.currentTarget.id.substring(4), tooltip, skillBox)
+      hoverBattleToolTip(e.currentTarget.value, tooltip, skillBox)
     }
     skillBox.onmouseleave = (e) => {
       tooltip.style.display = 'none'
@@ -199,6 +194,21 @@ const hoverTooltip = (skillName, tooltip, skillBox) => {
   tooltip.style.display = 'flex'
   // if (type === 'defense') tooltip.style.bottom = '73px'
   // else tooltip.style.top = '73px'
+
+  skillBox.append(tooltip)
+}
+
+const hoverBattleToolTip = (i, tooltip, skillBox) => {
+  var skill = battle.battleState.player_skills[battle.data.my_index][i]
+  var skillDesc = SKILL_DESCRIPTIONS[skill.name]
+  var skillParams = skill.params
+
+  tooltip.innerHTML = `
+    <p><strong>${skillDesc.name}</strong></p>
+    <p>${JSON.stringify(skillParams)}</p>
+    <p>${skillDesc.desc}</p>
+  `
+  tooltip.style.display = 'flex'
 
   skillBox.append(tooltip)
 }

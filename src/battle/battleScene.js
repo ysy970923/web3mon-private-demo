@@ -9,16 +9,18 @@ import { ATTACKS, DEFENCES, SKILL_DESCRIPTIONS } from './skills'
 import { selectedSkill, selectedDefenceSkills } from '../web/initialSetting'
 import { users, myID } from '../user/user'
 
-const battleBackgroundImage = new Image()
-battleBackgroundImage.src = './../img/Beach sunset.jpg'
-
 export const battleBackground = new Sprite({
   position: {
     x: 0,
     y: 0,
   },
 })
-battleBackground.setImage(battleBackgroundImage)
+
+export function setBattleBackground(i) {
+  var im = new Image()
+  im.src = `../img/Battle background/${i + 1}.png`
+  battleBackground.setImage(im)
+}
 
 export let opponent
 export let myMonster
@@ -56,12 +58,12 @@ export function renderState(data, battleState) {
     endBattle('WIN')
   }
   document.querySelector('#playerEffectsBox').innerHTML = ''
-  battleState.lasting_effects.forEach((e) => {
+  battleState.lasting_effect.forEach((e) => {
     document.querySelector('#playerEffectsBox').append(`${JSON.stringify(e)}`)
   })
 
   document.querySelector('#enemyEffectsBox').innerHTML = ''
-  battleState.lasting_effects.forEach((e) => {
+  battleState.lasting_effect.forEach((e) => {
     document.querySelector('#enemyEffectsBox').append(`${JSON.stringify(e)}`)
   })
 }

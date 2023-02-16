@@ -964,7 +964,8 @@ img {
 }
 #skill_box_temp .attack_skill_box .skill_hover_tooltip,
 #skill_box_temp .defense_skill_box .skill_hover_tooltip {
-  background: rgb(255, 255, 255);
+  background: rgb(0, 0, 0);
+  color: rgb(242, 242, 242);
   border-radius: 5px;
   box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.2);
   position: absolute;

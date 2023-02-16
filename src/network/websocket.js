@@ -30,12 +30,6 @@ function onmessage(type, data) {
       break
 
     case NETWORK.MAP_STATUS:
-      Object.keys(users).forEach((id) => {
-        if (!npc_list.includes(id)) {
-          if (!(id in data['player_infos_for_view'])) delete users[id]
-        }
-      })
-
       data['player_infos_for_view'].forEach((avatar) => {
         if (!(avatar.player_id in users)) {
           var newUser = new User(

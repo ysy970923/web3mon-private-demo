@@ -1,7 +1,14 @@
 import { Sprite } from '../object/Sprite'
 import { gsap } from 'gsap'
 
-const SKILLS = {
+export const LASTINGEFFECT = {
+  ContinuousAttack: 'ContinuousAttack',
+  DelayedAttack: 'DelayedAttack',
+  DamageMultiple: 'DamageMultiple',
+  NullifySkill: 'NullifySkill',
+}
+
+export const SKILLS = {
   DeathSpiral: 'DeathSpiral',
   CelsiusExplosion: 'CelsiusExplosion',
   BlockOfFud: 'BlockOfFud',
@@ -136,12 +143,20 @@ const SKILL_RENDER_TYPE = {
   CASTER_TO_RECEIVER: 2,
 }
 
-class LastingEffect {
+export class LastingEffect {
   name
   params
   constructor(name, params) {
     this.name = name
     this.params = params
+  }
+
+  minus_left_turn() {
+    this.params.remain_turn -= 1
+  }
+
+  left_turn() {
+    this.params.remain_turn > 0
   }
 }
 
@@ -330,52 +345,58 @@ export class Skill {
     }
     this.renderParam.sprite.setImage(spriteImg)
   }
-  create_lasting_effects(caster_idx) {
-    if (this.name === 'DeathSpiral')
-      return [
-        new LastingEffect('DamageMultiple', {
-          multiplier: 2,
-          remain_turn: 2,
-          caster_idx,
-        }),
-      ]
-    if (this.name === 'ShortSelling')
-      return [
-        new LastingEffect('ContinuousAttack', {
-          damage: 15,
-          remain_turn: 2,
-          caster_idx,
-        }),
-        new LastingEffect('NullifySkill', {
-          probability: 50,
-          remain_turn: 2,
-          caster_idx,
-        }),
-      ]
-    return undefined
+  create_lasting_effect(caster_idx) {
+    switch (this.name) {
+      case SKILLS.DeathSpiral:
+        return [
+          new LastingEffect(LASTINGEFFECT.DamageMultiple, {
+            multiplier: 2,
+            remain_turn: 2,
+            caster_idx,
+          }),
+        ]
+      case SKILLS.ShortSelling:
+        return [
+          new LastingEffect(LASTINGEFFECT.ContinuousAttack, {
+            damage: 15,
+            remain_turn: 2,
+            caster_idx,
+          }),
+          new LastingEffect(LASTINGEFFECT.NullifySkill, {
+            probability: 50,
+            remain_turn: 2,
+            caster_idx,
+          }),
+        ]
+      default:
+        return undefined
+    }
   }
   create_special_effects(caster_idx) {
-    if (this.name === 'Hacked')
-      return [
-        new SpecialEffect('SelfHealing', {
-          recovery_lp: this.params.recovery_lp,
-        }),
-      ]
-    if (this.name === 'GraceOfCz') return [new SpecialEffect('Cleanse', {})]
-    if (this.name === 'SelfCustody')
-      return [
-        new SpecialEffect('SelfHealing', {
-          recovery_lp: this.params.recovery_lp,
-        }),
-      ]
-    if (this.name === 'ProofOfReserve') {
-      return [
-        new SpecialEffect('Reflection', {
-          reflect_damage: this.params.reflect_damage,
-        }),
-      ]
+    switch (this.name) {
+      case SKILLS.Hacked:
+        return [
+          new SpecialEffect('SelfHealing', {
+            recovery_lp: this.params.recovery_lp,
+          }),
+        ]
+      case SKILLS.GraceOfCz:
+        return [new SpecialEffect('Cleanse', {})]
+      case SKILLS.SelfCustody:
+        return [
+          new SpecialEffect('SelfHealing', {
+            recovery_lp: this.params.recovery_lp,
+          }),
+        ]
+      case SKILLS.ProofOfReserve:
+        return [
+          new SpecialEffect('Reflection', {
+            reflect_damage: this.params.reflect_damage,
+          }),
+        ]
+      default:
+        return undefined
     }
-    return undefined
   }
   calculate_attack_damage() {
     if (this.name === 'DeathSpiral') {

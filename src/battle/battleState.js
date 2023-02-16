@@ -1,7 +1,23 @@
-import { ATTACKS, DEFENCES, Skill } from './skills'
+import { setBattleBackground } from './battleScene'
+import {
+  ATTACKS,
+  DEFENCES,
+  LastingEffect,
+  LASTINGEFFECT,
+  Skill,
+  SKILLS,
+} from './skills'
 
-const P1 = 9973
-const P2 = 6947
+const P1 = 49003
+const P2 = 56377
+const P3 = 34501
+const P4 = 53017
+const P5 = 94379
+const P6 = 74827
+const P7 = 30809
+const P8 = 29411
+const P9 = 65089
+const P10 = 84313
 
 export class BattleState {
   expires_at
@@ -10,7 +26,7 @@ export class BattleState {
   player_skills
   attacker_index
   defender_index
-  lasting_effects
+  lasting_effect
   constructor(info) {
     this.expires_at = info.expires_at
     this.sequence = 0
@@ -18,7 +34,7 @@ export class BattleState {
     this.player_skills = [[], []]
     this.attacker_index = undefined
     this.defender_index = undefined
-    this.lasting_effects = []
+    this.lasting_effect = []
     this.winner = undefined
   }
 
@@ -26,7 +42,7 @@ export class BattleState {
     var player_skills = [[], []]
     for (var i = 0; i < 2; i++)
       this.player_skills[i].forEach((e) => {
-        player_skills.push(e.write())
+        player_skills[i].push(e.write())
       })
     return {
       expires_at: this.expires_at,
@@ -50,6 +66,7 @@ export class BattleState {
     var random_number = actions[0].random_number + actions[1].random_number
     this.attacker_index = random_number % 2
     this.defender_index = 1 - this.attacker_index
+    setBattleBackground(random_number % 5)
   }
 
   doNext(actions) {
@@ -62,7 +79,7 @@ export class BattleState {
     this.applyCombatDamage(damage)
     this.applyLastingEffectDamage()
     this.arrangeLastingEffect()
-    this.skillPostProcessing()
+    this.skillPostProcessing(action_indexes)
     this.checkDeadPlayer()
     return true
   }
@@ -92,6 +109,7 @@ export class BattleState {
     if (def_skill.available_turn_seq !== undefined) {
       if (this.sequence > def_skill.available_turn_seq) return false
     }
+
     return true
   }
   checkDeadPlayer() {
@@ -104,11 +122,11 @@ export class BattleState {
   createLastingEffect(action_indexes) {
     for (var i = 0; i < 2; i++) {
       var action_index = action_indexes[i]
-      var new_lasting_effects =
-        this.player_skills[i][action_index].create_lasting_effects(i)
-      if (new_lasting_effects != undefined)
-        new_lasting_effects.forEach((e) => {
-          this.lasting_effects.push(e)
+      var new_lasting_effect =
+        this.player_skills[i][action_index].create_lasting_effect(i)
+      if (new_lasting_effect != undefined)
+        new_lasting_effect.forEach((e) => {
+          this.lasting_effect.push(e)
         })
     }
   }
@@ -159,11 +177,49 @@ export class BattleState {
     console.log(total_damage)
     return total_damage
   }
-  applyLastingEffectDamage() {}
 
-  arrangeLastingEffect() {}
+  applyLastingEffectDamage() {
+    this.lasting_effect.forEach((e) => {
+      switch (e.name) {
+        case LASTINGEFFECT.ContinuousAttack:
+          var target_idx = 1 - e.caster_idx
+          this.player_lp[target_idx] -= e.damage
+          break
 
-  skillPostProcessing() {}
+        case LASTINGEFFECT.DelayedAttack:
+          var target_idx = 1 - e.caster_idx
+          if (e.delayed_turn === 1) {
+            this.player_lp[target_idx] -= e.damage
+          }
+          break
+      }
+    })
+  }
+
+  arrangeLastingEffect() {
+    this.lasting_effect.forEach((e) => {
+      e.minus_left_turn()
+    })
+    this.lasting_effect = this.lasting_effect.filter((e) => e.left_turn())
+  }
+
+  skillPostProcessing(action_indexes) {
+    var def_skill =
+      this.player_skills[this.defender_index][
+        action_indexes[this.defender_index]
+      ]
+    switch (def_skill.name) {
+      case SKILLS.PowShield:
+        var lasting_effect = new LastingEffect(LASTINGEFFECT.DelayedAttack, {
+          damage: def_skill.absorbed_damage,
+          delayed_turn: 1,
+          remain_turn: 1,
+          caster_idx: this.defender_index,
+        })
+        this.lasting_effect.push(lasting_effect)
+        break
+    }
+  }
 
   applyCombatDamage(damage) {
     this.player_lp[this.defender_index] = Math.max(
