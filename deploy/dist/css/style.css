@@ -1109,6 +1109,10 @@ img {
   height: 300px;
 }
 
+#readyButtonContainer {
+  display: none;
+}
+
 .game_skill_btn {
   display: flex;
   flex-direction: row;

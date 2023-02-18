@@ -86,9 +86,9 @@
         }
 
         .op_skill_label {
-            color: cornflowerblue;
-            font-size: 15px;
-          }
+          color: cornflowerblue;
+          font-size: 15px;
+        }
 
         .skill_img_container {
           color: white;
@@ -115,6 +115,10 @@
       height: 300px;
     }
   }
+}
+
+#readyButtonContainer {
+  display: none;
 }
 
 .game_skill_btn {

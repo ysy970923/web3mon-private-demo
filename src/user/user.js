@@ -3,6 +3,7 @@ import { startMoveSender } from '../control/move'
 import { canva } from '../js/index'
 import { selectedClothId, playerUrl } from './logIn'
 import { animate } from '../animate'
+import { background } from '../control/map'
 
 const clothStorageLink = 'https://web3mon.s3.amazonaws.com/nftv1/'
 
@@ -11,6 +12,7 @@ export const worker = new Worker('./worker.js')
 const chatBubble = new Image()
 chatBubble.src = './../img/chatBubble2.png'
 
+export let player
 export let myID
 export const users = {}
 
@@ -19,6 +21,8 @@ terraLogo.src = './../img/terra.png'
 
 const nearLogo = new Image()
 nearLogo.src = './../img/near.png'
+
+const READYTEXT = 'Ready for Battle'
 
 export function setMyID(id) {
   myID = id
@@ -36,6 +40,7 @@ worker.onmessage = function (event) {
 
     if (event.data.id === myID) {
       document.getElementById('loading').style.display = 'none'
+      startMoveSender()
       animate()
     }
   }
@@ -59,9 +64,11 @@ export class User {
   chat
   chatShowTime
   clothId
+  readyForBattle
 
   constructor(id, nftCollection, tokenId, chain, nftUrl, clothId, map) {
     users[id] = this
+    if (id === myID) player = this
     this.id = id
     this.nftCollection = nftCollection
     this.tokenId = tokenId
@@ -104,7 +111,7 @@ export class User {
     this.moving = false
     this.chat = ''
     this.chatShowTime = 0
-    if (id === myID) startMoveSender()
+    this.readyForBattle = false
     console.log(id)
   }
 
@@ -121,6 +128,20 @@ export class User {
     this.sprite.position = position
   }
 
+  getGlobalPosition() {
+    return {
+      x: this.position.x - background.position.x,
+      y: this.position.y - background.position.y,
+    }
+  }
+
+  getNextBlock(delta) {
+    var globalPosition = this.getGlobalPosition()
+    var i = Math.floor((globalPosition.y + this.sprite.height + delta.y) / 80)
+    var j = Math.floor((globalPosition.x + (this.sprite.width / 2) + delta.x) / 80)
+    return [i, j]
+  }
+
   showChat(chat) {
     this.chat = chat
     this.chatShowTime = 0
@@ -131,8 +152,25 @@ export class User {
     this.sprite.animate = moving
   }
 
+  changeBattleReadyState() {
+    this.readyForBattle = !this.readyForBattle
+  }
+
   draw() {
+    canva.font = '15px "210L"'
+    canva.textAlign = 'center'
+    if (this.readyForBattle) {
+      canva.fillStyle = 'red'
+      canva.fillText(
+        READYTEXT,
+        this.position.x + this.sprite.width / 2,
+        this.position.y - 50
+      )
+    }
+
+    canva.fillStyle = 'black'
     if (this.chat.length > 0) {
+      var textWidth = canva.measureText(this.chat).width
       this.chatShowTime += 1
       canva.drawImage(
         chatBubble,
@@ -147,12 +185,10 @@ export class User {
       if (this.chatShowTime > 600) this.chat = ''
     }
 
-    // canva.font = '10px "Press Start 2P"'
-    var textWidth = canva.measureText(this.name).width
     canva.fillText(
       this.name,
-      this.position.x + this.sprite.width / 2 - textWidth / 2,
-      this.position.y - 5
+      this.position.x + this.sprite.width / 2,
+      this.position.y
     )
     // draw logo
     if (this.chain === 'terra') {

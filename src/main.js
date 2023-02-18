@@ -9,7 +9,7 @@ import './chat/sendChat'
 import '../style/index.scss'
 import '../style/modals.scss'
 import '../style/game.scss'
-import './data/map'
+import './control/map'
 import './web/initialSetting'
 
 document

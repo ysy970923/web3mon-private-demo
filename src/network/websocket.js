@@ -4,7 +4,7 @@ import { ACTION, CHAT, NETWORK } from './callType'
 import { npc_list } from '../data/npc'
 import { displayBattleAcceptPopup } from '../battle/battleStart'
 import { battle } from '../battle/battleClient'
-import { myID, setMyID, users, User } from '../user/user'
+import { myID, setMyID, users, User, player } from '../user/user'
 import { turnToGameScreen } from '../user/logIn'
 
 export let ws = null
@@ -39,7 +39,7 @@ function onmessage(type, data) {
             'tmp',
             'tmp',
             'tmp',
-            'tmp'
+            'MAIN'
           )
           //   newUser.setPosition(avatar.coordinate)
         }

@@ -16,7 +16,7 @@ export function sendChat() {
   console.log('클릭은됨')
 
   const chat = document.querySelector('#chat').value
-  users[myID].showChat(chat)
+  player.showChat(chat)
 
   safe_send({
     BoardCastChat: {
@@ -40,7 +40,7 @@ export function sendWhisperChat(receiver_id) {
 
 export function sendMapChat() {
   const chat = document.querySelector('#chat').value
-  users[myID].showChat(chat)
+  player.showChat(chat)
 
   safe_send({
     MapChat: {

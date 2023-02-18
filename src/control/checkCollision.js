@@ -7,6 +7,17 @@ export function rectangularCollision({ rectangle1, rectangle2 }) {
   )
 }
 
+export function userBoundaryCollision({user, boundary}) {
+    var userFootX = user.position.x + user.width / 2
+    var userFootY = user.position.y + user.height
+    return (
+        userFootX >= boundary.position.x &&
+        userFootX < boundary.position.x + boundary.width &&
+        userFootY >= boundary.position.y &&
+        userFootY < boundary.position.y + boundary.height
+    )
+}
+
 export function checkForCharacterCollision({
   characters,
   player,

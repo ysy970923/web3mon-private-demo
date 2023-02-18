@@ -1,10 +1,10 @@
 import { joyToKey } from './control/move'
-import { player, renderables, global_position, stopAllPlay } from './js/index'
+import { renderables, global_position, stopAllPlay } from './js/index'
 import { keys, lastKey } from './control/move'
 import { moveUser, stopUser } from './control/move'
 import { moveToXDirection } from './control/move'
 import { battle } from './battle/battleClient'
-import { myID, users } from './user/user'
+import { player, users } from './user/user'
 
 export const npcId = '250'
 
@@ -35,7 +35,7 @@ export const animate = () => {
   joyToKey()
 
   let moving = true
-  users[myID].setMoving(false)
+  player.setMoving(false)
 
   if (battle.started) return
 

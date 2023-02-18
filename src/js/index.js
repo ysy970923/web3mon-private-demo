@@ -1,9 +1,8 @@
-import { collisions } from '../data/collisions'
-import { battleZonesData } from '../data/battleZones'
+import { allowedBlocks } from '../data/collisions'
 import { charactersMapData } from '../data/characters'
 import { Boundary } from '../object/Boundary'
 import { Sprite } from '../object/Sprite'
-import { background, foreground } from '../data/map'
+import { background, foreground } from '../control/map'
 import { clickEvent } from '../battle/battleStart'
 import { setNFTInfo, setPlayerUrl, collection, setClothId } from '../user/logIn'
 import { battle } from '../battle/battleClient'
@@ -42,65 +41,17 @@ body.addEventListener('keydown', (event) => {
 })
 
 export const canva = canvas.getContext('2d')
-
-export const collisionsMap = []
-for (let i = 0; i < collisions.length; i += 70) {
-  collisionsMap.push(collisions.slice(i, 70 + i))
-}
-
-export const battleZonesMap = []
-for (let i = 0; i < battleZonesData.length; i += 70) {
-  battleZonesMap.push(battleZonesData.slice(i, 70 + i))
-}
+canva.textAlign = 'center'
 
 export const charactersMap = []
 for (let i = 0; i < charactersMapData.length; i += 70) {
   charactersMap.push(charactersMapData.slice(i, 70 + i))
 }
 
-export let boundaries = []
-export const setBoundaries = (bound) => {
-  boundaries = bound
-}
-export const mainMapBoundaries = []
-export const battleMapBoundaries = []
-
 export const offset = {
   x: window.innerWidth / 2 - 3360 / 2,
   y: window.innerHeight / 2 - 1920 / 2,
 }
-
-collisionsMap.forEach((row, i) => {
-  row.forEach((symbol, j) => {
-    if (symbol === 1025)
-      mainMapBoundaries.push(
-        new Boundary({
-          position: {
-            x: j * Boundary.width + offset.x,
-            y: i * Boundary.height + offset.y,
-          },
-          type: 'collision',
-        })
-      )
-  })
-})
-
-export const battleZones = []
-
-// battleZonesMap.forEach((row, i) => {
-//   row.forEach((symbol, j) => {
-//     if (symbol === 1025)
-//       battleZones.push(
-//         new Boundary({
-//           position: {
-//             x: j * Boundary.width + offset.x,
-//             y: i * Boundary.height + offset.y,
-//           },
-//           type: 'battle',
-//         })
-//       )
-//   })
-// })
 
 export const characters = []
 
@@ -150,34 +101,17 @@ charactersMap.forEach((row, i) => {
         })
       )
     }
-
-    if (symbol !== 0) {
-      mainMapBoundaries.push(
-        new Boundary({
-          position: {
-            x: j * Boundary.width + offset.x,
-            y: i * Boundary.height + offset.y,
-          },
-        })
-      )
-    }
   })
 })
 
-setBoundaries(mainMapBoundaries)
-
 export let movables = [
   background,
-  ...boundaries,
   foreground,
-  ...battleZones,
   ...characters,
 ]
 
 export let renderables = [
   background,
-  ...boundaries,
-  ...battleZones,
   ...characters,
   foreground,
 ]
@@ -187,13 +121,6 @@ export const setMovables = (mova) => {
 }
 export const setRenderables = (rend) => {
   renderables = rend
-}
-
-export function global_position() {
-  return {
-    x: users[myID].position.x - background.position.x,
-    y: users[myID].position.y - background.position.y,
-  }
 }
 
 export function local_position(position) {

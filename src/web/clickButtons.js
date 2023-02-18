@@ -2,6 +2,7 @@ import { login } from '../user/logIn'
 import * as nearAPI from 'near-api-js'
 import { findMyNFT } from '../user/findNFT'
 import { wallet } from '../wallet/multi-wallet'
+import { player } from '../user/user'
 
 function clickOutSideEvent1(e) {
   if (!document.getElementById('guidanceCard').contains(e.target)) {
@@ -85,4 +86,14 @@ document.getElementById('start_login_button').addEventListener('click', (e) => {
 
 document.getElementById('sign_out').addEventListener('click', (e) => {
   wallet.signOut()
+})
+
+document.getElementById('readyButton').addEventListener('click', (e) => {
+  player.changeBattleReadyState()
+  if (player.readyForBattle)
+    document.getElementById('readyButton').innerHTML =
+      'Cancel Ready <span class="bg" />'
+  else
+    document.getElementById('readyButton').innerHTML =
+      'Get Ready <span class="bg" />'
 })

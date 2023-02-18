@@ -1,13 +1,14 @@
 import { JoyStick } from './joystick'
 import { ws } from '../network/websocket'
-import { global_position } from '../js/index'
-import { transferMapTo } from '../data/map'
+import { transferMapTo } from './map'
 import {
   checkForCharacterCollision,
-  rectangularCollision,
+  userBoundaryCollision,
 } from './checkCollision'
 import { boundaries, movables, characters } from '../js/index'
-import { users, myID } from '../user/user'
+import { users, myID, player } from '../user/user'
+import { allowedBlocks } from '../data/collisions'
+import { portals } from '../data/portals'
 
 export let lastKey = ''
 
@@ -99,35 +100,14 @@ export function joyToKey() {
 }
 
 export function moveUser(position) {
-  if (
-    users[myID].map === 'MAIN' &&
-    global_position().x < 2200 &&
-    global_position().x > 2150 &&
-    global_position().y > 650 &&
-    global_position().y < 700
-  ) {
-    console.log('테스트 맵으로 이동합니다.')
-    transferMapTo('TEST')
-  } else if (
-    users[myID].map === 'TEST' &&
-    global_position().x > 1870 &&
-    global_position().x < 1900 &&
-    global_position().y < 730 &&
-    global_position().y > 700
-  ) {
-    console.log('메인 맵으로 이동합니다.')
-    transferMapTo('MAIN')
-  } else {
-    const body = {
-      Move: {
-        coordinate: [position.x, position.y],
-      },
-    }
-
-    const msg = JSON.stringify(body)
-
-    ws.send(msg)
+  const body = {
+    Move: {
+      coordinate: [position.x, position.y],
+    },
   }
+
+  const msg = JSON.stringify(body)
+  ws.send(msg)
 }
 
 export function stopUser(position) {
@@ -149,43 +129,27 @@ export function moveToXDirection(moving, direction, num = 1, passedTime) {
 
   const speed = (num * passedTime) / 5
 
-  users[myID].setMoving(true)
-  switch (direction) {
-    case 'w':
-      break
+  player.setMoving(true)
+  player.setDirection(direction)
 
-    default:
-      break
-  }
+  //   checkForCharacterCollision({
+  //     characters,
+  //     player: player.sprite,
+  //     characterOffset: {
+  //       x: speed * plusOrNot * isX,
+  //       y: speed * plusOrNot * isY,
+  //     },
+  //   })
 
-  users[myID].setDirection(direction)
-
-  checkForCharacterCollision({
-    characters,
-    player: users[myID].sprite,
-    characterOffset: {
-      x: speed * plusOrNot * isX,
-      y: speed * plusOrNot * isY,
-    },
+  var myBlock = player.getNextBlock({
+    x: -1 * speed * plusOrNot * isX,
+    y: -1 * speed * plusOrNot * isY,
   })
-
-  for (let i = 0; i < boundaries.length; i++) {
-    const boundary = boundaries[i]
-    if (
-      rectangularCollision({
-        rectangle1: users[myID].sprite,
-        rectangle2: {
-          ...boundary,
-          position: {
-            x: boundary.position.x + speed * plusOrNot * isX,
-            y: boundary.position.y + speed * plusOrNot * isY,
-          },
-        },
-      })
-    ) {
-      moving = false
-      break
-    }
+  if (allowedBlocks[player.map][myBlock[0]][myBlock[1]] === 'X') moving = false
+  var portal = portals[player.map][myBlock[0]][myBlock[1]]
+  if (portal !== 'X') {
+    transferMapTo(portal)
+    return
   }
 
   if (moving)
@@ -205,26 +169,26 @@ export function moveToXDirection(moving, direction, num = 1, passedTime) {
 
 export function moveToPosition(x, y) {
   movables.forEach((movable) => {
-    movable.position.x += 3 * x
-    movable.position.y += 3 * y
+    movable.position.x += x
+    movable.position.y += y
   })
   for (const key in users) {
     if (key !== myID)
       users[key].setPosition({
-        x: users[key].position.x + 3 * x,
-        y: users[key].position.y + 3 * y,
+        x: users[key].position.x + x,
+        y: users[key].position.y + y,
       })
   }
 }
 var previousAnimate = false
 export function startMoveSender() {
   setInterval(() => {
-    if (users[myID].moving === true) {
-      moveUser(global_position())
-      previousAnimate = users[myID].moving
+    if (player.moving === true) {
+      moveUser(player.getGlobalPosition())
+      previousAnimate = player.moving
     } else if (previousAnimate === true) {
-      stopUser(global_position())
+      stopUser(player.getGlobalPosition())
       previousAnimate = false
     }
-  }, 50)
+  }, 15)
 }

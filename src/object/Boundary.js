@@ -1,11 +1,11 @@
 import { canva } from '../js/index'
 export class Boundary {
-  static width = 48
-  static height = 48
+  static width = 80
+  static height = 80
   constructor({ position, type }) {
     this.position = position
-    this.width = 48
-    this.height = 48
+    this.width = 80
+    this.height = 80
     this.type = type
   }
 

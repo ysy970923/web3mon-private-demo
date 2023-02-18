@@ -1,5 +1,5 @@
-import { canva, player, renderables } from '../js/index'
-import { users, myID } from '../user/user'
+import { canva, renderables } from '../js/index'
+import { users, player } from '../user/user'
 
 window.addEventListener('resize', onResizeEvent, true)
 
@@ -9,8 +9,8 @@ window.addEventListener('resize', onResizeEvent, true)
 function onResizeEvent() {
   canva.width = window.innerWidth
   canva.height = window.innerHeight
-  var delta_x = canva.width / 2 - 192 / 4 / 2 - users[myID].position.x
-  var delta_y = canva.height / 2 - 68 / 2 - users[myID].position.y
+  var delta_x = canva.width / 2 - 192 / 4 / 2 - player.position.x
+  var delta_y = canva.height / 2 - 68 / 2 - player.position.y
   renderables.forEach((renderable) => {
     renderable.position.x = renderable.position.x + delta_x
     renderable.position.y = renderable.position.y + delta_y

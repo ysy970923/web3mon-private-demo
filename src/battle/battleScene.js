@@ -1,13 +1,12 @@
 import { animate } from '../animate'
 import { Sprite } from '../object/Sprite'
-import { player, canva } from '../js/index'
 import { battle } from './battleClient'
 import { Monster } from '../object/Monster'
 import { gsap } from 'gsap'
 import { battleAnimationId } from './enterBattle'
 import { ATTACKS, DEFENCES, SKILL_DESCRIPTIONS } from './skills'
 import { selectedSkill, selectedDefenceSkills } from '../web/initialSetting'
-import { users, myID } from '../user/user'
+import { users, player } from '../user/user'
 
 export const battleBackground = new Sprite({
   position: {
@@ -121,7 +120,7 @@ export function initBattle() {
   document.querySelector('#userInterface').style.display = 'block'
   document.querySelector('#enemyHealthBar').style.width = '100%'
   document.querySelector('#playerHealthBar').style.width = '100%'
-  document.querySelector('#battleMyName').innerHTML = `me(${users[myID].name})`
+  document.querySelector('#battleMyName').innerHTML = `me(${player.name})`
   document.querySelector('#battleOpponentName').innerHTML = `opponent(${
     users[battle.data.opponent_id].name
   })`
@@ -140,13 +139,13 @@ export function initBattle() {
 
   const myCharacter = {
     isEnemy: false,
-    name: users[myID].name,
+    name: player.name,
     health: battle.data.player_init_lp[battle.data.my_index],
     skills: battleState.player_skills[battle.data.my_index],
   }
 
   myMonster = new Monster(myCharacter)
-  myMonster.setImage(users[myID].spriteImgs.base)
+  myMonster.setImage(player.spriteImgs.base)
   myMonster.adjustHealth(battleState.player_lp[battle.data.my_index])
 
   renderedSprites['op'] = opponent
@@ -163,12 +162,12 @@ export function initBattle() {
 // document.querySelector('.main_container').style.display = 'none'
 
 const enterImageAnimation = () => {
-  document.getElementById('enter_img').src = users[myID].nftUrl
+  document.getElementById('enter_img').src = player.nftUrl
   document.getElementById('opp_enter_img').src =
     users[battle.data.opponent_id].nftUrl
   document.getElementById('enter_collection').innerText =
-    users[myID].nftCollection
-  document.getElementById('enter_name').innerText = users[myID].name
+    player.nftCollection
+  document.getElementById('enter_name').innerText = player.name
   for (var i = 0; i < 3; i++) {
     var skillName =
       battle.battleState.player_skills[battle.data.my_index][i].name
