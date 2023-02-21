@@ -4,8 +4,6 @@ import { battle } from './battleClient'
 import { Monster } from '../object/Monster'
 import { gsap } from 'gsap'
 import { battleAnimationId } from './enterBattle'
-import { ATTACKS, DEFENCES, SKILL_DESCRIPTIONS } from './skills'
-import { selectedSkill, selectedDefenceSkills } from '../web/initialSetting'
 import { users, player } from '../user/user'
 
 export const battleBackground = new Sprite({
@@ -16,6 +14,7 @@ export const battleBackground = new Sprite({
 })
 
 export function setBattleBackground(i) {
+  battle.data.battleBackground = i
   var im = new Image()
   im.src = `../img/Battle background/${i + 1}.png`
   battleBackground.setImage(im)
@@ -150,103 +149,10 @@ export function initBattle() {
 
   renderedSprites['op'] = opponent
   renderedSprites['me'] = myMonster
+  console.log(renderedSprites)
 
   queue = []
 
-  enterImageAnimation()
   document.getElementById('battle_skills').style.display = 'block'
   document.getElementById('battle_banner').style.display = 'block'
-}
-
-// document.querySelector('#battle_enter').style.opacity = 1
-// document.querySelector('.main_container').style.display = 'none'
-
-const enterImageAnimation = () => {
-  document.getElementById('enter_img').src = player.nftUrl
-  document.getElementById('opp_enter_img').src =
-    users[battle.data.opponent_id].nftUrl
-  document.getElementById('enter_collection').innerText =
-    player.nftCollection
-  document.getElementById('enter_name').innerText = player.name
-  for (var i = 0; i < 3; i++) {
-    var skillName =
-      battle.battleState.player_skills[battle.data.my_index][i].name
-    var desc_item = document.createElement('div')
-    desc_item.setAttribute('class', 'desc_item')
-    var skill_label = document.createElement('div')
-    skill_label.setAttribute('class', 'skill_label')
-    skill_label.innerText = `Attack ${i + 1}`
-    desc_item.append(skill_label)
-    var skill_img_container = document.createElement('div')
-    skill_img_container.setAttribute('class', 'skill_img_container')
-    var skill_img = document.createElement('img')
-    skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}`
-    skill_img_container.append(skill_img)
-    desc_item.append(skill_img_container)
-    document.getElementById('selected_attack_skills').append(desc_item)
-
-    var skillName =
-      battle.battleState.player_skills[battle.data.my_index][i + 3].name
-    var desc_item = document.createElement('div')
-    desc_item.setAttribute('class', 'desc_item')
-    var skill_label = document.createElement('div')
-    skill_label.setAttribute('class', 'skill_label')
-    skill_label.innerText = `Attack ${i + 1}`
-    desc_item.append(skill_label)
-    var skill_img_container = document.createElement('div')
-    skill_img_container.setAttribute('class', 'skill_img_container')
-    var skill_img = document.createElement('img')
-    skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}`
-    skill_img_container.append(skill_img)
-    desc_item.append(skill_img_container)
-    document.getElementById('selected_defence_skills').append(desc_item)
-  }
-
-  for (var i = 0; i < 3; i++) {
-    var skillName =
-      battle.battleState.player_skills[1 - battle.data.my_index][i].name
-    var desc_item = document.createElement('div')
-    desc_item.setAttribute('class', 'desc_item')
-    var skill_label = document.createElement('div')
-    skill_label.setAttribute('class', 'skill_label')
-    skill_label.innerText = `Attack ${i + 1}`
-    desc_item.append(skill_label)
-    var skill_img_container = document.createElement('div')
-    skill_img_container.setAttribute('class', 'skill_img_container')
-    var skill_img = document.createElement('img')
-    skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}`
-    skill_img_container.append(skill_img)
-    desc_item.append(skill_img_container)
-    document.getElementById('op_selected_attack_skills').append(desc_item)
-
-    var skillName =
-      battle.battleState.player_skills[1 - battle.data.my_index][i + 3].name
-    var desc_item = document.createElement('div')
-    desc_item.setAttribute('class', 'desc_item')
-    var skill_label = document.createElement('div')
-    skill_label.setAttribute('class', 'skill_label')
-    skill_label.innerText = `Attack ${i + 1}`
-    desc_item.append(skill_label)
-    var skill_img_container = document.createElement('div')
-    skill_img_container.setAttribute('class', 'skill_img_container')
-    var skill_img = document.createElement('img')
-    skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}`
-    skill_img_container.append(skill_img)
-    desc_item.append(skill_img_container)
-    document.getElementById('op_selected_defence_skills').append(desc_item)
-  }
-
-  document.querySelector('#battle_enter').style.transition = 'all 0s ease-out'
-  document.querySelector('#battle_enter').style.opacity = 1
-  document.querySelector('#battle_enter').style.zIndex = 1000
-  setTimeout(() => {
-    document.querySelector('#battle_enter').style.transition =
-      'all 1.2s ease-out'
-    document.querySelector('#battle_enter').style.opacity = 0
-    document.querySelector('#battle_enter').style.zIndex = -5
-  }, 5000)
 }

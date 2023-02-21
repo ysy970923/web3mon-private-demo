@@ -1,9 +1,10 @@
 import { Sprite } from '../object/Sprite'
 import { startMoveSender } from '../control/move'
-import { canva } from '../js/index'
+import { canva, setRenderables } from '../js/index'
 import { selectedClothId, playerUrl } from './logIn'
 import { animate } from '../animate'
-import { background } from '../control/map'
+import { background, foreground } from '../control/map'
+import { battle } from '../battle/battleClient'
 
 const clothStorageLink = 'https://web3mon.s3.amazonaws.com/nftv1/'
 
@@ -31,6 +32,7 @@ export function setMyID(id) {
 worker.onmessage = function (event) {
   console.log(event.data.id === myID)
   if (event.data) {
+    if (!(event.data.id in users)) return
     users[event.data.id].setSpriteImages('up', event.data.up)
     users[event.data.id].setSpriteImages('down', event.data.down)
     users[event.data.id].setSpriteImages('left', event.data.left)
@@ -38,10 +40,29 @@ worker.onmessage = function (event) {
     users[event.data.id].setSpriteImages('base', event.data.base)
     users[event.data.id].setDirection('down')
 
-    if (event.data.id === myID) {
-      document.getElementById('loading').style.display = 'none'
-      startMoveSender()
-      animate()
+    var resume_data = sessionStorage.getItem('resume-data')
+    if (resume_data !== null) {
+      resume_data = JSON.parse(resume_data)
+      if (
+        event.data.id === myID ||
+        event.data.id === resume_data.battle_data.opponent_id
+      )
+        console.log('1')
+      if (myID in users && resume_data.battle_data.opponent_id in users) {
+        console.log('2')
+        document.getElementById('loading').style.display = 'none'
+        startMoveSender()
+        animate()
+        battle.resume(resume_data.battle_data)
+      }
+    } else {
+      if (event.data.id === myID) {
+        document.getElementById('loading').style.display = 'none'
+        background.position.x = player.position.x - 1500
+        background.position.y = player.position.y - 350
+        startMoveSender()
+        animate()
+      }
     }
   }
 }
@@ -68,7 +89,9 @@ export class User {
 
   constructor(id, nftCollection, tokenId, chain, nftUrl, clothId, map) {
     users[id] = this
-    if (id === myID) player = this
+    if (id === myID) {
+      player = this
+    }
     this.id = id
     this.nftCollection = nftCollection
     this.tokenId = tokenId
@@ -80,6 +103,7 @@ export class User {
     this.clothId = clothId
     this.map = map
     this.name = `${nftCollection}-${tokenId}`
+
     this.position = {
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
@@ -138,7 +162,9 @@ export class User {
   getNextBlock(delta) {
     var globalPosition = this.getGlobalPosition()
     var i = Math.floor((globalPosition.y + this.sprite.height + delta.y) / 80)
-    var j = Math.floor((globalPosition.x + (this.sprite.width / 2) + delta.x) / 80)
+    var j = Math.floor(
+      (globalPosition.x + this.sprite.width / 2 + delta.x) / 80
+    )
     return [i, j]
   }
 

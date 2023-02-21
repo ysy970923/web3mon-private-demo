@@ -1,10 +1,16 @@
 import { ethers } from 'ethers'
 import { playerUrl, selectedClothId, tokenId } from '../user/logIn'
-import { renderState, setUpNextSetting } from './battleScene'
+import {
+  battleBackground,
+  initBattle,
+  renderState,
+  setBattleBackground,
+  setUpNextSetting,
+} from './battleScene'
 import { safe_send } from '../network/websocket'
-import { selectedSkill, selectedDefenceSkills } from '../web/initialSetting'
+import { selectedSkill, selectedDefenceSkills } from './initialSetting'
 import { BattleState } from './battleState'
-import { enterBattle } from './enterBattle'
+import { animateBattle, enterBattle } from './enterBattle'
 import { wallet } from '../wallet/multi-wallet'
 
 export const BATTLE_CONTRACT = 'game0.web3mon.testnet'
@@ -18,6 +24,7 @@ const resume_data = {
   clothId: '',
   opponentId: '',
 }
+
 class BattleClient {
   data
   keyManager
@@ -85,6 +92,7 @@ class BattleClient {
         player_pk: [this.keyManager.publicKey, op_pub_key],
         manager_pk: this.keyManager.publicKey,
         players_account: [wallet.accountId, 'bot'],
+        sequence: 0,
       }
     //   var battleInfo = await wallet.viewMethod({
     //     contractId: BATTLE_CONTRACT,
@@ -101,6 +109,7 @@ class BattleClient {
     else return false
 
     this.battleState = new BattleState(battleInfo)
+    this.choseAction = false
 
     this.data = {
       battleId: battle_id,
@@ -111,13 +120,14 @@ class BattleClient {
       op_commit: '',
       op_commit_signature: '',
       status: 'send',
-      actions: [],
+      actions: { 0: null, 1: null },
       manager_signature: '',
       op_pk: battleInfo.player_pk[1 - my_index],
       manager_pk: battleInfo.manager_pk,
       my_sk: this.keyManager.privateKey,
       player_init_lp: this.battleState.player_lp,
       pick_until_time: Date.now() + 1000 * 100,
+      battleBackground: 0,
     }
 
     // this.types = await wallet.viewMethod({
@@ -125,12 +135,8 @@ class BattleClient {
     //   method: 'get_types',
     //   args: {},
     // })
-    resume_data.battle_data = this.data
-    resume_data.battle_data.battle_state = this.battleState.write()
-    resume_data.playerUrl = playerUrl
-    resume_data.clothId = selectedClothId
-    resume_data.token_id = tokenId
-    sessionStorage.setItem('resume-data', JSON.stringify(resume_data))
+
+    this.save()
 
     // location.reload()
 
@@ -153,6 +159,15 @@ class BattleClient {
     return true
   }
 
+  save() {
+    resume_data.battle_data = this.data
+    resume_data.battle_data.battle_state = this.battleState.write()
+    resume_data.playerUrl = playerUrl
+    resume_data.clothId = selectedClothId
+    resume_data.token_id = tokenId
+    sessionStorage.setItem('resume-data', JSON.stringify(resume_data))
+  }
+
   resume(data) {
     this.data = data
     this.battleState = new BattleState(data.battle_state)
@@ -161,23 +176,31 @@ class BattleClient {
     this.started = true
     this.keyManager = new ethers.Wallet(this.data.my_sk)
 
-    document.getElementById('skill_box_temp').style.display = 'block'
-    document.getElementById('wait_modal').style.display = 'none'
+    if (this.battleState.sequence === 0) {
+      document.getElementById('skill_box_temp').style.display = 'block'
+      document.getElementById('wait_modal').style.display = 'none'
 
-    document.getElementById('selectTypeBtn').addEventListener('click', (e) => {
-      console.log('버튼 클릭됨', selectedSkill, selectedDefenceSkills)
-      if (selectedSkill.length < 3 || selectedDefenceSkills.length < 3) {
-        alert('You have to choose 3 skills each.')
-        return
-      }
-      document.getElementById('skill_box_temp').style.display = 'none'
-      // 내 스킬타입 확정
-      this.chooseAction({
-        attacks: selectedSkill,
-        defences: selectedDefenceSkills,
-      })
-      sessionStorage.removeItem('resume-data')
-    })
+      document
+        .getElementById('selectTypeBtn')
+        .addEventListener('click', (e) => {
+          console.log('버튼 클릭됨', selectedSkill, selectedDefenceSkills)
+          if (selectedSkill.length < 3 || selectedDefenceSkills.length < 3) {
+            alert('You have to choose 3 skills each.')
+            return
+          }
+          document.getElementById('skill_box_temp').style.display = 'none'
+          // 내 스킬타입 확정
+          this.chooseAction({
+            attacks: selectedSkill,
+            defences: selectedDefenceSkills,
+          })
+        })
+    } else {
+      setBattleBackground(this.data.battleBackground)
+      console.log(this.data)
+      initBattle()
+      animateBattle()
+    }
   }
 
   getPlayerAction(index) {
@@ -187,32 +210,22 @@ class BattleClient {
   }
 
   chooseAction(action) {
+    console.log(this.battleState.sequence)
     console.log(action)
-    if (this.data.pick_until_time < Date.now()) {
-      window.alert('Time is Over.')
+    // if (this.data.pick_until_time < Date.now()) {
+    //   window.alert('Time is Over.')
+    //   return
+    // }
+    if (this.choseAction) {
+      console.log('double click')
       return
     }
-    if (action.attacks === undefined) {
+    this.choseAction = true
+    if (this.battleState.sequence > 0) {
       this.data.actions[this.data.my_index] = {
         action_index: parseInt(action),
         random_number: Math.floor(Math.random() * 1000000000),
       }
-      if (this.data.battleId === 'bot')
-        if (action < 3)
-          this.data.actions[1 - this.data.my_index] = {
-            action_index: Math.floor(Math.random() * 3) + 3,
-            random_number: Math.floor(Math.random() * 1000000000),
-          }
-        else if (action < 6)
-          this.data.actions[1 - this.data.my_index] = {
-            action_index: Math.floor(Math.random() * 3),
-            random_number: Math.floor(Math.random() * 1000000000),
-          }
-        else
-          this.data.actions[1 - this.data.my_index] = {
-            action_index: action,
-            random_number: Math.floor(Math.random() * 1000000000),
-          }
     } else {
       this.data.actions[this.data.my_index] = {
         attacks: action.attacks,
@@ -220,6 +233,7 @@ class BattleClient {
         random_number: Math.floor(Math.random() * 1000000000),
       }
     }
+    console.log(this.data.actions[this.data.my_index])
     this.sendCommit()
   }
 
@@ -243,12 +257,11 @@ class BattleClient {
   }
 
   timer() {
-    if (this.data.mode === 'channel') this.receive()
-    else return // TODO
+    if (this.data.mode === 'channel') this.onChannelHandler()
+    else this.onChainHandler()
   }
 
-  async receive() {
-    console.log(this.data.status)
+  async onChannelHandler() {
     if (this.data.status === 'send') return
 
     // if last consensused state is expired -> this moved to chain
@@ -279,7 +292,30 @@ class BattleClient {
     // sessionStorage.setItem('resume-data', JSON.stringify(resume_data))
   }
 
-  async sendCommit() {
+  async onChainHandler() {
+    setTimeout(() => {
+      this.sendCommitFor10RoundsOnChain()
+    }, 1000 * 60)
+  }
+
+  choose10Actions(actions) {
+    this.data.actions[this.data.my_index] = []
+    actions.forEach((a) => {
+      if (a.attacks !== undefined)
+        this.data.actions[this.data.my_index].push({
+          attacks: a.attacks,
+          defences: a.defences,
+          random_number: Math.floor(Math.random() * 1000000000),
+        })
+      else
+        this.data.actions[this.data.my_index].push({
+          action_index: parseInt(a),
+          random_number: Math.floor(Math.random() * 1000000000),
+        })
+    })
+  }
+
+  async sendCommitFor10RoundsOnChain() {
     var commit = await ethers.utils.keccak256(
       ethers.utils.toUtf8Bytes(
         JSON.stringify(this.data.actions[this.data.my_index])
@@ -291,60 +327,70 @@ class BattleClient {
     message.set(a)
     message.set(b, a.length)
     var signature = await this.keyManager.signMessage(message)
-    console.log(this.data.mode)
-    if (this.data.mode === 'channel') {
-      if (this.data.battleId === 'bot') {
-        var commit = await ethers.utils.keccak256(
-          ethers.utils.toUtf8Bytes(
-            JSON.stringify(this.data.actions[1 - this.data.my_index])
-          )
-        )
-        var a = new Uint8Array([this.battleState.sequence])
-        var b = ethers.utils.arrayify(commit)
-        var message = new Uint8Array(a.length + b.length)
-        message.set(a)
-        message.set(b, a.length)
-        var signature = await this.keyManager.signMessage(message)
-        this.receiveQueue.push(
-          JSON.stringify({ commit: commit, signature: signature })
-        )
-      } else {
-        if (this.battleState.sequence === 0)
-          safe_send({
-            BattleCommitReady: {
-              battle_id: this.data.battleId,
-              signature: signature,
-              message: {
-                hashed_message: commit,
-                sequence: this.battleState.sequence,
-              },
-            },
-          })
-        else
-          safe_send({
-            BattleCommitAction: {
-              battle_id: this.data.battleId,
-              signature: signature,
-              message: {
-                hashed_message: commit,
-                sequence: this.battleState.sequence,
-              },
-            },
-          })
-      }
-    } else {
-      // send to chain
-      await wallet.callMethod({
-        contractId: BATTLE_CONTRACT,
-        method: 'commit',
-        args: {
+
+    await wallet.callMethod({
+      contractId: BATTLE_CONTRACT,
+      method: 'commit',
+      args: {
+        battle_id: this.data.battleId,
+        player_index: this.data.my_index,
+        commit: commit,
+        sig: signature,
+      },
+    })
+    // send commit
+    setTimeout(() => {
+      this.sendActionFor10RoundsOnChain()
+    }, 1000 * 60)
+  }
+
+  async sendActionFor10RoundsOnChain() {
+    await wallet.callMethod({
+      contractId: BATTLE_CONTRACT,
+      method: 'reveal',
+      args: {
+        battle_id: this.data.battleId,
+        player_index: this.data.my_index,
+        action: this.data.actions[this.data._my_index],
+      },
+    })
+  }
+
+  async sendCommit() {
+    console.log('send commit')
+    var commit = await ethers.utils.keccak256(
+      ethers.utils.toUtf8Bytes(
+        JSON.stringify(this.data.actions[this.data.my_index])
+      )
+    )
+    var a = new Uint8Array([this.battleState.sequence])
+    var b = ethers.utils.arrayify(commit)
+    var message = new Uint8Array(a.length + b.length)
+    message.set(a)
+    message.set(b, a.length)
+    var signature = await this.keyManager.signMessage(message)
+    if (this.battleState.sequence === 0)
+      safe_send({
+        BattleCommitReady: {
           battle_id: this.data.battleId,
-          player_index: this.data.my_index,
-          commit: commit,
-          sig: signature,
+          signature: signature,
+          message: {
+            hashed_message: commit,
+            sequence: this.battleState.sequence,
+          },
         },
       })
-    }
+    else
+      safe_send({
+        BattleCommitAction: {
+          battle_id: this.data.battleId,
+          signature: signature,
+          message: {
+            hashed_message: commit,
+            sequence: this.battleState.sequence,
+          },
+        },
+      })
     this.data.status = 'commit'
   }
 
@@ -374,39 +420,20 @@ class BattleClient {
   async sendAction() {
     console.log('send action')
     var action = this.data.actions[this.data.my_index]
-    if (this.data.mode === 'channel') {
-      if (this.data.battleId === 'bot')
-        this.receiveQueue.push(
-          JSON.stringify(this.data.actions[1 - this.data.my_index])
-        )
-      else {
-        if (this.battleState.sequence === 0)
-          safe_send({
-            BattleRevealReady: {
-              battle_id: this.data.battleId,
-              reveal_ready_message: action,
-            },
-          })
-        else
-          safe_send({
-            BattleRevealAction: {
-              battle_id: this.data.battleId,
-              reveal_action_message: action,
-            },
-          })
-      }
-    } else {
-      // send to chain
-      await wallet.callMethod({
-        contractId: BATTLE_CONTRACT,
-        method: 'reveal',
-        args: {
-          battle_id: this.data.battle_id,
-          player_index: this.data.my_index,
-          action: action,
+    if (this.battleState.sequence === 0)
+      safe_send({
+        BattleRevealReady: {
+          battle_id: this.data.battleId,
+          reveal_ready_message: action,
         },
       })
-    }
+    else
+      safe_send({
+        BattleRevealAction: {
+          battle_id: this.data.battleId,
+          reveal_action_message: action,
+        },
+      })
     this.data.status = 'reveal'
   }
 
@@ -496,6 +523,7 @@ class BattleClient {
     if (true) {
       this.data.manager_signature = signature
       this.data.oldBattleState = JSON.parse(JSON.stringify(battleState))
+      this.choseAction = false
       this.battleState.expires_at = expires_at
       if (this.battleState.sequence === 0) enterBattle()
       else {
@@ -504,6 +532,7 @@ class BattleClient {
       }
       setUpNextSetting()
       this.battleState.addSequence()
+      this.save()
       return true
     } else {
       return false

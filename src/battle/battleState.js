@@ -29,7 +29,7 @@ export class BattleState {
   lasting_effect
   constructor(info) {
     this.expires_at = info.expires_at
-    this.sequence = 0
+    this.sequence = info.sequence
     this.player_lp = [100, 100]
     this.player_skills = [[], []]
     this.attacker_index = undefined
@@ -55,6 +55,7 @@ export class BattleState {
   }
 
   setPlayerSkills(actions) {
+    console.log(actions)
     for (var i = 0; i < 2; i++) {
       actions[i].attacks.forEach((j) => {
         this.player_skills[i].push(new Skill(ATTACKS[j]))

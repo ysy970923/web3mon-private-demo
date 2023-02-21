@@ -30,7 +30,9 @@ function onmessage(type, data) {
       break
 
     case NETWORK.MAP_STATUS:
+      var currentUsers = new Set()
       data['player_infos_for_view'].forEach((avatar) => {
+        currentUsers.add(avatar.player_id)
         if (!(avatar.player_id in users)) {
           var newUser = new User(
             avatar.player_id,
@@ -44,6 +46,7 @@ function onmessage(type, data) {
           //   newUser.setPosition(avatar.coordinate)
         }
       })
+      for (var key in users) if (!currentUsers.has(key)) delete users[key]
 
       break
 
@@ -150,6 +153,7 @@ export function onopen() {
     var msg = wsQueue.shift()
     if (msg != null)
       try {
+        console.log(msg)
         ws.send(msg)
       } catch (e) {
         console.log(e)
@@ -221,7 +225,7 @@ export function connect() {
 
   serverUrl =
     'ws://ec2-44-201-5-87.compute-1.amazonaws.com:8080/ws-login?token='
-  serverUrl = serverUrl + localStorage.getItem('jwt')
+  serverUrl = serverUrl + sessionStorage.getItem('jwt')
 
   ws = new WebSocket(serverUrl)
 
@@ -237,6 +241,7 @@ export function connect() {
   ws.onerror = ({ data }) => onerror(data)
   ws.onmessage = ({ data }) => {
     const msg = JSON.parse(data)
+    console.log(msg)
     const type = Object.keys(msg)[0]
     onmessage(type, msg[type])
   }

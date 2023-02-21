@@ -1,19 +1,15 @@
 import { Sprite } from '../object/Sprite'
 import { ws } from '../network/websocket'
-import { characters, setMovables, setRenderables } from '../js/index'
-import { moveToPosition, moveToXDirection } from './move'
-import { player } from '../user/user'
+import { characters } from '../js/index'
+import { movePlayerToPosition } from './move'
+import { player, users } from '../user/user'
+import { setMovables, setRenderables } from '../js/renderables'
 
 const mainBackgroundImage = new Image()
-mainBackgroundImage.src = '../img/battleMap.png'
+mainBackgroundImage.src = '../img/Island.png'
 
 const foregroundImage = new Image()
-foregroundImage.src = '../img/battleMap.png'
-
-const offset = {
-  x: window.innerWidth / 2 - 3360 / 2,
-  y: window.innerHeight / 2 - 1920 / 2,
-}
+foregroundImage.src = '../img/Island.png'
 
 const MAP = {
   MAIN: 'MAIN',
@@ -22,16 +18,16 @@ const MAP = {
 
 export let background = new Sprite({
   position: {
-    x: offset.x,
-    y: offset.y,
+    x: 0,
+    y: 0,
   },
 })
 background.setImage(mainBackgroundImage)
 
 export let foreground = new Sprite({
   position: {
-    x: offset.x,
-    y: offset.y,
+    x: 0,
+    y: 0,
   },
 })
 foreground.setImage(foregroundImage)
@@ -52,27 +48,12 @@ export function transferMapTo(toMap) {
     document.getElementById('readyButtonContainer').style.display = 'block'
 
     var newBackgroundImage = new Image()
-    newBackgroundImage.src = '../img/Pellet Town.png'
+    newBackgroundImage.src = '../img/waitMap/1.png'
 
     background.setImage(newBackgroundImage)
 
-    background.position = {
-      x: offset.x,
-      y: offset.y,
-    }
-
-    setRenderables([
-      background,
-      ...characters,
-      player,
-      // foreground,
-    ])
-
-    setMovables([
-      background,
-      ...characters,
-      //   foreground,
-    ])
+    background.position.x = player.position.x - 1720
+    background.position.y = player.position.y - 850
 
     // moveToXDirection(true, 'up', 20)
 
@@ -89,18 +70,16 @@ export function transferMapTo(toMap) {
   } else if (toMap === MAP.MAIN) {
     document.getElementById('map_identifier').innerText =
       'MAIN map : you cannot fight here!'
-    
+
     document.getElementById('readyButtonContainer').style.display = 'none'
 
     var newBackgroundImage = new Image()
-    newBackgroundImage.src = '../img/battleMap.png'
+    newBackgroundImage.src = '../img/Island.png'
 
     background.setImage(newBackgroundImage)
 
-    background.position = {
-      x: offset.x,
-      y: offset.y,
-    }
+    background.position.x = player.position.x - 1500
+    background.position.y = player.position.y - 350
 
     const body = {
       MapTransfer: {
@@ -108,19 +87,6 @@ export function transferMapTo(toMap) {
         to: 'MAIN',
       },
     }
-
-    setRenderables([
-      background,
-      ...characters,
-      player,
-      //   foreground,
-    ])
-
-    setMovables([
-      background,
-      ...characters,
-      //   foreground,
-    ])
 
     // moveToPosition(200, -100)
 

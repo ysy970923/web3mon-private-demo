@@ -175,7 +175,7 @@ export class NearWallet {
     )
     console.log('답 ', res)
     if (res.data.jwt !== undefined) {
-      localStorage.setItem('jwt', res.data.jwt)
+      sessionStorage.setItem('jwt', res.data.jwt)
       return true
     } else return false
   }

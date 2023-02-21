@@ -1,8 +1,4 @@
-import { player, canvas } from '../js/index'
-import { MultiWallet } from '../wallet/multi-wallet'
-import { chosenCloth } from '../web/initialSetting'
 import { wallet } from '../wallet/multi-wallet'
-import { users } from './user'
 import { connect } from '../network/websocket'
 
 export let playerUrl
@@ -58,8 +54,6 @@ export const turnToGameScreen = () => {
   document.getElementById('login_screen').style.display = 'none'
   document.getElementById('game_screen').style.display = 'block'
   document.querySelector('canvas').style.display = 'block'
-
-  console.log('canva', canvas)
 }
 
 export const logout = () => {

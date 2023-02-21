@@ -1,11 +1,11 @@
 import { JoyStick } from './joystick'
 import { ws } from '../network/websocket'
-import { transferMapTo } from './map'
+import { background, transferMapTo } from './map'
 import {
   checkForCharacterCollision,
   userBoundaryCollision,
 } from './checkCollision'
-import { boundaries, movables, characters } from '../js/index'
+import { movables } from '../js/renderables'
 import { users, myID, player } from '../user/user'
 import { allowedBlocks } from '../data/collisions'
 import { portals } from '../data/portals'
@@ -153,33 +153,23 @@ export function moveToXDirection(moving, direction, num = 1, passedTime) {
   }
 
   if (moving)
-    movables.forEach((movable) => {
-      movable.position.x += speed * plusOrNot * isX
-      movable.position.y += speed * plusOrNot * isY
-    })
-  if (moving)
-    for (const key in users) {
-      if (key !== myID)
-        users[key].setPosition({
-          x: users[key].position.x + speed * plusOrNot * isX,
-          y: users[key].position.y + speed * plusOrNot * isY,
-        })
+    movePlayerToPosition(speed * plusOrNot * isX, speed * plusOrNot * isY)
+}
+
+export function movePlayerToPosition(deltaX, deltaY) {
+  background.position.x += deltaX
+  background.position.y += deltaY
+
+  for (var key in users)
+    if (key !== myID) {
+      var user = users[key]
+      user.setPosition({
+        x: user.position.x + deltaX,
+        y: user.position.y + deltaY,
+      })
     }
 }
 
-export function moveToPosition(x, y) {
-  movables.forEach((movable) => {
-    movable.position.x += x
-    movable.position.y += y
-  })
-  for (const key in users) {
-    if (key !== myID)
-      users[key].setPosition({
-        x: users[key].position.x + x,
-        y: users[key].position.y + y,
-      })
-  }
-}
 var previousAnimate = false
 export function startMoveSender() {
   setInterval(() => {

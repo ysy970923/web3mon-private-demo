@@ -920,6 +920,45 @@ img {
   display: none;
 }
 
+#multipleActionCard {
+  display: none;
+  flex-direction: column;
+  box-shadow: var(--card-shadow);
+  text-align: center;
+  font-family: Pretendard;
+  left: 10px;
+  z-index: 5;
+}
+#multipleActionCard .action_box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+#multipleActionCard .action_box .right_arrow {
+  font-size: 2em;
+}
+#multipleActionCard .action_box .one_action_box {
+  width: 90px;
+  height: 90px;
+  margin: 6px;
+  padding: 5px;
+  outline: 3px solid rgba(242, 242, 242, 0.5);
+  transition: 0.3s ease;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.01);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-weight: 700;
+}
+#multipleActionCard .action_box .one_action_box:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  outline: 2px solid rgba(0, 0, 0, 0.2);
+}
+
 #skill_box_temp {
   display: none;
   flex-direction: column;

@@ -1,12 +1,7 @@
-import { allowedBlocks } from '../data/collisions'
-import { charactersMapData } from '../data/characters'
-import { Boundary } from '../object/Boundary'
-import { Sprite } from '../object/Sprite'
 import { background, foreground } from '../control/map'
 import { clickEvent } from '../battle/battleStart'
 import { setNFTInfo, setPlayerUrl, collection, setClothId } from '../user/logIn'
 import { battle } from '../battle/battleClient'
-import { users, myID } from '../user/user'
 import { connect } from '../network/websocket'
 
 // 최초로 지갑 연결
@@ -26,8 +21,8 @@ body.addEventListener('keydown', (event) => {
   if (document.getElementById('chatForm').style.display !== 'none') {
     return
   }
-  let key = event.code
-  let keyCode = event.keyCode
+//   let key = event.code
+//   let keyCode = event.keyCode
   //   if (key === 'Space' || keyCode === 32) {
   //     moveToXDirection(true, lastKey, 4)
   //     moveToXDirection(true, lastKey, 4)
@@ -43,84 +38,9 @@ body.addEventListener('keydown', (event) => {
 export const canva = canvas.getContext('2d')
 canva.textAlign = 'center'
 
-export const charactersMap = []
-for (let i = 0; i < charactersMapData.length; i += 70) {
-  charactersMap.push(charactersMapData.slice(i, 70 + i))
-}
-
 export const offset = {
   x: window.innerWidth / 2 - 3360 / 2,
   y: window.innerHeight / 2 - 1920 / 2,
-}
-
-export const characters = []
-
-const villagerImg = new Image()
-villagerImg.src = './../img/villager/Idle.png'
-
-const oldManImg = new Image()
-oldManImg.src = './../img/oldMan/Idle.png'
-
-const kobugi = new Image()
-kobugi.src = './../img/oldMan/kobugi.png'
-
-charactersMap.forEach((row, i) => {
-  row.forEach((symbol, j) => {
-    // 1026 === villager
-    if (symbol === 1026) {
-      characters.push(
-        new Sprite({
-          position: {
-            x: j * Boundary.width + offset.x,
-            y: i * Boundary.height + offset.y,
-          },
-          image: kobugi,
-          frames: {
-            max: 4,
-            hold: 60,
-          },
-          scale: 3,
-          animate: true,
-        })
-      )
-    }
-    // 1031 === oldMan
-    else if (symbol === 1031) {
-      characters.push(
-        new Sprite({
-          position: {
-            x: j * Boundary.width + offset.x,
-            y: i * Boundary.height + offset.y,
-          },
-          image: kobugi,
-          frames: {
-            max: 4,
-            hold: 60,
-          },
-          scale: 3,
-        })
-      )
-    }
-  })
-})
-
-export let movables = [
-  background,
-  foreground,
-  ...characters,
-]
-
-export let renderables = [
-  background,
-  ...characters,
-  foreground,
-]
-
-export const setMovables = (mova) => {
-  movables = mova
-}
-export const setRenderables = (rend) => {
-  renderables = rend
 }
 
 export function local_position(position) {
@@ -147,7 +67,6 @@ if (resume_data !== null) {
     setPlayerUrl(resume_data.playerUrl)
     setClothId(resume_data.clothId)
     connect()
-    battle.resume(resume_data.battle_data)
     document.getElementById('resumePopUp').style = 'none'
   })
   document.getElementById('notResumeButton').addEventListener('click', (e) => {

@@ -1,7 +1,5 @@
-import { connect } from '../network/websocket'
-import { animate } from '../animate'
 import { wallet } from '../wallet/multi-wallet'
-import { collection, setClothId, setClothUrl, setNFTInfo, setPlayerUrl } from './logIn'
+import { collection, setClothId, setNFTInfo, setPlayerUrl } from './logIn'
 
 export async function findMyNFT() {
   document.getElementById('chain_containers').style.display = 'none'
@@ -29,6 +27,7 @@ export async function findMyNFT() {
     }
     // 초기화
     document.querySelector('#nftListBox').innerHTML = ''
+    document.querySelector('#clothesBox').innerHTML = ''
     document.getElementById('tokenId').value = ''
     let imgs = []
     let clothes = []

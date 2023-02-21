@@ -1,10 +1,12 @@
 import { joyToKey } from './control/move'
-import { renderables, global_position, stopAllPlay } from './js/index'
+import { stopAllPlay } from './js/index'
 import { keys, lastKey } from './control/move'
 import { moveUser, stopUser } from './control/move'
 import { moveToXDirection } from './control/move'
 import { battle } from './battle/battleClient'
 import { player, users } from './user/user'
+import { background, foreground } from './control/map'
+import { setRenderables, setMovables, renderables } from './js/renderables'
 
 export const npcId = '250'
 
@@ -22,15 +24,14 @@ export const animate = () => {
   canvas.height = window.innerHeight
   const animationId = window.requestAnimationFrame(animate)
 
-  renderables.forEach((renderable) => {
-    renderable.draw()
-  })
-  // NPC가 말하는거
-  npcTalk(animationId)
-
-  for (const key in users) {
+  background.draw()
+  for (var key in users) {
     users[key].draw()
   }
+//   foreground.draw()
+
+  // NPC가 말하는거
+  npcTalk(animationId)
 
   joyToKey()
 

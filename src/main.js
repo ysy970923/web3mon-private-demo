@@ -1,5 +1,6 @@
 import './web/clickButtons'
 import './user/logIn'
+import './control/map'
 import './js/index'
 import './user/findNFT'
 import './control/move'
@@ -9,8 +10,7 @@ import './chat/sendChat'
 import '../style/index.scss'
 import '../style/modals.scss'
 import '../style/game.scss'
-import './control/map'
-import './web/initialSetting'
+import './battle/initialSetting'
 
 document
   .getElementById('nft_choose_container_back')

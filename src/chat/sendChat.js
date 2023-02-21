@@ -1,7 +1,7 @@
 import { log, safe_send } from '../network/websocket'
 import { closeForm } from './chatForm'
 import { CHAT } from '../network/callType'
-import { myID, users } from '../user/user'
+import { player } from '../user/user'
 
 document
   .getElementById('sendChatBtn')
