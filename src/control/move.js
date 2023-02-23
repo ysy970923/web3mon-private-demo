@@ -114,19 +114,9 @@ export function sendPosition(position) {
   // 버튼 안 눌렀으면 0 이상 차이나면 전송
   // 버튼 안 눌렀는데 0 인데 움직이고 있었으면 멈춤
   if (delta > 50) {
-    console.log(1)
     moveUser(position)
     lastSentPosition.x = position.x
     lastSentPosition.y = position.y
-  }
-  // 버튼 안 누름
-  if (!player.moving) {
-    if (delta > 0) {
-      console.log(2)
-      moveUser(position)
-      lastSentPosition.x = position.x
-      lastSentPosition.y = position.y
-    }
   }
 }
 

@@ -95,9 +95,8 @@ function onmessage(type, data) {
       else if (isLeft) users[id].setDirection('left')
       else if (isRight) users[id].setDirection('right')
 
-      // 포지션 이동이 아니라 새로운 포지션까지 이동하는 애니메이션이어야 하는데?
+      // smooth move
       users[id].setPosition(newPosition, false)
-      users[id].setMoving(true)
       break
 
     // use as a tmp broadcaster

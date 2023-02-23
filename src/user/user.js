@@ -16,6 +16,10 @@ const chatBubble = new Image()
 chatBubble.src = './../img/chatBubble2.png'
 
 export let player
+
+export function setPlayer(a) {
+  player = a
+}
 export let myID
 export const users = {}
 
@@ -204,35 +208,30 @@ export class User {
   }
 
   draw(passedTime) {
-    var moveDistance = 0.2 * passedTime
+    if (this.id !== myID) {
+      var moveDistance = 0.2 * passedTime
 
-    var moveInX = this.position.x - this.sprite.position.x
-    var moveInY = this.position.y - this.sprite.position.y
+      var moveInX = this.position.x - this.sprite.position.x
+      var moveInY = this.position.y - this.sprite.position.y
 
-    if (this.id !== myID)
-      if (
-        Math.abs(moveInX) < moveDistance &&
-        Math.abs(moveInY) < moveDistance
-      ) {
+      if (moveInX > 100) {
+        moveDistance *= 2
+      }
+      if (moveInY > 100) {
+        moveDistance *= 2
+      }
+      this.setMoving(true)
+      if (moveInX >= moveDistance) {
+        this.sprite.position.x += moveDistance
+      } else if (moveInX <= -1 * moveDistance) {
+        this.sprite.position.x -= moveDistance
+      } else if (moveInY >= moveDistance) {
+        this.sprite.position.y += moveDistance
+      } else if (moveInY <= -1 * moveDistance) {
+        this.sprite.position.y -= moveDistance
+      } else {
         this.setMoving(false)
       }
-
-    if (moveInX > 100) {
-      moveDistance *= 2
-    }
-    if (moveInY > 100) {
-      moveDistance *= 2
-    }
-    if (moveInX >= moveDistance) {
-      this.sprite.position.x += moveDistance
-    } else if (moveInX <= -1 * moveDistance) {
-      this.sprite.position.x -= moveDistance
-    }
-
-    if (moveInY >= moveDistance) {
-      this.sprite.position.y += moveDistance
-    } else if (moveInY <= -1 * moveDistance) {
-      this.sprite.position.y -= moveDistance
     }
 
     canva.font = '15px "210L"'

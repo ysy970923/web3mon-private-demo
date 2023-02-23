@@ -12,6 +12,7 @@ import { selectedSkill, selectedDefenceSkills } from './initialSetting'
 import { BattleState } from './battleState'
 import { animateBattle, enterBattle } from './enterBattle'
 import { wallet } from '../wallet/multi-wallet'
+import { SKILL_DESCRIPTIONS } from './skills'
 
 export const BATTLE_CONTRACT = 'game.web3mon.testnet'
 const FT_CONTRACT = 'usdc.web3mon.testnet' // USDC.e contract ID
@@ -150,19 +151,19 @@ class BattleClient {
     // location.reload()
 
     // moving funds to battle contract
-    await wallet.callMethod({
-      contractId: FT_CONTRACT,
-      method: 'ft_transfer_call',
-      args: {
-        receiver_id: BATTLE_CONTRACT,
-        amount: BET_AMOUNT,
-        msg: JSON.stringify({
-          battle_id: msg.battle_id,
-          player_index: my_index,
-        }),
-      },
-      deposit: 1,
-    })
+    // await wallet.callMethod({
+    //   contractId: FT_CONTRACT,
+    //   method: 'ft_transfer_call',
+    //   args: {
+    //     receiver_id: BATTLE_CONTRACT,
+    //     amount: BET_AMOUNT,
+    //     msg: JSON.stringify({
+    //       battle_id: msg.battle_id,
+    //       player_index: my_index,
+    //     }),
+    //   },
+    //   deposit: 1,
+    // })
 
     this.started = true
     return true
@@ -185,7 +186,7 @@ class BattleClient {
     this.data = data
     this.battleState = new BattleState(data.battle_state)
     delete this.data['battle_state']
-    setInterval(() => this.timer(), 1000)
+    this.timerId = setInterval(() => this.timer(), 1000)
     this.started = true
     this.keyManager = new ethers.Wallet(this.data.my_sk)
     console.log(this.battleState)
@@ -227,30 +228,55 @@ class BattleClient {
     //   window.alert('Time is Over.')
     //   return
     // }
-    if (this.choseAction) {
-      console.log('double click')
-      return
-    }
-    this.choseAction = true
-    if (this.battleState.sequence === 0) {
-      this.data.actions[this.data.my_index] = {
-        attacks: action.attacks,
-        defences: action.defences,
-        random_number: Math.floor(Math.random() * 1000000000),
-      }
-    } else {
-      var skill = this.battleState.player_skills[this.data.my_index][action]
-      if (!skill.check_availability(this.battleState.sequence)) {
-        window.alert('skill is not allowed')
-        this.choseAction = false
+    if (this.data.mode === 'channel') {
+      if (this.choseAction) {
+        console.log('double click')
         return
       }
-      this.data.actions[this.data.my_index] = {
+      this.choseAction = true
+      if (this.battleState.sequence === 0) {
+        this.data.actions[this.data.my_index] = {
+          attacks: action.attacks,
+          defences: action.defences,
+          random_number: Math.floor(Math.random() * 1000000000),
+        }
+      } else {
+        var skill = this.battleState.player_skills[this.data.my_index][action]
+        if (
+          !skill.check_availability(
+            this.battleState.sequence,
+            this.data.my_index
+          )
+        ) {
+          window.alert('skill is not allowed')
+          this.choseAction = false
+          return
+        }
+        this.data.actions[this.data.my_index] = {
+          action_index: parseInt(action),
+          random_number: Math.floor(Math.random() * 1000000000),
+        }
+      }
+      this.sendCommit()
+    } else {
+      var skill = this.battleState.player_skills[this.data.my_index][action]
+      var sequence =
+        this.battleState.sequence +
+        this.data.actions[this.data.my_index].length +
+        1
+      if (!skill.check_availability(sequence, this.data.my_index)) {
+        window.alert('skill is not allowed')
+        return
+      }
+      this.data.actions[this.data.my_index].push({
         action_index: parseInt(action),
         random_number: Math.floor(Math.random() * 1000000000),
-      }
+      })
+      var skillType = skill.type
+      document.getElementById(
+        `chosen-${this.data.actions[this.data.my_index].length}`
+      ).innerHTML = `<img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />`
     }
-    this.sendCommit()
   }
 
   isMyAttack() {
@@ -278,13 +304,14 @@ class BattleClient {
   }
 
   async onChannelHandler() {
-    if (!this.data.status.isOk) return
+    
     // if last consensused state is expired -> this moved to chain
-    // if (this.data.oldBattleState.expires_at < Date.now()) {
-    //   console.log(Date.now())
-    //   this.data.mode = 'chain'
-    //   return
-    // }
+    if (this.data.oldBattleState.expires_at < Date.now()) {
+      this.data.mode = 'chain'
+      return
+    }
+    if (!this.data.status.isOk) return
+
     // console.log(this.data.oldBattleState.expires_at - Date.now())
     var msg = this.receiveQueue.shift()
     if (msg === undefined) return
@@ -310,12 +337,55 @@ class BattleClient {
   }
 
   async onChainHandler() {
-    setTimeout(() => {
-      this.sendCommitForMultipleRoundsOnChain()
-    }, 1000 * 60)
+    clearInterval(this.timerId)
+    this.data.actions = [[], []]
+    var actionBoxes = []
+
+    for (var i = 0; i < 5; i++) {
+      var actionBox = document.createElement('div')
+      actionBox.className = 'one_action_box'
+      actionBox.id = `chosen-${i + 1}`
+      actionBox.value = i
+      actionBox.onclick = (e) => {
+        battle.data.actions[battle.data.my_index].splice(
+          e.currentTarget.value,
+          1
+        )
+        for (var j = 0; j < 5; j++) {
+          var action = battle.data.actions[battle.data.my_index][j]
+          if (action !== undefined) {
+            var skillType =
+              this.battleState.player_skills[this.data.my_index][
+                action.action_index
+              ].type
+            document.getElementById(
+              `chosen-${j + 1}`
+            ).innerHTML = `<img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />`
+          } else {
+            document.getElementById(`chosen-${j + 1}`).innerHTML = ''
+          }
+        }
+      }
+      actionBoxes.push(actionBox)
+    }
+
+    var div = document.getElementById('action_box_container')
+    actionBoxes.forEach((doc) => {
+      div.append(doc)
+      var arrow = document.createElement('span')
+      arrow.className = 'right_arrow'
+      arrow.innerHTML = '&#8680;'
+      div.append(arrow)
+    })
+
+    document.getElementById('multipleActionCard').style.display = 'block'
+    // setTimeout(() => {
+    //   this.sendCommitForMultipleRoundsOnChain()
+    // }, 1000 * 60)
   }
 
   chooseMultipleActions(actions) {
+    console.log('here')
     this.data.actions[this.data.my_index] = []
     actions.forEach((a) => {
       if (a.attacks !== undefined)
@@ -524,19 +594,19 @@ class BattleClient {
     this.data.player_signatures[1 - this.data.my_index] =
       msg.consensus_signature
 
-    console.log(
-      JSON.stringify({
-        battle_id: this.data.battleId,
-        state: this.battleState.write(),
-        sig: [
-          Buffer.from(this.data.player_signatures[0], 'hex').toString('base64'),
-          Buffer.from(this.data.player_signatures[1], 'hex').toString('base64'),
-        ],
-        manager_sig: Buffer.from(this.data.manager_signature, 'hex').toString(
-          'base64'
-        ),
-      })
-    )
+    // console.log(
+    //   JSON.stringify({
+    //     battle_id: this.data.battleId,
+    //     state: this.battleState.write(),
+    //     sig: [
+    //       Buffer.from(this.data.player_signatures[0], 'hex').toString('base64'),
+    //       Buffer.from(this.data.player_signatures[1], 'hex').toString('base64'),
+    //     ],
+    //     manager_sig: Buffer.from(this.data.manager_signature, 'hex').toString(
+    //       'base64'
+    //     ),
+    //   })
+    // )
 
     // next state is valid only until 2.5 minute from now
     // if (!(expires_at < Date.now() + 150 * 1000)) return

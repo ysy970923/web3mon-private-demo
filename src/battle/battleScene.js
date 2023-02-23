@@ -131,7 +131,7 @@ export function initBattle() {
   var battleState = battle.battleState
   const opponentUser = {
     isEnemy: true,
-    name: users[battle.data.opponent_id].sprite.name,
+    name: users[battle.data.opponent_id].name,
     health: battle.data.player_init_lp[1 - battle.data.my_index],
     skills: battleState.player_skills[1 - battle.data.my_index],
   }

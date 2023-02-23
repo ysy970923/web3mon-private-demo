@@ -29,11 +29,11 @@ export function enterBattle() {
     opacity: 1,
     repeat: 3,
     yoyo: true,
-    duration: 0.4,
+    duration: 0.1,
     onComplete() {
       gsap.to('#overlappingDiv', {
         opacity: 1,
-        duration: 0.4,
+        duration: 0.1,
         onComplete() {
           // activate a new animation loop
           enterImageAnimation()
@@ -41,7 +41,7 @@ export function enterBattle() {
           animateBattle()
           gsap.to('#overlappingDiv', {
             opacity: 0,
-            duration: 0.4,
+            duration: 0.1,
           })
         },
       })
@@ -166,5 +166,5 @@ const enterImageAnimation = () => {
       'all 1.2s ease-out'
     document.querySelector('#battle_enter').style.opacity = 0
     document.querySelector('#battle_enter').style.zIndex = -5
-  }, 5000)
+  }, 1000)
 }

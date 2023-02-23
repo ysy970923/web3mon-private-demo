@@ -174,6 +174,7 @@ export class Skill {
   type
   params
   renderParam
+  atkOrDef
 
   constructor(type) {
     this.type = type
@@ -192,6 +193,7 @@ export class Skill {
         }
         frame = 14
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
+        this.atkOrDef = 'atk'
         break
       case SKILLS.CelsiusExplosion:
         this.params = {
@@ -199,6 +201,7 @@ export class Skill {
         }
         frame = 8
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
+        this.atkOrDef = 'atk'
         break
       case SKILLS.BlockOfFud:
         this.params = {
@@ -206,6 +209,7 @@ export class Skill {
         }
         frame = 15
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
+        this.atkOrDef = 'atk'
         break
       case SKILLS.Hacked:
         this.params = {
@@ -214,6 +218,7 @@ export class Skill {
         }
         frame = 13
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
+        this.atkOrDef = 'atk'
         break
       case SKILLS.FTTTsunami:
         this.params = {
@@ -222,6 +227,7 @@ export class Skill {
         frame = 13
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
         position = {}
+        this.atkOrDef = 'atk'
         break
       case SKILLS.FallOfVoyager:
         this.params = {
@@ -230,6 +236,7 @@ export class Skill {
         }
         frame = 9
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
+        this.atkOrDef = 'atk'
         break
       case SKILLS.HardForkArrow:
         this.params = {
@@ -238,6 +245,7 @@ export class Skill {
         }
         frame = 12
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
+        this.atkOrDef = 'atk'
         break
       case SKILLS.ShortSelling:
         this.params = {
@@ -245,6 +253,7 @@ export class Skill {
         }
         frame = 10
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
+        this.atkOrDef = 'atk'
         break
       case SKILLS.PowShield:
         this.params = {
@@ -253,6 +262,7 @@ export class Skill {
         }
         frame = 4
         renderType = SKILL_RENDER_TYPE.ON_CASTER
+        this.atkOrDef = 'def'
         break
       case SKILLS.MergeWall:
         this.params = {
@@ -261,6 +271,7 @@ export class Skill {
         }
         frame = 8
         renderType = SKILL_RENDER_TYPE.ON_CASTER
+        this.atkOrDef = 'def'
         break
       case SKILLS.AuditField:
         this.params = {
@@ -269,6 +280,7 @@ export class Skill {
         }
         frame = 9
         renderType = SKILL_RENDER_TYPE.ON_CASTER
+        this.atkOrDef = 'def'
         break
       case SKILLS.GraceOfCz:
         this.params = {
@@ -277,6 +289,7 @@ export class Skill {
         }
         frame = 8
         renderType = SKILL_RENDER_TYPE.ON_CASTER
+        this.atkOrDef = 'def'
         break
       case SKILLS.WithdrawalCloak:
         this.params = {
@@ -285,6 +298,7 @@ export class Skill {
         }
         frame = 10
         renderType = SKILL_RENDER_TYPE.ON_CASTER
+        this.atkOrDef = 'def'
         break
       case SKILLS.ProofOfReserve:
         this.params = {
@@ -294,6 +308,7 @@ export class Skill {
         }
         frame = 12
         renderType = SKILL_RENDER_TYPE.ON_CASTER
+        this.atkOrDef = 'def'
         break
       case SKILLS.BTCArmor:
         this.params = {
@@ -303,6 +318,7 @@ export class Skill {
         }
         frame = 8
         renderType = SKILL_RENDER_TYPE.ON_CASTER
+        this.atkOrDef = 'def'
         break
       case SKILLS.SelfCustody:
         this.params = {
@@ -312,6 +328,7 @@ export class Skill {
         }
         frame = 7
         renderType = SKILL_RENDER_TYPE.ON_CASTER
+        this.atkOrDef = 'def'
         break
     }
 
@@ -334,9 +351,23 @@ export class Skill {
     this.renderParam.sprite.setImage(spriteImg)
   }
 
-  check_availability(sequence) {
+  check_availability(sequence, caster_idx) {
     if (this.params.available_turn_seq !== undefined)
       if (sequence > this.params.available_turn_seq) return false
+
+    var attacker_index = battle.battleState.attacker_index
+    if ((sequence - battle.battleState.sequence) % 2 === 1) {
+      attacker_index = 1 - attacker_index
+    }
+    console.log(this.type)
+    console.log(caster_idx)
+    console.log(attacker_index)
+    console.log(this.atkOrDef)
+    if (attacker_index === caster_idx) {
+      if (this.atkOrDef === 'def') return false
+    } else {
+      if (this.atkOrDef === 'atk') return false
+    }
     return true
   }
 

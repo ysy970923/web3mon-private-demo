@@ -101,14 +101,11 @@ export class BattleState {
     var atk_action_index = action_indexes[this.attacker_index]
     var def_action_index = action_indexes[this.defender_index]
 
-    if (atk_action_index >= 3) return false
-    if (def_action_index < 3) return false
-
     var atk_skill = this.player_skills[this.attacker_index][atk_action_index]
     var def_skill = this.player_skills[this.defender_index][def_action_index]
 
-    atk_skill.check_availability(this.sequence)
-    def_skill.check_availability(this.sequence)
+    atk_skill.check_availability(this.sequence, this.attacker_index)
+    def_skill.check_availability(this.sequence, this.defender_index)
 
     return true
   }
