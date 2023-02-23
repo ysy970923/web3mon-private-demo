@@ -21,7 +21,6 @@ export function enterBattle() {
   console.log('enter battle')
   document.getElementById('skill_box_temp').style.display = 'none'
   addBattleSkillBox()
-  document.getElementById('acceptBattleCard').style.display = 'none'
   const animationId = window.requestAnimationFrame(animate)
   // deactivate current animation loop
   window.cancelAnimationFrame(animationId)
@@ -88,8 +87,8 @@ const enterImageAnimation = () => {
   document.getElementById('enter_collection').innerText = player.nftCollection
   document.getElementById('enter_name').innerText = player.name
   for (var i = 0; i < 3; i++) {
-    var skillName =
-      battle.battleState.player_skills[battle.data.my_index][i].name
+    var skillType =
+      battle.battleState.player_skills[battle.data.my_index][i].type
     var desc_item = document.createElement('div')
     desc_item.setAttribute('class', 'desc_item')
     var skill_label = document.createElement('div')
@@ -100,13 +99,13 @@ const enterImageAnimation = () => {
     skill_img_container.setAttribute('class', 'skill_img_container')
     var skill_img = document.createElement('img')
     skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}`
+    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}`
     skill_img_container.append(skill_img)
     desc_item.append(skill_img_container)
     document.getElementById('selected_attack_skills').append(desc_item)
 
-    var skillName =
-      battle.battleState.player_skills[battle.data.my_index][i + 3].name
+    var skillType =
+      battle.battleState.player_skills[battle.data.my_index][i + 3].type
     var desc_item = document.createElement('div')
     desc_item.setAttribute('class', 'desc_item')
     var skill_label = document.createElement('div')
@@ -117,15 +116,15 @@ const enterImageAnimation = () => {
     skill_img_container.setAttribute('class', 'skill_img_container')
     var skill_img = document.createElement('img')
     skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}`
+    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}`
     skill_img_container.append(skill_img)
     desc_item.append(skill_img_container)
     document.getElementById('selected_defence_skills').append(desc_item)
   }
 
   for (var i = 0; i < 3; i++) {
-    var skillName =
-      battle.battleState.player_skills[1 - battle.data.my_index][i].name
+    var skillType =
+      battle.battleState.player_skills[1 - battle.data.my_index][i].type
     var desc_item = document.createElement('div')
     desc_item.setAttribute('class', 'desc_item')
     var skill_label = document.createElement('div')
@@ -136,13 +135,13 @@ const enterImageAnimation = () => {
     skill_img_container.setAttribute('class', 'skill_img_container')
     var skill_img = document.createElement('img')
     skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}`
+    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}`
     skill_img_container.append(skill_img)
     desc_item.append(skill_img_container)
     document.getElementById('op_selected_attack_skills').append(desc_item)
 
-    var skillName =
-      battle.battleState.player_skills[1 - battle.data.my_index][i + 3].name
+    var skillType =
+      battle.battleState.player_skills[1 - battle.data.my_index][i + 3].type
     var desc_item = document.createElement('div')
     desc_item.setAttribute('class', 'desc_item')
     var skill_label = document.createElement('div')
@@ -153,7 +152,7 @@ const enterImageAnimation = () => {
     skill_img_container.setAttribute('class', 'skill_img_container')
     var skill_img = document.createElement('img')
     skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}`
+    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}`
     skill_img_container.append(skill_img)
     desc_item.append(skill_img_container)
     document.getElementById('op_selected_defence_skills').append(desc_item)

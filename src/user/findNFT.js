@@ -5,8 +5,15 @@ export async function findMyNFT() {
   document.getElementById('chain_containers').style.display = 'none'
   document.getElementById('loading_container').style.display = 'block'
   if (wallet.selectedChain === '' || wallet.getAccountId() === '') return
+  var imgs = []
+  var clothes = []
+  // 초기화
+  document.querySelector('#nftListBox').innerHTML = ''
+  document.querySelector('#clothesBox').innerHTML = ''
+  document.getElementById('tokenId').value = ''
+
   // 체인이 니어일 때
-  if (wallet.selectedChain === 'near') {
+  if (wallet.selectedChain === 'NEAR') {
     var nft_contract_list = [
       'asac.web3mon.testnet',
       'nearnauts.web3mon.testnet',
@@ -25,12 +32,6 @@ export async function findMyNFT() {
       from_index: '0',
       limit: 50,
     }
-    // 초기화
-    document.querySelector('#nftListBox').innerHTML = ''
-    document.querySelector('#clothesBox').innerHTML = ''
-    document.getElementById('tokenId').value = ''
-    let imgs = []
-    let clothes = []
 
     for (var contract_id of nft_contract_list) {
       var metadata = await wallet.viewMethod({
@@ -45,23 +46,25 @@ export async function findMyNFT() {
 
       if (data.length !== 0) {
         data.forEach((nft) => {
-          let img = document.createElement('img')
-          if (nft.metadata.media.includes('https://'))
-            img.src = nft.metadata.media
-          else img.src = metadata.base_uri + '/' + nft.metadata.media
+          if (nft.token_id !== 'terra') {
+            let img = document.createElement('img')
+            if (nft.metadata.media.includes('https://'))
+              img.src = nft.metadata.media
+            else img.src = metadata.base_uri + '/' + nft.metadata.media
 
-          const name = `${metadata.name} #${nft.metadata.title}`
+            const name = `${metadata.name} #${nft.metadata.title}`
 
-          img.style = 'width: min(100px, 15%); opacity: 0.5;'
-          img.setAttribute('collection', contract_id)
-          img.setAttribute('asset_id', nft.token_id)
-          img.setAttribute('name', name)
-          if (contract_id === 'nftv1.web3mon.testnet') {
-            clothes.push(img)
-            img.onclick = onClothClick
-          } else {
-            imgs.push(img)
-            img.onclick = onImgClick
+            img.style = 'width: min(100px, 15%); opacity: 0.5;'
+            img.setAttribute('collection', contract_id)
+            img.setAttribute('asset_id', nft.token_id)
+            img.setAttribute('name', name)
+            if (contract_id === 'nftv1.web3mon.testnet') {
+              clothes.push(img)
+              img.onclick = onClothClick
+            } else {
+              imgs.push(img)
+              img.onclick = onImgClick
+            }
           }
         })
       }
@@ -87,65 +90,85 @@ export async function findMyNFT() {
       document.querySelector('#clothesBox').appendChild(p)
     }
   }
+  console.log(wallet.selectedChain === 'terra')
 
   // terra
-  if (wallet.seletedChain === 'terra') {
+  if (wallet.selectedChain === 'terra') {
     var nft_contract_list = [
-      'terra16ds898j530kn4nnlc7xlj6hcxzqpcxxk4mj8gkcl3vswksu6s3zszs8kp2',
       'terra17vysjt8ws64v8w696mavjpqs8mksf8s993qghlust9yey8qcmppqnhgw0e',
     ]
     document.querySelector('#nftListBox').innerHTML = ''
     document.getElementById('tokenId').value = ''
-    var imgs = []
+    var tmpClothes = [
+      {
+        src: 'https://bafybeihppeux4ojitk5nii4znq4t4vw6oa26arg2u7tv276vnhsklibpgy.ipfs.dweb.link/2.png',
+        collection: 'tmp',
+        asset_id: '2',
+        name: 'Web3Mon #2',
+      },
+    ]
     for (var contract_id of nft_contract_list) {
-      var args = {
-        owner: wallet.getAccountId(),
-      }
+      //   var args = {
+      //     owner: wallet.getAccountId(),
+      //   }
+      var args = {}
       var res = await wallet.viewMethod({
         contractId: contract_id,
-        method: 'tokens',
+        method: 'all_tokens',
         args: args,
       })
-
+      console.log(res)
       var key = Object.keys(res.data)[0]
       for (var i in res.data[key]) {
-        var nft = res.data[key][i]
-        var args = { token_id: nft }
-        var nft_data = await wallet.viewMethod({
-          contractId: contract_id,
-          method: 'nft_info',
-          args: args,
-        })
         var img = document.createElement('img')
-        var img_url = nft_data.data.extension.image
-        if (img_url === undefined) {
-          var response = await fetch(nft_data.data.token_uri, {
-            method: 'GET',
-          })
-          response = await response.json()
-          // console.log(response)
-          img_url = response.media
-        } else if (!img_url.includes('https://'))
-          img_url = `https://ipfs.io/ipfs/${nft_data.data.extension.image.replace(
-            'ipfs://',
-            ''
-          )}`
-        img.src = img_url
+        // var img_url = nft_data.extension.image
+        // if (img_url === undefined) {
+        var response = await fetch(res.data[key][i].metadata_uri, {
+          method: 'GET',
+        })
+        response = await response.json()
+        var nft_data = response
+        // } else if (!img_url.includes('https://'))
+        //   img_url = `https://ipfs.io/ipfs/${img_url.replace('ipfs://', '')}`
+        img.src = nft_data.media
         img.style = 'width: min(100px, 15%); opacity: 0.5;'
         img.setAttribute('asset_id', nft)
         img.setAttribute('collection', contract_id)
-        img.setAttribute('name', nft_data.data.extension.name)
+        img.setAttribute('name', nft_data.title)
         img.onclick = onImgClick
         imgs.push(img)
       }
     }
+
+    tmpClothes.forEach((e) => {
+      var img = document.createElement('img')
+      img.src = e.src
+      img.style = 'width: min(100px, 15%); opacity: 0.5;'
+      img.setAttribute('collection', e.collection)
+      img.setAttribute('asset_id', e.asset_id)
+      img.setAttribute('name', e.name)
+      clothes.push(img)
+      img.onclick = onClothClick
+    })
+
     imgs.forEach((i) => {
       document.querySelector('#nftListBox').appendChild(i)
     })
+
+    clothes.forEach((i) => {
+      document.querySelector('#clothesBox').appendChild(i)
+    })
+
     if (imgs.length === 0) {
       let p = document.createElement('p')
       p.innerHTML = 'There is no NFT'
       document.querySelector('#nftListBox').appendChild(p)
+    }
+
+    if (clothes.length === 0) {
+      let p = document.createElement('p')
+      p.innerHTML = 'There are no Clothes'
+      document.querySelector('#clothesBox').appendChild(p)
     }
   }
 

@@ -69,7 +69,7 @@
 
         <button id="chatOpenBtn" class="nes-btn">Chat</button>
         <div class="chat-popup" id="chatForm" style="display: none">
-          <form class="form-container" id="chatForm">
+          <form class="form-container">
             <h2>Chat</h2>
             <input
               id="chat"
@@ -103,7 +103,7 @@
           <div class="game_button_container">
             <button
               class="custom_button_1"
-              id="profileButton"
+              id="profileBtn"
               type="button"
               class="nes-btn"
             >
@@ -114,7 +114,7 @@
           <div class="game_button_container">
             <button
               class="custom_button_1"
-              id="guidanceButton"
+              id="guidanceBtn"
               type="button"
               class="nes-btn"
             >
@@ -136,7 +136,7 @@
           <div class="game_button_container">
             <button
               class="custom_button_1"
-              id="battleHistoryButton"
+              id="battleHistoryBtn"
               type="button"
               class="nes-btn"
             >
@@ -164,6 +164,7 @@
         />
 
         <div id="battle_banner">
+          <h1 id="battle_sequence">Round: X</h1>
           <h1 id="battle_left_time">XX:XX</h1>
           <h1 id="atk_or_def">Attack</h1>
         </div>
@@ -212,14 +213,7 @@
         </div>
 
         <!-- Battle Squence 1 : Choose fight or not -->
-        <div id="acceptBattleCard" class="battleCard battle_modal">
-          <h2>Start Battle</h2>
-          <p id="battleOpponentName2"></p>
-          <button id="acceptBattleBtn" class="nes-btn is-success">YES</button>
-          <button id="refuseBattleBtn" class="nes-btn is-error">NO</button>
-          <button id="seeOpponentInfo" class="nes-btn">See Info</button>
-        </div>
-
+        <div id="battleCard" class="battle_modal"></div>
         <!-- Battle Squence 2 : Choose your skill -->
         <div id="skill_box_temp" class="battle_modal">
           <p class="title">Selections</p>
@@ -256,7 +250,7 @@
           <h2 id="actionContent"></h2>
         </div>
 
-        <div id="battleHistoryLog" class="card">
+        <div id="battleHistoryCard" class="card">
           <h2 id="battleHistoryContent"></h2>
         </div>
 

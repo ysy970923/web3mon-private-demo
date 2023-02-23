@@ -1,10 +1,6 @@
 import { canvas, stopAllPlay } from '../js/index'
 import { battle } from './battleClient'
 import { myID, users, player } from '../user/user'
-import {
-  clickOutSideProfileEvent,
-  clickOutSideBattleCardEvent,
-} from '../web/clickButtons'
 
 /**
  * check whether click another player to battle.
@@ -15,7 +11,7 @@ export function clickEvent() {
     if (battle.started) return
     if (stopAllPlay) return
     // I should be ready
-    if (!player.readyForBattle) return
+    // if (!player.readyForBattle) return
     for (const key in users) {
       if (key === myID) continue
       var x = e.offsetX - users[key].sprite.width / 2
@@ -27,59 +23,61 @@ export function clickEvent() {
       ) {
         // opponent should be ready
         // if (!users[key].readyForBattle) break
-        clickToStartBattle(key)
+        setUpBattleCard('request', key, null)
         break
       }
     }
   })
 }
 
-/**
- * when clicked another player to battle.
- * @param {string} key
- */
-const clickToStartBattle = (key) => {
-  // show battle request popup
-  displayBattleAcceptPopup(key)
+export function setUpBattleCard(type, key, battle_id) {
+  var title
+  var text
+  if (type === 'request') {
+    title = 'Request Battle...'
+    text = `Request To: ${users[key].name}`
+  } else if (type === 'accept') {
+    title = 'Incoming Battle...'
+    text = `Request From: ${users[key].name}`
+  }
+  document.getElementById('battleCard').innerHTML = `
+    <h2>${title}</h2>
+    <div style="margin:5px">
+        <img src=${users[key].nftUrl}/>
+    </div>
+    <p>${text}</p>
+    <button id="yesBattleBtn" class="nes-btn is-success">YES</button>
+    <button id="noBattleBtn" class="nes-btn is-error">NO</button>
+    `
 
-  // 배틀 제안
-  battle.request(key)
-
-  // 배틀 제안 취소
-  document.getElementById('refuseBattleBtn').addEventListener('click', (e) => {
-    document.getElementById('acceptBattleCard').style.display = 'none'
+  document.getElementById('yesBattleBtn').addEventListener('click', (e) => {
+    if (type === 'request') {
+      battle.request(key)
+    } else if (type === 'accept') {
+      battle.accept(battle_id, key)
+    }
+    document.getElementById('battleCard').style.display = 'none'
+    document.getElementById('battleCard').innerHTML = ''
+    document.getElementById('wait_modal').style.display = 'flex'
   })
 
-  document.getElementById('seeOpponentInfo').addEventListener('click', (e) => {
-    document.getElementById('acceptBattleCard').style.display = 'none'
-    document.getElementById('profileCard').style.display = 'block'
-    document.body.addEventListener(
-      'click',
-      (e) => {
-        clickOutSideProfileEvent(e)
-      },
-      true
-    )
+  document.getElementById('noBattleBtn').addEventListener('click', (e) => {
+    if (type === 'request') {
+    } else if (type === 'accept') {
+      battle.refuse(battle_id)
+    }
+    document.getElementById('battleCard').style.display = 'none'
+    document.getElementById('battleCard').innerHTML = ''
   })
-}
 
-/**
- * 지금 클릭한 애랑 배틀 할거야? or 얘가 너랑 싸우고 싶다는데 배틀할거야? 보여주기
- * @param {string} key 상대방의 아이디
- */
-export const displayBattleAcceptPopup = (key) => {
-  document.body.addEventListener('click', clickOutSideBattleCardEvent, true)
+  document.getElementById('noBattleBtn').addEventListener('click', (e) => {
+    if (type === 'request') {
+    } else if (type === 'accept') {
+      battle.refuse(battle_id)
+    }
+    document.getElementById('battleCard').style.display = 'none'
+    document.getElementById('battleCard').innerHTML = ''
+  })
 
-  document.getElementById('acceptBattleBtn').style.display = 'inline-block'
-  document.getElementById('refuseBattleBtn').style.display = 'inline-block'
-  document
-    .getElementById('acceptBattleBtn')
-    .replaceWith(document.getElementById('acceptBattleBtn').cloneNode(true))
-  document
-    .getElementById('refuseBattleBtn')
-    .replaceWith(document.getElementById('refuseBattleBtn').cloneNode(true))
-
-  document.getElementById('acceptBattleCard').style.display = 'block'
-  document.getElementById('battleOpponentName2').innerText =
-    'Opponent: ' + users[key].sprite.name
+  document.getElementById('battleCard').style.display = 'block'
 }

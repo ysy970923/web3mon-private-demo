@@ -1,5 +1,6 @@
 import { Sprite } from '../object/Sprite'
 import { gsap } from 'gsap'
+import { battle } from './battleClient'
 
 export const LASTINGEFFECT = {
   ContinuousAttack: 'ContinuousAttack',
@@ -21,7 +22,7 @@ export const SKILLS = {
   MergeWall: 'MergeWall',
   AuditField: 'AuditField',
   GraceOfCz: 'GraceOfCz',
-  WithdrawlsCloak: 'WithdrawlsCloak',
+  WithdrawalCloak: 'WithdrawalCloak',
   ProofOfReserve: 'ProofOfReserve',
   BTCArmor: 'BTCArmor',
   SelfCustody: 'SelfCustody',
@@ -43,7 +44,7 @@ export const DEFENCES = [
   SKILLS.MergeWall,
   SKILLS.AuditField,
   SKILLS.GraceOfCz,
-  SKILLS.WithdrawlsCloak,
+  SKILLS.WithdrawalCloak,
   SKILLS.ProofOfReserve,
   SKILLS.BTCArmor,
   SKILLS.SelfCustody,
@@ -115,7 +116,7 @@ ex) If the opponent used <Hacked> on the previous turn, give the opponent 35AD.'
 33% activation rate to defend against all Attack from the opponent in the current turn.',
     img: 'grace of cz.png',
   },
-  WithdrawlsCloak: {
+  WithdrawalCloak: {
     name: 'Withdrawals Cloak',
     desc: 'For the next three turns(including the current turn), 15AD is continuously given to the opponent. However, the user also receives 5AD for the next three turns(including the current turn). On the last turn, it deals an additional 5AD(total 15 AD) to the opponent, and the effect ends.',
     img: 'withdrawls cloak.png',
@@ -144,10 +145,10 @@ const SKILL_RENDER_TYPE = {
 }
 
 export class LastingEffect {
-  name
+  type
   params
-  constructor(name, params) {
-    this.name = name
+  constructor(type, params) {
+    this.type = type
     this.params = params
   }
 
@@ -161,29 +162,30 @@ export class LastingEffect {
 }
 
 class SpecialEffect {
-  name
-  constructor(name, params) {
-    this.name = name
+  type
+  params
+  constructor(type, params) {
+    this.type = type
     this.params = params
   }
 }
 
 export class Skill {
-  name
+  type
   params
   renderParam
 
-  constructor(name) {
-    this.name = name
+  constructor(type) {
+    this.type = type
     var spriteImg = new Image()
-    spriteImg.src = `../img/Skills/${SKILL_DESCRIPTIONS[name].img}`
+    spriteImg.src = `../img/Skills/${SKILL_DESCRIPTIONS[type].img}`
     var frame
     var renderType
+    var position = { x: 0, y: 0 }
 
-    switch (name) {
+    switch (type) {
       case SKILLS.DeathSpiral:
         this.params = {
-          cool_down: 0,
           success_count: 0,
           base_damage: 25,
           multiplier: 150,
@@ -193,7 +195,6 @@ export class Skill {
         break
       case SKILLS.CelsiusExplosion:
         this.params = {
-          cool_down: 0,
           base_damage: 20,
         }
         frame = 8
@@ -201,7 +202,6 @@ export class Skill {
         break
       case SKILLS.BlockOfFud:
         this.params = {
-          cool_down: 0,
           base_damage: 18,
         }
         frame = 15
@@ -209,7 +209,6 @@ export class Skill {
         break
       case SKILLS.Hacked:
         this.params = {
-          cool_down: 0,
           base_damage: 20,
           recovery_lp: 15,
         }
@@ -218,15 +217,14 @@ export class Skill {
         break
       case SKILLS.FTTTsunami:
         this.params = {
-          cool_down: 0,
           base_damage: 20,
         }
         frame = 13
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
+        position = {}
         break
       case SKILLS.FallOfVoyager:
         this.params = {
-          cool_down: 0,
           available_turn_seq: 2,
           base_damage: 40,
         }
@@ -235,7 +233,6 @@ export class Skill {
         break
       case SKILLS.HardForkArrow:
         this.params = {
-          cool_down: 0,
           base_damage: 0,
           last_turn_damage: 0,
         }
@@ -244,7 +241,6 @@ export class Skill {
         break
       case SKILLS.ShortSelling:
         this.params = {
-          cool_down: 0,
           base_damage: 15,
         }
         frame = 10
@@ -252,7 +248,6 @@ export class Skill {
         break
       case SKILLS.PowShield:
         this.params = {
-          cool_down: 0,
           base_shield: 15, // 15
           absorbed_damage: 0,
         }
@@ -261,7 +256,6 @@ export class Skill {
         break
       case SKILLS.MergeWall:
         this.params = {
-          cool_down: 0,
           defence_probability: 50, //0.5
           defence_proportion: 50, //
         }
@@ -270,7 +264,6 @@ export class Skill {
         break
       case SKILLS.AuditField:
         this.params = {
-          cool_down: 0,
           defence_probability: 100, //1
           defence_proportion: 20, //02
         }
@@ -279,16 +272,14 @@ export class Skill {
         break
       case SKILLS.GraceOfCz:
         this.params = {
-          cool_down: 0,
           defence_probability: 33, //0.33
           defence_proportion: 100, //1
         }
         frame = 8
         renderType = SKILL_RENDER_TYPE.ON_CASTER
         break
-      case SKILLS.WithdrawlsCloak:
+      case SKILLS.WithdrawalCloak:
         this.params = {
-          cool_down: 0,
           defence_probability: 0, //0.33
           defence_proportion: 0, //1
         }
@@ -297,17 +288,15 @@ export class Skill {
         break
       case SKILLS.ProofOfReserve:
         this.params = {
-          cool_down: 0,
           reflection_probability: 33, //0.33
           reflection_proportion: 100, //1
-          reflect_damage: 0,
+          //   reflect_damage: 0,
         }
         frame = 12
         renderType = SKILL_RENDER_TYPE.ON_CASTER
         break
       case SKILLS.BTCArmor:
         this.params = {
-          cool_down: 0,
           available_turn_seq: 2,
           defence_probability: 33, //0.33
           defence_proportion: 100, //1
@@ -317,7 +306,6 @@ export class Skill {
         break
       case SKILLS.SelfCustody:
         this.params = {
-          cool_down: 0,
           defence_probability: 33, //1
           defence_proportion: 100, //1
           recovery_lp: 10,
@@ -345,8 +333,15 @@ export class Skill {
     }
     this.renderParam.sprite.setImage(spriteImg)
   }
+
+  check_availability(sequence) {
+    if (this.params.available_turn_seq !== undefined)
+      if (sequence > this.params.available_turn_seq) return false
+    return true
+  }
+
   create_lasting_effect(caster_idx) {
-    switch (this.name) {
+    switch (this.type) {
       case SKILLS.DeathSpiral:
         return [
           new LastingEffect(LASTINGEFFECT.DamageMultiple, {
@@ -373,7 +368,7 @@ export class Skill {
     }
   }
   create_special_effects(caster_idx) {
-    switch (this.name) {
+    switch (this.type) {
       case SKILLS.Hacked:
         return [
           new SpecialEffect('SelfHealing', {
@@ -388,70 +383,78 @@ export class Skill {
             recovery_lp: this.params.recovery_lp,
           }),
         ]
-      case SKILLS.ProofOfReserve:
-        return [
-          new SpecialEffect('Reflection', {
-            reflect_damage: this.params.reflect_damage,
-          }),
-        ]
+      //   case SKILLS.ProofOfReserve:
+      //     return [
+      //       new SpecialEffect('Reflection', {
+      //         reflect_damage: this.params.reflect_damage,
+      //       }),
+      //     ]
       default:
         return undefined
     }
   }
+
   calculate_attack_damage() {
-    if (this.name === 'DeathSpiral') {
-      if (this.params.success_count == 3)
+    if (this.type === 'DeathSpiral') {
+      if (this.params.success_count == 3) {
+        battle.event(`multiplied by ${this.params.multiplier}`)
         return this.params.multiplier * this.params.base_damage
-    } else if (this.name === 'HardForkArrow')
+      }
+    } else if (this.type === 'HardForkArrow') {
+      battle.event(`return last turn damage ${this.params.last_turn_damage}`)
       return this.params.last_turn_damage + this.params.base_damage
+    }
     return this.params.base_damage
   }
+
   calculate_damage(attack_skill_damage, random_number) {
-    if (this.name === 'PowShield') {
+    if (this.type === 'PowShield') {
       this.params.absorbed_damage = Math.min(
         attack_skill_damage,
         this.params.base_shield
       )
+      battle.event(`absorb damage ${this.params.absorbed_damage}`)
       return Math.max(attack_skill_damage - this.params.base_shield, 0)
-    } else if (this.name === 'MergeWall') {
+    } else if (this.type === 'MergeWall') {
       if (random_number < this.params.defence_probability)
         return (
           attack_skill_damage -
           multPercentage(this.params.defence_proportion, attack_skill_damage)
         )
       else return attack_skill_damage
-    } else if (this.name === 'AuditField') {
+    } else if (this.type === 'AuditField') {
       if (random_number < this.params.defence_probability)
         return (
           attack_skill_damage -
           multPercentage(this.params.defence_proportion, attack_skill_damage)
         )
       else return attack_skill_damage
-    } else if (this.name === 'GraceOfCz') {
+    } else if (this.type === 'GraceOfCz') {
       if (random_number < this.params.defence_probability)
         return (
           attack_skill_damage -
           multPercentage(this.params.defence_proportion, attack_skill_damage)
         )
       else return attack_skill_damage
-    } else if (this.name === 'WithdrawlsCloak') {
+    } else if (this.type === 'WithdrawalCloak') {
       return attack_skill_damage
-    } else if (this.name === 'ProofOfReserve') {
-      if (random_number < this.params.reflection_probability)
-        this.params.reflect_damage = multPercentage(
-          this.params.reflection_proportion,
-          attack_skill_damage
-        )
-      else this.params.reflect_damage = 0
-      return attack_skill_damage - this.params.reflect_damage
-    } else if (this.name === 'BTCArmor') {
+    } else if (this.type === 'ProofOfReserve') {
+      //   if (random_number < this.params.reflection_probability)
+      // this.params.reflect_damage = multPercentage(
+      //   this.params.reflection_proportion,
+      //   attack_skill_damage
+      // )
+      //   else this.params.reflect_damage = 0
+      //   return attack_skill_damage - this.params.reflect_damage
+      return attack_skill_damage
+    } else if (this.type === 'BTCArmor') {
       if (random_number < this.params.defence_probability)
         return (
           attack_skill_damage -
           multPercentage(this.params.defence_proportion, attack_skill_damage)
         )
       else return attack_skill_damage
-    } else if (this.name === 'SelfCustody') {
+    } else if (this.type === 'SelfCustody') {
       if (random_number < this.params.defence_probability)
         return (
           attack_skill_damage -
@@ -462,7 +465,12 @@ export class Skill {
   }
 
   write() {
-    return this.params
+    var msg = {}
+    msg.type = this.type
+    for (var key in this.params) {
+      msg[key] = this.params[key]
+    }
+    return msg
   }
 
   render(caster, receiver, renderedSprites) {
@@ -475,12 +483,6 @@ export class Skill {
             100,
           y: caster.position.y - this.renderParam.sprite.image.height / 2,
         }
-        gsap.to(this.renderParam.sprite.position, {
-          duration: 3.0,
-          onComplete: () => {
-            delete renderedSprites[`${caster}${receiver}${this.name}`]
-          },
-        })
         break
       case SKILL_RENDER_TYPE.ON_RECEIVER:
         this.renderParam.sprite.position = {
@@ -490,16 +492,13 @@ export class Skill {
             100,
           y: receiver.position.y - this.renderParam.sprite.image.height / 2,
         }
-        gsap.to(this.renderParam.sprite.position, {
-          duration: 3.0,
-          onComplete: () => {
-            delete renderedSprites[`${caster}${receiver}${this.name}`]
-          },
-        })
         break
     }
-    renderedSprites[`${caster}${receiver}${this.name}`] =
+    renderedSprites[`${caster}${receiver}${this.type}`] =
       this.renderParam.sprite
+    setTimeout(() => {
+      delete renderedSprites[`${caster}${receiver}${this.type}`]
+    }, 3000)
   }
 }
 

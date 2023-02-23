@@ -1,7 +1,7 @@
 import { joyToKey } from './control/move'
 import { stopAllPlay } from './js/index'
 import { keys, lastKey } from './control/move'
-import { moveUser, stopUser } from './control/move'
+import { sendPosition } from './control/move'
 import { moveToXDirection } from './control/move'
 import { battle } from './battle/battleClient'
 import { player, users } from './user/user'
@@ -25,18 +25,16 @@ export const animate = () => {
   const animationId = window.requestAnimationFrame(animate)
 
   background.draw()
+
   for (var key in users) {
     users[key].draw()
   }
-//   foreground.draw()
+  //   foreground.draw()
 
   // NPC가 말하는거
   npcTalk(animationId)
 
   joyToKey()
-
-  let moving = true
-  player.setMoving(false)
 
   if (battle.started) return
 
@@ -48,14 +46,21 @@ export const animate = () => {
   var passedTime = newTime - previousTime
   previousTime = newTime
 
-  if (stopAllPlay) return
-  if (keys.w.pressed && lastKey === 'w') {
-    moveToXDirection(moving, 'up', 1, passedTime)
-  } else if (keys.a.pressed && lastKey === 'a') {
-    moveToXDirection(moving, 'left', 1, passedTime)
-  } else if (keys.s.pressed && lastKey === 's') {
-    moveToXDirection(moving, 'down', 1, passedTime)
-  } else if (keys.d.pressed && lastKey === 'd') {
-    moveToXDirection(moving, 'right', 1, passedTime)
+  for (var key in users) {
+    users[key].draw(passedTime)
   }
+  if (stopAllPlay) return
+
+  player.setMoving(false)
+  
+  if (keys.w.pressed && lastKey === 'w') {
+    moveToXDirection('up', 1, passedTime)
+  } else if (keys.a.pressed && lastKey === 'a') {
+    moveToXDirection('left', 1, passedTime)
+  } else if (keys.s.pressed && lastKey === 's') {
+    moveToXDirection('down', 1, passedTime)
+  } else if (keys.d.pressed && lastKey === 'd') {
+    moveToXDirection('right', 1, passedTime)
+  }
+  sendPosition(player.getGlobalPosition())
 }

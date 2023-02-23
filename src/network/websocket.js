@@ -2,10 +2,14 @@ import { endBattle } from '../battle/battleScene'
 import { local_position } from '../js/index'
 import { ACTION, CHAT, NETWORK } from './callType'
 import { npc_list } from '../data/npc'
-import { displayBattleAcceptPopup } from '../battle/battleStart'
+import {
+  displayBattleAcceptPopup,
+  setUpBattleCard,
+} from '../battle/battleStart'
 import { battle } from '../battle/battleClient'
 import { myID, setMyID, users, User, player } from '../user/user'
 import { turnToGameScreen } from '../user/logIn'
+import { moveUser } from '../control/move'
 
 export let ws = null
 const wsQueue = []
@@ -33,58 +37,92 @@ function onmessage(type, data) {
       var currentUsers = new Set()
       data['player_infos_for_view'].forEach((avatar) => {
         currentUsers.add(avatar.player_id)
+        // temporary
+        if (avatar.player_id === myID) {
+          if (avatar.token_id === 'terra')
+            safe_send({
+              BoardCastChat: {
+                content: JSON.stringify({
+                  nftCollection: 'Galactic Punks',
+                  tokenId: '100',
+                  chain: 'TERRA',
+                  nftUrl:
+                    'https://ipfs.talis.art/ipfs/QmdUGyDFFBZMf92nf1fXxjoy2sNNL8oJbk1YBDCQzYfLuz/0.png',
+                }),
+              },
+            })
+        }
+
         if (!(avatar.player_id in users)) {
-          var newUser = new User(
-            avatar.player_id,
-            'tmp',
-            'tmp',
-            'tmp',
-            'tmp',
-            'tmp',
-            'MAIN'
-          )
+          if (avatar.token_id !== 'terra') {
+            var newUser = new User(
+              avatar.player_id,
+              avatar.collection,
+              avatar.token_id,
+              avatar.chain,
+              avatar.nft_image_url,
+              'tmp',
+              'MAIN'
+            )
+            users[avatar.player_id] = newUser
+          }
           //   newUser.setPosition(avatar.coordinate)
         }
       })
       for (var key in users) if (!currentUsers.has(key)) delete users[key]
-
       break
 
     case ACTION.MOVE:
       if (data.player_key === myID) {
         return
-      } else {
-        const id = data.player_key
-
-        if (data.coordinate[0] === 1 && data.coordinate[1] === 1) {
-          users[id].setMoving(false)
-        } else {
-          // 디렉션 계산해서 이미지 부여하기
-          const newPosition = local_position({
-            x: data.coordinate[0],
-            y: data.coordinate[1],
-          })
-
-          const isRight = users[id].position.x - newPosition.x < -1
-          const isBottom = users[id].position.y - newPosition.y < -1
-          const isLeft = users[id].position.x - newPosition.x > 1
-          const isUp = users[id].position.y - newPosition.y > 1
-
-          if (isUp) users[id].setDirection('up')
-          else if (isBottom) users[id].setDirection('down')
-          else if (isLeft) users[id].setDirection('left')
-          else if (isRight) users[id].setDirection('right')
-
-          // 포지션 이동이 아니라 새로운 포지션까지 이동하는 애니메이션이어야 하는데?
-          users[id].setPosition(newPosition)
-          users[id].setMoving(true)
-        }
       }
+
+      const id = data.player_key
+
+      // 디렉션 계산해서 이미지 부여하기
+      const newPosition = local_position({
+        x: data.coordinate[0],
+        y: data.coordinate[1],
+      })
+
+      const isRight = users[id].position.x - newPosition.x < -1
+      const isBottom = users[id].position.y - newPosition.y < -1
+      const isLeft = users[id].position.x - newPosition.x > 1
+      const isUp = users[id].position.y - newPosition.y > 1
+
+      if (isUp) users[id].setDirection('up')
+      else if (isBottom) users[id].setDirection('down')
+      else if (isLeft) users[id].setDirection('left')
+      else if (isRight) users[id].setDirection('right')
+
+      // 포지션 이동이 아니라 새로운 포지션까지 이동하는 애니메이션이어야 하는데?
+      users[id].setPosition(newPosition, false)
+      users[id].setMoving(true)
       break
 
+    // use as a tmp broadcaster
     case CHAT.BOARD_CAST_CHAT:
-      if (data.send_player_id !== myID)
-        users[data.send_player_id].showChat(data['content'])
+      console.log(data)
+      if (data['content'][0] === '{') {
+        var user_info = JSON.parse(data['content'])
+        if (!(data.send_player_id in users))
+          users[data.send_player_id] = new User(
+            data.send_player_id,
+            user_info.nftCollection,
+            user_info.tokenId,
+            user_info.chain,
+            user_info.nftUrl,
+            'tmp',
+            'MAIN'
+          )
+      }
+      //   if (data.send_player_id !== myID) {
+      //     users[data.send_player_id].showChat(data['content'])
+      //   }
+      break
+
+    case 'ReadyBattle':
+      console.log(data)
       break
 
     case ACTION.MAP_TRANSFER:
@@ -93,25 +131,16 @@ function onmessage(type, data) {
 
     case NETWORK.BATTLE_INIT:
       console.log('배틀 열림!', data)
-      battle.start(data.battle_id, data.opponent_battle_exclusive_pub_key)
+      //   setTimeout(() => {
+      //     battle.start(data)
+      //   }, 1000*60)
+      battle.start(data)
       break
 
     case NETWORK.BATTLE_OFFER:
       console.log('누가 나한테 배틀 신청함!', data)
       // 우선 수락할건지 말건지 화면을 보여줘야한다.
-      displayBattleAcceptPopup(data.proposer_player_id)
-
-      document
-        .getElementById('acceptBattleBtn')
-        .addEventListener('click', (e) => {
-          battle.accept(data.battle_id, data.proposer_player_id)
-        })
-
-      document
-        .getElementById('refuseBattleBtn')
-        .addEventListener('click', (e) => {
-          battle.refuse(data.battle_id, data.proposer_player_id)
-        })
+      setUpBattleCard('accept', data.proposer_player_id, data.battle_id)
       break
 
     case NETWORK.BATTLE_REJECT:
@@ -125,9 +154,15 @@ function onmessage(type, data) {
 
     case NETWORK.BATTLE:
       if (data.message_type === 'Ok') {
+        battle.data.status.isOk = true
       } else if (data.message_type === 'Next') {
       } else if (data.message_type === 'ByPass') {
         battle.receiveQueue.push(data.content)
+      } else if (data.message_type === 'ConsensusState') {
+        var content = JSON.parse(data.content)
+        console.log(content)
+        battle.battleState.expires_at = content.next_turn_expired_at
+        battle.data.manager_signature = content.manager_signature
       }
       break
 
@@ -241,12 +276,12 @@ export function connect() {
   ws.onerror = ({ data }) => onerror(data)
   ws.onmessage = ({ data }) => {
     const msg = JSON.parse(data)
-    console.log(msg)
     const type = Object.keys(msg)[0]
     onmessage(type, msg[type])
   }
   ws.onclose = function (e) {
     console.log('Websocket Server is Closed! with : ', e)
+    clearInterval(wsInterval)
     ws = null
   }
 }

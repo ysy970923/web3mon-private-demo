@@ -11,6 +11,7 @@ import '../style/index.scss'
 import '../style/modals.scss'
 import '../style/game.scss'
 import './battle/initialSetting'
+import './web/popUp'
 
 document
   .getElementById('nft_choose_container_back')

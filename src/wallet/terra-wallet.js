@@ -19,6 +19,7 @@ import {
 
 import { Subscription, combineLatest } from 'rxjs'
 import { wallet } from './multi-wallet'
+import axios from 'axios'
 
 const THIRTY_TGAS = '30000000000000'
 const NO_DEPOSIT = '0'
@@ -136,5 +137,35 @@ export class TerraWallet {
     res = await res.json()
     console.log(res)
     return res
+  }
+
+  async verifyOwner(collection, token_id) {
+    var body = {
+      signature:
+        '14516281842f8249ed965d7f00be6f805affd7fad14db3db6b64393f9180a3e3ce98a9f4a19983ab5fdb11bf19f6571ed109dc3c37ee1b81ce208ab0080d5b01',
+      message: {
+        chain: 'NEAR',
+        collection: 'asac.web3mon.testnet',
+        token_id: 'terra',
+        pub_key:
+          '47e4e29ce5959543ee6d2c1e4c8c7f7816190fc17751f196139d018cbee64eb0',
+        extra_info: { near_account_id: 'bob.web3mon.testnet' },
+      },
+    }
+
+    var res = await axios.post(
+      'http://ec2-44-201-5-87.compute-1.amazonaws.com:8080/login',
+      body,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+    console.log('답 ', res)
+    if (res.data.jwt !== undefined) {
+      sessionStorage.setItem('jwt', res.data.jwt)
+      return true
+    } else return false
   }
 }

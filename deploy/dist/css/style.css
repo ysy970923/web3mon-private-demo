@@ -901,6 +901,7 @@ img {
   !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./style/modals.scss ***!
   \************************************************************************************************************/
 .battle_modal {
+  display: none;
   position: fixed;
   top: calc(50vh - 300px);
   z-index: 5;

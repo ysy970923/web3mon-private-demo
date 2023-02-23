@@ -34,11 +34,11 @@ export function renderState(data, battleState) {
     .append(
       myMonster.name +
         ' used ' +
-        mySkill.name +
+        mySkill.type +
         '\n' +
         opponent.name +
         ' used ' +
-        opSkill.name
+        opSkill.type
     )
 
   myMonster.adjustHealth(battleState.player_lp[data.my_index])
@@ -77,6 +77,10 @@ export function setUpNextSetting() {
   document.querySelectorAll('.def_skill_buttons').forEach((e) => {
     e.disabled = battle.isMyAttack()
   })
+
+  document.querySelector(
+    '#battle_sequence'
+  ).innerText = `Round: ${battle.battleState.sequence}`
 }
 
 /**

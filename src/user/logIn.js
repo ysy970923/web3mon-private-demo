@@ -34,7 +34,7 @@ export const login = async () => {
   }
   document.getElementById('chatOpenBtn').style.display = 'block'
   document.getElementById('profileImg').src = playerUrl
-  if (wallet.selectedChain === 'near') {
+  if (wallet.selectedChain === 'NEAR') {
     document.getElementById('parasUrl').addEventListener('click', (e) => {
       window
         .open(

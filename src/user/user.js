@@ -1,10 +1,12 @@
 import { Sprite } from '../object/Sprite'
-import { startMoveSender } from '../control/move'
 import { canva, setRenderables } from '../js/index'
 import { selectedClothId, playerUrl } from './logIn'
 import { animate } from '../animate'
 import { background, foreground } from '../control/map'
 import { battle } from '../battle/battleClient'
+import { safe_send } from '../network/websocket'
+import axios from 'axios'
+import { movePlayerToPosition, moveUser, stopUser } from '../control/move'
 
 const clothStorageLink = 'https://web3mon.s3.amazonaws.com/nftv1/'
 
@@ -47,20 +49,15 @@ worker.onmessage = function (event) {
         event.data.id === myID ||
         event.data.id === resume_data.battle_data.opponent_id
       )
-        console.log('1')
-      if (myID in users && resume_data.battle_data.opponent_id in users) {
-        console.log('2')
-        document.getElementById('loading').style.display = 'none'
-        startMoveSender()
-        animate()
-        battle.resume(resume_data.battle_data)
-      }
+        if (myID in users && resume_data.battle_data.opponent_id in users) {
+          document.getElementById('loading').style.display = 'none'
+          animate()
+          battle.resume(resume_data.battle_data)
+        }
     } else {
       if (event.data.id === myID) {
+        movePlayerToPosition(1500, 350, false)
         document.getElementById('loading').style.display = 'none'
-        background.position.x = player.position.x - 1500
-        background.position.y = player.position.y - 350
-        startMoveSender()
         animate()
       }
     }
@@ -88,26 +85,35 @@ export class User {
   readyForBattle
 
   constructor(id, nftCollection, tokenId, chain, nftUrl, clothId, map) {
-    users[id] = this
+    console.log(id)
+    console.log(myID)
     if (id === myID) {
       player = this
+      this.position = {
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+      }
+    } else {
+      this.position = {
+        x: -200,
+        y: -200,
+      }
     }
     this.id = id
     this.nftCollection = nftCollection
     this.tokenId = tokenId
-    if (chain === 'tmp') chain = 'near'
     this.chain = chain
-    if (nftUrl === 'tmp') nftUrl = playerUrl
     this.nftUrl = nftUrl
     if (clothId === 'tmp') clothId = selectedClothId
     this.clothId = clothId
     this.map = map
-    this.name = `${nftCollection}-${tokenId}`
 
-    this.position = {
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    }
+    if (nftCollection === 'asac.web3mon.testnet') nftCollection = 'ASAC'
+    else if (nftCollection === 'nearnauts.web3mon.testnet')
+      nftCollection = 'Nearnauts'
+
+    this.name = `${nftCollection} #${tokenId}`
+
     this.sprite = new Sprite({
       position: this.position,
       frames: {
@@ -147,9 +153,11 @@ export class User {
     this.sprite.setImage(this.spriteImgs[direction])
   }
 
-  setPosition(position) {
+  setPosition(position, instant) {
     this.position = position
-    this.sprite.position = position
+    if (instant) {
+      this.sprite.position = position
+    }
   }
 
   getGlobalPosition() {
@@ -161,9 +169,9 @@ export class User {
 
   getNextBlock(delta) {
     var globalPosition = this.getGlobalPosition()
-    var i = Math.floor((globalPosition.y + this.sprite.height + delta.y) / 80)
+    var i = Math.floor((globalPosition.y + this.sprite.height - delta.y) / 80)
     var j = Math.floor(
-      (globalPosition.x + this.sprite.width / 2 + delta.x) / 80
+      (globalPosition.x + this.sprite.width / 2 - delta.x) / 80
     )
     return [i, j]
   }
@@ -180,17 +188,61 @@ export class User {
 
   changeBattleReadyState() {
     this.readyForBattle = !this.readyForBattle
+    if (this.readyForBattle) {
+      safe_send({
+        ReadyBattle: {
+          meaningless: 0,
+        },
+      })
+    } else {
+      safe_send({
+        UnreadyBattle: {
+          meaningless: 0,
+        },
+      })
+    }
   }
 
-  draw() {
+  draw(passedTime) {
+    var moveDistance = 0.2 * passedTime
+
+    var moveInX = this.position.x - this.sprite.position.x
+    var moveInY = this.position.y - this.sprite.position.y
+
+    if (this.id !== myID)
+      if (
+        Math.abs(moveInX) < moveDistance &&
+        Math.abs(moveInY) < moveDistance
+      ) {
+        this.setMoving(false)
+      }
+
+    if (moveInX > 100) {
+      moveDistance *= 2
+    }
+    if (moveInY > 100) {
+      moveDistance *= 2
+    }
+    if (moveInX >= moveDistance) {
+      this.sprite.position.x += moveDistance
+    } else if (moveInX <= -1 * moveDistance) {
+      this.sprite.position.x -= moveDistance
+    }
+
+    if (moveInY >= moveDistance) {
+      this.sprite.position.y += moveDistance
+    } else if (moveInY <= -1 * moveDistance) {
+      this.sprite.position.y -= moveDistance
+    }
+
     canva.font = '15px "210L"'
     canva.textAlign = 'center'
     if (this.readyForBattle) {
       canva.fillStyle = 'red'
       canva.fillText(
         READYTEXT,
-        this.position.x + this.sprite.width / 2,
-        this.position.y - 50
+        this.sprite.position.x + this.sprite.width / 2,
+        this.sprite.position.y - 50
       )
     }
 
@@ -200,36 +252,40 @@ export class User {
       this.chatShowTime += 1
       canva.drawImage(
         chatBubble,
-        this.position.x + 40,
-        this.position.y - 70,
+        this.sprite.position.x + 40,
+        this.sprite.position.y - 70,
         150,
         80
       )
 
-      canva.fillText(this.chat, this.position.x + 55, this.position.y - 39)
+      canva.fillText(
+        this.chat,
+        this.sprite.position.x + 55,
+        this.sprite.position.y - 39
+      )
 
       if (this.chatShowTime > 600) this.chat = ''
     }
 
     canva.fillText(
       this.name,
-      this.position.x + this.sprite.width / 2,
-      this.position.y
+      this.sprite.position.x + this.sprite.width / 2,
+      this.sprite.position.y
     )
     // draw logo
-    if (this.chain === 'terra') {
+    if (this.chain === 'TERRA') {
       canva.drawImage(
         terraLogo,
-        this.position.x + this.sprite.width / 2 - 5,
-        this.position.y - 36,
+        this.sprite.position.x + this.sprite.width / 2 - 5,
+        this.sprite.position.y - 36,
         17,
         17
       )
-    } else if (this.chain === 'near') {
+    } else if (this.chain === 'NEAR') {
       canva.drawImage(
         nearLogo,
-        this.position.x + this.sprite.width / 2 - 5,
-        this.position.y - 36,
+        this.sprite.position.x + this.sprite.width / 2 - 5,
+        this.sprite.position.y - 36,
         17,
         17
       )

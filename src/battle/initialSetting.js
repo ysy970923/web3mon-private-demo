@@ -18,12 +18,12 @@ const skillBoxAdd = () => {
 
   for (let i = 0; i < ATTACKS.length; i++) {
     let skillBox = document.createElement('div')
-    var skillName = ATTACKS[i]
+    var skillType = ATTACKS[i]
     skillBox.className = 'one_atk_skill_box'
     skillBox.innerHTML = `
-      <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}" />
+      <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />
     `
-    skillBox.id = skillName
+    skillBox.id = skillType
 
     skillBox.onmouseover = (e) => {
       hoverTooltip(e.currentTarget.id, tooltip, skillBox)
@@ -62,14 +62,14 @@ const skillBoxAdd = () => {
 
   for (let i = 0; i < DEFENCES.length; i++) {
     let skillBox = document.createElement('div')
-    var skillName = DEFENCES[i]
+    var skillType = DEFENCES[i]
 
     skillBox.className = 'one_atk_skill_box'
     skillBox.innerHTML = `
-    <img src=".././../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}" />
+    <img src=".././../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />
     `
 
-    skillBox.id = skillName
+    skillBox.id = skillType
 
     skillBox.onmouseover = (e) => {
       hoverTooltip(e.currentTarget.id, tooltip2, skillBox)
@@ -114,13 +114,13 @@ export const addBattleSkillBox = () => {
   let defenseSkills = []
   for (let i = 0; i < 3; i++) {
     let skillBox = document.createElement('div')
-    var skillName =
-      battle.battleState.player_skills[battle.data.my_index][i].name
+    var skillType =
+      battle.battleState.player_skills[battle.data.my_index][i].type
     skillBox.className = `battle_one_skill a${i} atk_skill_buttons`
     skillBox.innerHTML = `
-    <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}" />
+    <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />
     `
-    skillBox.id = `Box-${skillName}`
+    skillBox.id = `Box-${skillType}`
     skillBox.value = i
     skillBox.onmouseover = (e) => {
       hoverBattleToolTip(e.currentTarget.value, tooltip, skillBox)
@@ -150,13 +150,13 @@ export const addBattleSkillBox = () => {
   // 방어 스킬들 넣기
   for (let i = 0; i < 3; i++) {
     let skillBox = document.createElement('div')
-    var skillName =
-      battle.battleState.player_skills[battle.data.my_index][i + 3].name
+    var skillType =
+      battle.battleState.player_skills[battle.data.my_index][i + 3].type
     skillBox.className = `battle_one_skill a${i} def_skill_buttons`
     skillBox.innerHTML = `
-    <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillName].img}" />
+    <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />
     `
-    skillBox.id = `Box-${skillName}`
+    skillBox.id = `Box-${skillType}`
     skillBox.value = i + 3
     skillBox.onmouseover = (e) => {
       hoverBattleToolTip(e.currentTarget.value, tooltip, skillBox)
@@ -190,8 +190,8 @@ export const addBattleSkillBox = () => {
   })
 }
 
-const hoverTooltip = (skillName, tooltip, skillBox) => {
-  var skillDesc = SKILL_DESCRIPTIONS[skillName]
+const hoverTooltip = (skillType, tooltip, skillBox) => {
+  var skillDesc = SKILL_DESCRIPTIONS[skillType]
   tooltip.innerHTML = `
     <p><strong>${skillDesc.name}</strong></p>
     <p>${skillDesc.desc}</p>
@@ -205,12 +205,11 @@ const hoverTooltip = (skillName, tooltip, skillBox) => {
 
 const hoverBattleToolTip = (i, tooltip, skillBox) => {
   var skill = battle.battleState.player_skills[battle.data.my_index][i]
-  var skillDesc = SKILL_DESCRIPTIONS[skill.name]
-  var skillParams = skill.params
+  var skillDesc = SKILL_DESCRIPTIONS[skill.type]
 
   tooltip.innerHTML = `
     <p><strong>${skillDesc.name}</strong></p>
-    <p>${JSON.stringify(skillParams)}</p>
+    <p>${JSON.stringify(skill.write())}</p>
     <p>${skillDesc.desc}</p>
   `
   tooltip.style.display = 'flex'

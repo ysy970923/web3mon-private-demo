@@ -17,6 +17,6 @@ function onResizeEvent() {
   player.setPosition({
     x: player.position.x + delta_x,
     y: player.position.y + delta_y,
-  })
+  }, true)
   movePlayerToPosition(delta_x, delta_y)
 }

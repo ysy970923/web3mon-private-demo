@@ -7,6 +7,7 @@ import {
   Skill,
   SKILLS,
 } from './skills'
+import { battle } from './battleClient'
 
 const P1 = 49003
 const P2 = 56377
@@ -28,8 +29,8 @@ export class BattleState {
   defender_index
   lasting_effect
   constructor(info) {
-    this.expires_at = info.expires_at
-    this.sequence = info.sequence
+    this.expires_at = info.current_turn_expired_at
+    this.sequence = info.game_turn_sequence
     this.player_lp = [100, 100]
     this.player_skills = [[], []]
     this.attacker_index = undefined
@@ -45,17 +46,18 @@ export class BattleState {
         player_skills[i].push(e.write())
       })
     return {
-      expires_at: this.expires_at,
-      sequence: this.sequence,
       player_lp: this.player_lp,
       player_skills,
       attacker_index: this.attacker_index,
       defender_index: this.defender_index,
+      lasting_effect: this.lasting_effect,
+      game_turn_sequence: this.sequence,
+      current_turn_expired_at: this.expires_at,
     }
   }
 
   setPlayerSkills(actions) {
-    console.log(actions)
+    this.addSequence()
     for (var i = 0; i < 2; i++) {
       actions[i].attacks.forEach((j) => {
         this.player_skills[i].push(new Skill(ATTACKS[j]))
@@ -71,6 +73,7 @@ export class BattleState {
   }
 
   doNext(actions) {
+    this.addSequence()
     var action_indexes = [actions[0].action_index, actions[1].action_index]
     var random_number = actions[0].random_number + actions[1].random_number
     if (!this.checkSkillAvailability(action_indexes)) return false
@@ -93,6 +96,7 @@ export class BattleState {
     this.attacker_index = 1 - this.attacker_index
     this.defender_index = 1 - this.defender_index
   }
+
   checkSkillAvailability(action_indexes) {
     var atk_action_index = action_indexes[this.attacker_index]
     var def_action_index = action_indexes[this.defender_index]
@@ -103,16 +107,12 @@ export class BattleState {
     var atk_skill = this.player_skills[this.attacker_index][atk_action_index]
     var def_skill = this.player_skills[this.defender_index][def_action_index]
 
-    if (atk_skill.available_turn_seq !== undefined) {
-      if (this.sequence > atk_skill.available_turn_seq) return false
-    }
-
-    if (def_skill.available_turn_seq !== undefined) {
-      if (this.sequence > def_skill.available_turn_seq) return false
-    }
+    atk_skill.check_availability(this.sequence)
+    def_skill.check_availability(this.sequence)
 
     return true
   }
+
   checkDeadPlayer() {
     if (this.player_lp[this.defender_index] === 0)
       this.winner = this.attacker_index
@@ -147,19 +147,21 @@ export class BattleState {
   }
 
   applySpecialEffect(effect, caster_idx) {
-    if (effect.name === 'Cleanse') this.lasting_effect = []
-    else if (effect.name === 'SelfHealing') {
+    battle.event(effect)
+    if (effect.type === 'Cleanse') this.lasting_effect = []
+    else if (effect.type === 'SelfHealing') {
       var healed_hp = Math.min(
         this.player_lp[caster_idx] + effect.params.recovery_lp,
         100
       )
       this.player_lp[caster_idx] = healed_hp
-    } else if (effect.name === 'Reflection') {
-      this.player_lp[1 - caster_idx] = Math.min(
-        this.player_lp[1 - caster_idx] - effect.params.reflect_damage,
-        0
-      )
     }
+    // else if (effect.type === 'Reflection') {
+    //   this.player_lp[1 - caster_idx] = Math.min(
+    //     this.player_lp[1 - caster_idx] - effect.params.reflect_damage,
+    //     0
+    //   )
+    // }
   }
 
   // TODO: nullify and multiple
@@ -173,24 +175,25 @@ export class BattleState {
         action_indexes[this.defender_index]
       ]
     var attack_damage = atk_skill.calculate_attack_damage()
-    console.log(atk_skill)
     var total_damage = def_skill.calculate_damage(attack_damage, random_number)
-    console.log(total_damage)
+    battle.event(total_damage)
     return total_damage
   }
 
   applyLastingEffectDamage() {
-    this.lasting_effect.forEach((e) => {
-      switch (e.name) {
+    this.lasting_effect.forEach((effect) => {
+      switch (effect.params.type) {
         case LASTINGEFFECT.ContinuousAttack:
-          var target_idx = 1 - e.caster_idx
-          this.player_lp[target_idx] -= e.damage
+          var target_idx = 1 - effect.caster_idx
+          this.player_lp[target_idx] -= effect.params.damage
+          battle.event(effect)
           break
 
         case LASTINGEFFECT.DelayedAttack:
-          var target_idx = 1 - e.caster_idx
-          if (e.delayed_turn === 1) {
-            this.player_lp[target_idx] -= e.damage
+          var target_idx = 1 - effect.caster_idx
+          if (effect.params.delayed_turn === 1) {
+            this.player_lp[target_idx] -= effect.params.damage
+            battle.event(effect)
           }
           break
       }
@@ -198,10 +201,12 @@ export class BattleState {
   }
 
   arrangeLastingEffect() {
-    this.lasting_effect.forEach((e) => {
-      e.minus_left_turn()
+    this.lasting_effect.forEach((effect) => {
+      effect.minus_left_turn()
     })
-    this.lasting_effect = this.lasting_effect.filter((e) => e.left_turn())
+    this.lasting_effect = this.lasting_effect.filter((effect) => {
+      effect.left_turn()
+    })
   }
 
   skillPostProcessing(action_indexes) {
@@ -209,15 +214,16 @@ export class BattleState {
       this.player_skills[this.defender_index][
         action_indexes[this.defender_index]
       ]
-    switch (def_skill.name) {
+    switch (def_skill.type) {
       case SKILLS.PowShield:
         var lasting_effect = new LastingEffect(LASTINGEFFECT.DelayedAttack, {
-          damage: def_skill.absorbed_damage,
+          damage: def_skill.params.absorbed_damage,
           delayed_turn: 1,
           remain_turn: 1,
           caster_idx: this.defender_index,
         })
         this.lasting_effect.push(lasting_effect)
+        battle.event(effect)
         break
     }
   }

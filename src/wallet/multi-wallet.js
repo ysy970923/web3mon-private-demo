@@ -7,7 +7,7 @@ class MultiWallet {
 
   constructor() {
     this.wallets = {}
-    this.wallets['near'] = new NearWallet({
+    this.wallets['NEAR'] = new NearWallet({
       createAccessKeyFor: 'web3mon.testnet',
       network: 'testnet',
     })
@@ -15,7 +15,7 @@ class MultiWallet {
   }
 
   startUp() {
-    this.wallets['near'].startUp()
+    this.wallets['NEAR'].startUp()
     this.wallets['terra'].startUp()
   }
 
