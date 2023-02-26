@@ -5,6 +5,8 @@ import { Monster } from '../object/Monster'
 import { gsap } from 'gsap'
 import { battleAnimationId } from './enterBattle'
 import { users, player } from '../user/user'
+import { removeBattleSkillBox } from './initialSetting'
+import { adjustMapPosition } from '../control/map'
 
 export const battleBackground = new Sprite({
   position: {
@@ -48,12 +50,10 @@ export function renderState(data, battleState) {
 
   if (myMonster.health <= 0) {
     myMonster.faint()
-    endBattle('LOSE')
   }
   // 내가 이긴 경우
   else if (opponent.health <= 0) {
     opponent.faint()
-    endBattle('WIN')
   }
   document.querySelector('#playerEffectsBox').innerHTML = ''
   battleState.lasting_effect.forEach((e) => {
@@ -71,13 +71,6 @@ export function setUpNextSetting() {
     document.querySelector('#atk_or_def').innerText = 'ATTACK'
   else document.querySelector('#atk_or_def').innerText = 'DEFENSE'
 
-  document.querySelectorAll('.atk_skill_buttons').forEach((e) => {
-    e.disabled = !battle.isMyAttack()
-  })
-  document.querySelectorAll('.def_skill_buttons').forEach((e) => {
-    e.disabled = battle.isMyAttack()
-  })
-
   document.querySelector(
     '#battle_sequence'
   ).innerText = `Round: ${battle.battleState.sequence}`
@@ -88,12 +81,13 @@ export function setUpNextSetting() {
  * @param {'win' | 'lose'} result 이겼으면 win, 졌으면 lose
  */
 export function endBattle(result) {
-  battle.endBattle()
-  if (result === 'win') {
+  if (result === 'WIN') {
     console.log('이겼다.')
-  } else if (result === 'lose') {
+  } else if (result === 'LOSE') {
     console.log('졌다.')
   }
+  removeBattleSkillBox()
+  adjustMapPosition()
 
   queue.push(() => {
     // fade back to black

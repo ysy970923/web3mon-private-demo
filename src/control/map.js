@@ -1,6 +1,6 @@
 import { Sprite } from '../object/Sprite'
 import { ws } from '../network/websocket'
-import { characters } from '../js/index'
+import { characters, local_position } from '../js/index'
 import { movePlayerToPosition } from './move'
 import { player, users } from '../user/user'
 import { setMovables, setRenderables } from '../js/renderables'
@@ -13,7 +13,13 @@ foregroundImage.src = '../img/Island.png'
 
 const MAP = {
   MAIN: 'MAIN',
-  TEST: 'TEST',
+  BATTLE0: 'BATTLE0',
+  BATTLE1: 'BATTLE1',
+  BATTLE2: 'BATTLE2',
+  BATTLE3: 'BATTLE3',
+  BATTLE4: 'BATTLE4',
+  BATTLE5: 'BATTLE5',
+  BATTLE6: 'BATTLE6',
 }
 
 export let background = new Sprite({
@@ -32,67 +38,73 @@ export let foreground = new Sprite({
 })
 foreground.setImage(foregroundImage)
 
+export function adjustMapPosition() {
+  var playerLocalPosition = local_position(player.position)
+  var deltaX = window.innerWidth / 2 - playerLocalPosition.x
+  var deltaY = window.innerHeight / 2 - playerLocalPosition.y
+  background.position.x += deltaX
+  background.position.y += deltaY
+}
+
 export function transferMapTo(toMap) {
   // map 이동의 효과 : 뭐가 있을까?
   // map UI 자체 변경 -> renderables, movables 가 바뀌는 것
   // map에 존재하는 유저들 변경
-  player.map = toMap
-  console.log(player.map)
 
   showMapLoading()
+  var newBackgroundImage = new Image()
 
-  if (toMap === MAP.TEST) {
-    document.getElementById('map_identifier').innerText =
-      'BATTLE map : you can fight here!'
+  switch (toMap) {
+    case MAP.MAIN:
+      document.getElementById('map_identifier').innerText =
+        'MAIN map : you cannot fight here!'
 
-    document.getElementById('readyButtonContainer').style.display = 'block'
+      document.getElementById('readyButtonContainer').style.display = 'none'
 
-    var newBackgroundImage = new Image()
-    newBackgroundImage.src = '../img/waitMap/1.png'
+      newBackgroundImage.src = '../img/Island.png'
 
-    background.setImage(newBackgroundImage)
+      player.setPosition({ x: 1500, y: 350 }, true)
+      break
 
-    background.position.x = player.position.x - 1720
-    background.position.y = player.position.y - 850
+    case MAP.BATTLE0:
+      newBackgroundImage.src = '../img/waitMap/1.png'
 
-    // moveToXDirection(true, 'up', 20)
+    case MAP.BATTLE1:
+      newBackgroundImage.src = '../img/waitMap/2.png'
 
-    const body = {
-      MapTransfer: {
-        from: 'MAIN',
-        to: 'TEST',
-      },
-    }
-    // moveToPosition(340, -240)
+    case MAP.BATTLE2:
+      newBackgroundImage.src = '../img/waitMap/3.png'
 
-    const msg = JSON.stringify(body)
-    ws.send(msg)
-  } else if (toMap === MAP.MAIN) {
-    document.getElementById('map_identifier').innerText =
-      'MAIN map : you cannot fight here!'
+    case MAP.BATTLE3:
+      newBackgroundImage.src = '../img/waitMap/4.png'
 
-    document.getElementById('readyButtonContainer').style.display = 'none'
+    case MAP.BATTLE4:
+      newBackgroundImage.src = '../img/waitMap/1.png'
 
-    var newBackgroundImage = new Image()
-    newBackgroundImage.src = '../img/Island.png'
+      document.getElementById('map_identifier').innerText =
+        'BATTLE map : you can fight here!'
 
-    background.setImage(newBackgroundImage)
+      document.getElementById('readyButtonContainer').style.display = 'block'
 
-    background.position.x = player.position.x - 1500
-    background.position.y = player.position.y - 350
-
-    const body = {
-      MapTransfer: {
-        from: 'TEST',
-        to: 'MAIN',
-      },
-    }
-
-    // moveToPosition(200, -100)
-
-    const msg = JSON.stringify(body)
-    ws.send(msg)
+      player.setPosition({ x: 1720, y: 850 }, true)
+      break
   }
+  background.setImage(newBackgroundImage)
+  adjustMapPosition()
+
+  const body = {
+    MapTransfer: {
+      from: player.map,
+      to: toMap,
+    },
+  }
+
+  // moveToPosition(200, -100)
+
+  console.log(player.map)
+  const msg = JSON.stringify(body)
+  ws.send(msg)
+  player.map = toMap
 }
 
 const showMapLoading = async () => {

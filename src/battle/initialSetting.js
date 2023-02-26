@@ -81,13 +81,13 @@ const skillBoxAdd = () => {
 
     skillBox.onclick = (e) => {
       if (selectedDefenceSkills.includes(i)) {
-        skillBox.style.background = 'white'
+        skillBox.style.background = null
         selectedDefenceSkills = selectedDefenceSkills.filter((doc) => doc !== i)
       } else {
         console.log(selectedDefenceSkills, 'Qq')
         if (selectedDefenceSkills.length < 3) {
           selectedDefenceSkills.push(i)
-          skillBox.style.background = 'var(--primary-color)'
+          skillBox.style.background = 'var(--primary-color01)'
         }
       }
     }
@@ -97,6 +97,14 @@ const skillBoxAdd = () => {
   defenceSkills.forEach((doc) => {
     defdiv.append(doc)
   })
+}
+
+export const removeBattleSkillBox = () => {
+  let box = document.getElementById('battle_skills_attack')
+  let box2 = document.getElementById('battle_skills_defense')
+
+  box.innerHTML = ''
+  box2.innerHTML = ''
 }
 
 export const addBattleSkillBox = () => {
@@ -131,11 +139,6 @@ export const addBattleSkillBox = () => {
     }
     skillBox.onclick = (e) => {
       // 스킬 사용
-      if (e.currentTarget.disabled) {
-        window.alert('Please use Defense Skill')
-        return
-      }
-
       battle.chooseAction(e.currentTarget.value)
       document.querySelector('#actionContent').innerText =
         'Used ' + e.currentTarget.id.substring(4)
@@ -167,10 +170,6 @@ export const addBattleSkillBox = () => {
     }
     skillBox.onclick = (e) => {
       // 스킬 사용
-      if (e.currentTarget.disabled) {
-        window.alert('Please use Attack Skill')
-        return
-      }
       battle.chooseAction(e.currentTarget.value)
       document.querySelector('#actionContent').innerText =
         'Used ' + e.currentTarget.id.substring(4)

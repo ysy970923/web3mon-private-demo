@@ -57,12 +57,12 @@ export class Monster extends Sprite {
   draw() {
     if (this.isEnemy)
       super.position = {
-        x: window.innerWidth * 0.9 - 200,
+        x: window.innerWidth * 0.9 - 100,
         y: window.innerHeight * 0.1 + 200,
       }
     else
       super.position = {
-        x: window.innerWidth * 0.1 + 200,
+        x: window.innerWidth * 0.1 + 100,
         y: window.innerHeight * 0.9 - 200,
       }
     super.draw()

@@ -52,7 +52,7 @@ export const animate = () => {
   if (stopAllPlay) return
 
   player.setMoving(false)
-  
+
   if (keys.w.pressed && lastKey === 'w') {
     moveToXDirection('up', 1, passedTime)
   } else if (keys.a.pressed && lastKey === 'a') {
@@ -62,5 +62,5 @@ export const animate = () => {
   } else if (keys.d.pressed && lastKey === 'd') {
     moveToXDirection('right', 1, passedTime)
   }
-  sendPosition(player.getGlobalPosition())
+  sendPosition(player.position)
 }

@@ -27,7 +27,15 @@ export function setClothId(id) {
 }
 
 export const login = async () => {
-  var verified = await wallet.verifyOwner(collection, tokenId)
+  if (tokenId === undefined) {
+    window.alert('Please Choose NFT to use')
+    return
+  }
+  if (selectedClothId === undefined) {
+    window.alert('Please Choose Cloth to wear')
+    return
+  }
+  var verified = await wallet.verifyOwner(collection, tokenId, selectedClothId)
   if (!verified) {
     window.alert('Owner Verification Fail')
     return

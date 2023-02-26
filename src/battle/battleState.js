@@ -28,6 +28,7 @@ export class BattleState {
   attacker_index
   defender_index
   lasting_effect
+  winner
   constructor(info) {
     this.expires_at = info.current_turn_expired_at
     this.sequence = info.game_turn_sequence
@@ -45,12 +46,16 @@ export class BattleState {
       this.player_skills[i].forEach((e) => {
         player_skills[i].push(e.write())
       })
+    var lasting_effect = []
+    this.lasting_effect.forEach((e) => {
+      lasting_effect.push(e.write())
+    })
     return {
       player_lp: this.player_lp,
       player_skills,
       attacker_index: this.attacker_index,
       defender_index: this.defender_index,
-      lasting_effect: this.lasting_effect,
+      lasting_effect,
       game_turn_sequence: this.sequence,
       current_turn_expired_at: this.expires_at,
     }
@@ -220,7 +225,7 @@ export class BattleState {
           caster_idx: this.defender_index,
         })
         this.lasting_effect.push(lasting_effect)
-        battle.event(effect)
+        battle.event(lasting_effect)
         break
     }
   }

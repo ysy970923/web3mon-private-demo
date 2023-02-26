@@ -42,8 +42,12 @@ class MultiWallet {
     return await this.wallets[this.selectedChain].callMethod(kargs)
   }
 
-  async verifyOwner(collection, token_id) {
-    return await this.wallets[this.selectedChain].verifyOwner(collection, token_id)
+  async verifyOwner(collection, token_id, cloth_id) {
+    return await this.wallets[this.selectedChain].verifyOwner(
+      collection,
+      token_id,
+      cloth_id
+    )
   }
 }
 

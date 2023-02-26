@@ -1,8 +1,8 @@
 import { Sprite } from '../object/Sprite'
-import { canva, setRenderables } from '../js/index'
+import { canva, local_position, setRenderables } from '../js/index'
 import { selectedClothId, playerUrl } from './logIn'
 import { animate } from '../animate'
-import { background, foreground } from '../control/map'
+import { adjustMapPosition, background, foreground } from '../control/map'
 import { battle } from '../battle/battleClient'
 import { safe_send } from '../network/websocket'
 import axios from 'axios'
@@ -36,34 +36,36 @@ export function setMyID(id) {
 }
 
 worker.onmessage = function (event) {
-  console.log(event.data.id === myID)
-  if (event.data) {
-    if (!(event.data.id in users)) return
-    users[event.data.id].setSpriteImages('up', event.data.up)
-    users[event.data.id].setSpriteImages('down', event.data.down)
-    users[event.data.id].setSpriteImages('left', event.data.left)
-    users[event.data.id].setSpriteImages('right', event.data.right)
-    users[event.data.id].setSpriteImages('base', event.data.base)
-    users[event.data.id].setDirection('down')
+  if (event.data === undefined) return
 
-    var resume_data = sessionStorage.getItem('resume-data')
-    if (resume_data !== null) {
-      resume_data = JSON.parse(resume_data)
-      if (
-        event.data.id === myID ||
-        event.data.id === resume_data.battle_data.opponent_id
-      )
-        if (myID in users && resume_data.battle_data.opponent_id in users) {
+  var user_id = event.data.id
+  if (!(user_id in users)) return
+
+  users[user_id].setSpriteImages('up', event.data.up)
+  users[user_id].setSpriteImages('down', event.data.down)
+  users[user_id].setSpriteImages('left', event.data.left)
+  users[user_id].setSpriteImages('right', event.data.right)
+  users[user_id].setSpriteImages('base', event.data.base)
+  users[user_id].setDirection('down')
+  users[user_id].made = true
+
+  var resume_data = sessionStorage.getItem('resume-data')
+  if (resume_data !== null) {
+    resume_data = JSON.parse(resume_data)
+    var opponent_id = resume_data.battle_data.opponent_id
+    if (event.data.id === myID || event.data.id === opponent_id)
+      if (myID in users && opponent_id in users) {
+        if (users[myID].made && users[opponent_id].made) {
           document.getElementById('loading').style.display = 'none'
           animate()
           battle.resume(resume_data.battle_data)
         }
-    } else {
-      if (event.data.id === myID) {
-        movePlayerToPosition(1500, 350, false)
-        document.getElementById('loading').style.display = 'none'
-        animate()
       }
+  } else {
+    if (event.data.id === myID) {
+      adjustMapPosition()
+      document.getElementById('loading').style.display = 'none'
+      animate()
     }
   }
 }
@@ -80,6 +82,7 @@ export class User {
   sprite
   spriteImgs
   nftUrl
+  targetPosition
   position
   map
   moving
@@ -87,28 +90,35 @@ export class User {
   chatShowTime
   clothId
   readyForBattle
+  made
 
-  constructor(id, nftCollection, tokenId, chain, nftUrl, clothId, map) {
-    console.log(id)
-    console.log(myID)
+  constructor(
+    id,
+    nftCollection,
+    tokenId,
+    chain,
+    nftUrl,
+    clothId,
+    map,
+    coordinate
+  ) {
+    console.log(clothId)
     if (id === myID) {
       player = this
-      this.position = {
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 2,
-      }
-    } else {
-      this.position = {
-        x: -200,
-        y: -200,
-      }
     }
+
+    this.position = { x: coordinate[0], y: coordinate[1] }
+    if (coordinate[0] === 0 && coordinate[1] === 0) {
+      this.position.x = 1500
+      this.position.y = 350
+    }
+    this.targetPosition = this.position
+
     this.id = id
     this.nftCollection = nftCollection
     this.tokenId = tokenId
     this.chain = chain
     this.nftUrl = nftUrl
-    if (clothId === 'tmp') clothId = selectedClothId
     this.clothId = clothId
     this.map = map
 
@@ -132,6 +142,11 @@ export class User {
       right: new Image(),
       base: new Image(),
     }
+    this.moving = false
+    this.chat = ''
+    this.chatShowTime = 0
+    this.readyForBattle = false
+    this.made = false
 
     worker.postMessage({
       id: id,
@@ -142,11 +157,6 @@ export class User {
       upSource: clothStorageLink + this.clothId + '/up.png',
       contractAddress: nftCollection,
     })
-    this.moving = false
-    this.chat = ''
-    this.chatShowTime = 0
-    this.readyForBattle = false
-    console.log(id)
   }
 
   setSpriteImages(direction, imageSrc) {
@@ -158,25 +168,18 @@ export class User {
   }
 
   setPosition(position, instant) {
-    this.position = position
     if (instant) {
-      this.sprite.position = position
-    }
-  }
-
-  getGlobalPosition() {
-    return {
-      x: this.position.x - background.position.x,
-      y: this.position.y - background.position.y,
+      this.targetPosition = position
+      this.position = position
+      this.sprite.position = local_position(position)
+    } else {
+      this.targetPosition = position
     }
   }
 
   getNextBlock(delta) {
-    var globalPosition = this.getGlobalPosition()
-    var i = Math.floor((globalPosition.y + this.sprite.height - delta.y) / 80)
-    var j = Math.floor(
-      (globalPosition.x + this.sprite.width / 2 - delta.x) / 80
-    )
+    var i = Math.floor((this.position.y + this.sprite.height - delta.y) / 80)
+    var j = Math.floor((this.position.x + this.sprite.width / 2 - delta.x) / 80)
     return [i, j]
   }
 
@@ -211,8 +214,8 @@ export class User {
     if (this.id !== myID) {
       var moveDistance = 0.2 * passedTime
 
-      var moveInX = this.position.x - this.sprite.position.x
-      var moveInY = this.position.y - this.sprite.position.y
+      var moveInX = this.targetPosition.x - this.position.x
+      var moveInY = this.targetPosition.y - this.position.y
 
       if (moveInX > 100) {
         moveDistance *= 2
@@ -222,17 +225,19 @@ export class User {
       }
       this.setMoving(true)
       if (moveInX >= moveDistance) {
-        this.sprite.position.x += moveDistance
+        this.position.x += moveDistance
       } else if (moveInX <= -1 * moveDistance) {
-        this.sprite.position.x -= moveDistance
+        this.position.x -= moveDistance
       } else if (moveInY >= moveDistance) {
-        this.sprite.position.y += moveDistance
+        this.position.y += moveDistance
       } else if (moveInY <= -1 * moveDistance) {
-        this.sprite.position.y -= moveDistance
+        this.position.y -= moveDistance
       } else {
         this.setMoving(false)
       }
     }
+
+    this.sprite.position = local_position(this.position)
 
     canva.font = '15px "210L"'
     canva.textAlign = 'center'
@@ -240,6 +245,17 @@ export class User {
       canva.fillStyle = 'red'
       canva.fillText(
         READYTEXT,
+        this.sprite.position.x + this.sprite.width / 2,
+        this.sprite.position.y - 50
+      )
+    }
+
+    canva.font = '15px "210L"'
+    canva.textAlign = 'center'
+    if (this.id === myID) {
+      canva.fillStyle = 'red'
+      canva.fillText(
+        '▼',
         this.sprite.position.x + this.sprite.width / 2,
         this.sprite.position.y - 50
       )

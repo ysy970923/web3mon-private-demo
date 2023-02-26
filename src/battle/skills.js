@@ -152,6 +152,15 @@ export class LastingEffect {
     this.params = params
   }
 
+  write() {
+    var msg = {}
+    msg.type = this.type
+    for (var key in this.params) {
+      msg[key] = this.params[key]
+    }
+    return msg
+  }
+
   minus_left_turn() {
     this.params.remain_turn -= 1
   }
@@ -188,7 +197,7 @@ export class Skill {
       case SKILLS.DeathSpiral:
         this.params = {
           success_count: 0,
-          base_damage: 25,
+          base_damage: 50,
           multiplier: 150,
         }
         frame = 14
@@ -197,7 +206,7 @@ export class Skill {
         break
       case SKILLS.CelsiusExplosion:
         this.params = {
-          base_damage: 20,
+          base_damage: 40,
         }
         frame = 8
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -205,7 +214,7 @@ export class Skill {
         break
       case SKILLS.BlockOfFud:
         this.params = {
-          base_damage: 18,
+          base_damage: 36,
         }
         frame = 15
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -340,7 +349,7 @@ export class Skill {
         },
         frames: {
           max: frame,
-          hold: 20,
+          hold: 10,
         },
         animate: true,
         rotation: 0,
@@ -359,10 +368,6 @@ export class Skill {
     if ((sequence - battle.battleState.sequence) % 2 === 1) {
       attacker_index = 1 - attacker_index
     }
-    console.log(this.type)
-    console.log(caster_idx)
-    console.log(attacker_index)
-    console.log(this.atkOrDef)
     if (attacker_index === caster_idx) {
       if (this.atkOrDef === 'def') return false
     } else {

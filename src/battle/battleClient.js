@@ -2,6 +2,7 @@ import { ethers } from 'ethers'
 import { playerUrl, selectedClothId, tokenId } from '../user/logIn'
 import {
   battleBackground,
+  endBattle,
   initBattle,
   renderState,
   setBattleBackground,
@@ -26,18 +27,25 @@ const resume_data = {
   opponentId: '',
 }
 
+function randInt() {
+  return Math.floor(Math.random() * 1000000000)
+}
+
 class BattleClient {
   data
   keyManager
   receiveQueue
   types
   mode
+  timerId
+  choseAction
 
   constructor() {
     this.keyManager = ethers.Wallet.createRandom()
     this.receiveQueue = []
     this.data = { status: { isOk: false, stage: 'reveal' } }
     this.started = false
+    this.choseAction = false
   }
 
   // battle request to opponent
@@ -73,7 +81,7 @@ class BattleClient {
   // start battle (move fund to battle contract)
   async start(msg) {
     var battleInfo = {
-      current_turn_expired_at: msg.next_turn_expired_at,
+      current_turn_expired_at: msg.next_turn_expired_at * 1000 + 2 * 60 * 1000,
       player_pk: [
         this.keyManager.publicKey.substring(2),
         msg.opponent_battle_exclusive_pub_key,
@@ -124,7 +132,7 @@ class BattleClient {
       battleId: msg.battle_id,
       opponent_id: this.data.opponent_id,
       mode: 'channel',
-      oldBattleState: '',
+      oldBattleState: JSON.parse(JSON.stringify(this.battleState.write())),
       my_index: my_index,
       op_commit: '',
       op_commit_signature: '',
@@ -151,19 +159,19 @@ class BattleClient {
     // location.reload()
 
     // moving funds to battle contract
-    // await wallet.callMethod({
-    //   contractId: FT_CONTRACT,
-    //   method: 'ft_transfer_call',
-    //   args: {
-    //     receiver_id: BATTLE_CONTRACT,
-    //     amount: BET_AMOUNT,
-    //     msg: JSON.stringify({
-    //       battle_id: msg.battle_id,
-    //       player_index: my_index,
-    //     }),
-    //   },
-    //   deposit: 1,
-    // })
+    await wallet.callMethod({
+      contractId: FT_CONTRACT,
+      method: 'ft_transfer_call',
+      args: {
+        receiver_id: BATTLE_CONTRACT,
+        amount: BET_AMOUNT,
+        msg: JSON.stringify({
+          battle_id: msg.battle_id,
+          player_index: my_index,
+        }),
+      },
+      deposit: 1,
+    })
 
     this.started = true
     return true
@@ -189,31 +197,41 @@ class BattleClient {
     this.timerId = setInterval(() => this.timer(), 1000)
     this.started = true
     this.keyManager = new ethers.Wallet(this.data.my_sk)
-    console.log(this.battleState)
-    if (this.battleState.sequence === 0) {
-      document.getElementById('skill_box_temp').style.display = 'block'
-      document.getElementById('wait_modal').style.display = 'none'
+    if (this.data.mode === 'channel') {
+      if (this.battleState.sequence === 0) {
+        document.getElementById('skill_box_temp').style.display = 'block'
+        document.getElementById('wait_modal').style.display = 'none'
 
-      document
-        .getElementById('selectTypeBtn')
-        .addEventListener('click', (e) => {
-          console.log('버튼 클릭됨', selectedSkill, selectedDefenceSkills)
-          if (selectedSkill.length < 3 || selectedDefenceSkills.length < 3) {
-            alert('You have to choose 3 skills each.')
-            return
-          }
-          document.getElementById('skill_box_temp').style.display = 'none'
-          // 내 스킬타입 확정
-          this.chooseAction({
-            attacks: selectedSkill,
-            defences: selectedDefenceSkills,
+        document
+          .getElementById('selectTypeBtn')
+          .addEventListener('click', (e) => {
+            console.log('버튼 클릭됨', selectedSkill, selectedDefenceSkills)
+            if (selectedSkill.length < 3 || selectedDefenceSkills.length < 3) {
+              alert('You have to choose 3 skills each.')
+              return
+            }
+            document.getElementById('skill_box_temp').style.display = 'none'
+            // 내 스킬타입 확정
+            this.chooseAction({
+              attacks: selectedSkill,
+              defences: selectedDefenceSkills,
+            })
           })
-        })
-    } else {
+      } else {
+        setBattleBackground(this.data.battleBackground)
+        initBattle()
+        animateBattle()
+      }
+    } else if (this.data.mode === 'chain') {
       setBattleBackground(this.data.battleBackground)
-      console.log(this.data)
       initBattle()
       animateBattle()
+      if (this.data.status.stage === 'commit') {
+        this.data.status.stage = 'reveal'
+      } else if (this.data.status.stage === 'reveal') {
+        this.data.status.stage = 'wait-over'
+      }
+      this.data.status.isOk = true
     }
   }
 
@@ -224,10 +242,11 @@ class BattleClient {
   }
 
   chooseAction(action) {
-    // if (this.data.pick_until_time < Date.now()) {
-    //   window.alert('Time is Over.')
-    //   return
-    // }
+    if (this.data.pick_until_time < Date.now()) {
+      window.alert('Time is Over.')
+      this.close('LOSE')
+      return
+    }
     if (this.data.mode === 'channel') {
       if (this.choseAction) {
         console.log('double click')
@@ -238,7 +257,7 @@ class BattleClient {
         this.data.actions[this.data.my_index] = {
           attacks: action.attacks,
           defences: action.defences,
-          random_number: Math.floor(Math.random() * 1000000000),
+          random_number: randInt(),
         }
       } else {
         var skill = this.battleState.player_skills[this.data.my_index][action]
@@ -254,27 +273,40 @@ class BattleClient {
         }
         this.data.actions[this.data.my_index] = {
           action_index: parseInt(action),
-          random_number: Math.floor(Math.random() * 1000000000),
+          random_number: randInt(),
         }
       }
       this.sendCommit()
     } else {
       var skill = this.battleState.player_skills[this.data.my_index][action]
-      var sequence =
-        this.battleState.sequence +
-        this.data.actions[this.data.my_index].length +
-        1
-      if (!skill.check_availability(sequence, this.data.my_index)) {
+      var sequence = 5
+      for (var i = 0; i < 5; i++) {
+        if (this.data.actions[this.data.my_index].action_index[i] === -1) {
+          sequence = i
+          break
+        }
+      }
+      if (sequence === 5) {
+        window.alert('no more skill to choose')
+        return
+      }
+      if (
+        !skill.check_availability(
+          this.battleState.sequence + sequence,
+          this.data.my_index
+        )
+      ) {
         window.alert('skill is not allowed')
         return
       }
-      this.data.actions[this.data.my_index].push({
-        action_index: parseInt(action),
-        random_number: Math.floor(Math.random() * 1000000000),
-      })
-      var skillType = skill.type
+
+      this.data.actions[this.data.my_index].action_index[sequence] =
+        parseInt(action)
+
+      var skillType =
+        this.battleState.player_skills[this.data.my_index][action].type
       document.getElementById(
-        `chosen-${this.data.actions[this.data.my_index].length}`
+        `chosen-${sequence + 1}`
       ).innerHTML = `<img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />`
     }
   }
@@ -283,32 +315,44 @@ class BattleClient {
     return this.battleState.attacker_index === this.data.my_index
   }
 
-  async endBattle() {
-    // var my_index = this.data.my_index
-    // // player win
-    // if (this.battleState.winner === my_index)
-    //   await wallet.callMethod({
-    //     contractId: BATTLE_CONTRACT,
-    //     method: 'close_channel',
-    //     args: {
-    //       battle_id: this.data.battleId,
-    //     },
-    //     deposit: 1,
-    //   })
-    // sessionStorage.removeItem('resume-data')
-  }
-
   timer() {
+    var current_time = Date.now()
+    var left_time = this.data.pick_until_time - current_time
+    if (left_time > 0)
+      document.getElementById('battle_left_time').innerText = `00:${Math.floor(
+        left_time / 1000
+      )}`
+    if (this.data.status.stage === 'wait-over') {
+      if (this.data.pick_until_time < current_time) {
+        this.getAndEndBattle()
+        return
+      }
+    }
+    console.log(this.choseAction)
+    if (left_time <= 0) {
+      if (!this.choseAction) {
+        window.alert('Time is Over.')
+        this.close('LOSE')
+        return
+      }
+    }
+    console.log(this.data.mode)
     if (this.data.mode === 'channel') this.onChannelHandler()
     else this.onChainHandler()
   }
 
   async onChannelHandler() {
-    
-    // if last consensused state is expired -> this moved to chain
-    if (this.data.oldBattleState.expires_at < Date.now()) {
+    // if last consensused state expired is only left 1 minute -> this moved to chain
+    if (
+      this.data.oldBattleState.current_turn_expired_at <
+      Date.now() + 60 * 1000
+    ) {
       this.data.mode = 'chain'
-      return
+      this.data.status.stage = 'choose'
+      this.data.status.isOk = true
+      // give 100 seconds to choose what to use -> 1 minute left for expiration, additional 1 minute
+      this.data.pick_until_time =
+        this.data.oldBattleState.current_turn_expired_at + 10 * 1000
     }
     if (!this.data.status.isOk) return
 
@@ -327,7 +371,6 @@ class BattleClient {
     } else if (this.data.status.stage === 'state') {
       this.data.status.isOk = false
       await this.receiveStateSignature(msg)
-      this.data.status.stage = 'commit'
     }
 
     // resume_data.battle_data = this.data
@@ -336,70 +379,87 @@ class BattleClient {
     // sessionStorage.setItem('resume-data', JSON.stringify(resume_data))
   }
 
-  async onChainHandler() {
-    clearInterval(this.timerId)
-    this.data.actions = [[], []]
-    var actionBoxes = []
+  onChainHandler() {
+    if (!this.data.status.isOk) return
 
-    for (var i = 0; i < 5; i++) {
-      var actionBox = document.createElement('div')
-      actionBox.className = 'one_action_box'
-      actionBox.id = `chosen-${i + 1}`
-      actionBox.value = i
-      actionBox.onclick = (e) => {
-        battle.data.actions[battle.data.my_index].splice(
-          e.currentTarget.value,
-          1
-        )
-        for (var j = 0; j < 5; j++) {
-          var action = battle.data.actions[battle.data.my_index][j]
-          if (action !== undefined) {
-            var skillType =
-              this.battleState.player_skills[this.data.my_index][
-                action.action_index
-              ].type
-            document.getElementById(
-              `chosen-${j + 1}`
-            ).innerHTML = `<img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />`
-          } else {
-            document.getElementById(`chosen-${j + 1}`).innerHTML = ''
+    if (this.data.status.stage === 'choose') {
+      this.data.status.isOk = false
+      this.data.actions = [
+        {
+          action_index: [-1, -1, -1, -1, -1],
+          random_number: [
+            randInt(),
+            randInt(),
+            randInt(),
+            randInt(),
+            randInt(),
+          ],
+        },
+        {
+          action_index: [-1, -1, -1, -1, -1],
+          random_number: [
+            randInt(),
+            randInt(),
+            randInt(),
+            randInt(),
+            randInt(),
+          ],
+        },
+      ]
+      var actionBoxes = []
+
+      for (var i = 0; i < 5; i++) {
+        var actionBox = document.createElement('div')
+        actionBox.className = 'one_action_box'
+        actionBox.id = `chosen-${i + 1}`
+        actionBox.value = i
+        actionBox.onclick = (e) => {
+          console.log('remove actionBox')
+          battle.data.actions[battle.data.my_index].action_index[
+            e.currentTarget.value
+          ] = -1
+          for (var j = 0; j < 5; j++) {
+            var action =
+              battle.data.actions[battle.data.my_index].action_index[j]
+            if (action !== -1) {
+              var skillType =
+                this.battleState.player_skills[this.data.my_index][action].type
+              document.getElementById(
+                `chosen-${j + 1}`
+              ).innerHTML = `<img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />`
+            } else {
+              document.getElementById(`chosen-${j + 1}`).innerHTML = ''
+            }
           }
         }
+        actionBoxes.push(actionBox)
       }
-      actionBoxes.push(actionBox)
+
+      var div = document.getElementById('action_box_container')
+      actionBoxes.forEach((doc) => {
+        div.append(doc)
+        // var arrow = document.createElement('span')
+        // arrow.className = 'right_arrow'
+        // arrow.innerHTML = '&#8680;'
+        // div.append(arrow)
+      })
+
+      document.getElementById('multipleActionCard').style.display = 'block'
+      this.data.status.isOk = true
+      this.data.status.stage = 'wait-choose'
+    } else if (this.data.status.stage === 'wait-choose') {
+      if (this.data.pick_until_time < Date.now()) {
+        this.data.status.stage = 'commit'
+      }
+    } else if (this.data.status.stage === 'commit') {
+      this.data.status.isOk = false
+      this.sendCommitForMultipleRoundsOnChain()
+    } else if (this.data.status.stage === 'reveal') {
+      if (this.data.pick_until_time + 10 * 1000 < Date.now()) {
+        this.data.status.isOk = false
+        this.sendActionForMultipleRoundsOnChain()
+      }
     }
-
-    var div = document.getElementById('action_box_container')
-    actionBoxes.forEach((doc) => {
-      div.append(doc)
-      var arrow = document.createElement('span')
-      arrow.className = 'right_arrow'
-      arrow.innerHTML = '&#8680;'
-      div.append(arrow)
-    })
-
-    document.getElementById('multipleActionCard').style.display = 'block'
-    // setTimeout(() => {
-    //   this.sendCommitForMultipleRoundsOnChain()
-    // }, 1000 * 60)
-  }
-
-  chooseMultipleActions(actions) {
-    console.log('here')
-    this.data.actions[this.data.my_index] = []
-    actions.forEach((a) => {
-      if (a.attacks !== undefined)
-        this.data.actions[this.data.my_index].push({
-          attacks: a.attacks,
-          defences: a.defences,
-          random_number: Math.floor(Math.random() * 1000000000),
-        })
-      else
-        this.data.actions[this.data.my_index].push({
-          action_index: parseInt(a),
-          random_number: Math.floor(Math.random() * 1000000000),
-        })
-    })
   }
 
   async sendCommitForMultipleRoundsOnChain() {
@@ -415,7 +475,9 @@ class BattleClient {
     message.set(b, a.length)
     var signature = await this.keyManager.signMessage(message)
 
-    await wallet.callMethod({
+    this.save()
+
+    console.log({
       contractId: BATTLE_CONTRACT,
       method: 'commit',
       args: {
@@ -425,14 +487,24 @@ class BattleClient {
         sig: signature,
       },
     })
-    // send commit
-    setTimeout(() => {
-      this.sendActionForMultipleRoundsOnChain()
-    }, 1000 * 60)
+
+    // await wallet.callMethod({
+    //   contractId: BATTLE_CONTRACT,
+    //   method: 'commit',
+    //   args: {
+    //     battle_id: this.data.battleId,
+    //     player_index: this.data.my_index,
+    //     commit: commit,
+    //     sig: signature,
+    //   },
+    // })
   }
 
   async sendActionForMultipleRoundsOnChain() {
-    await wallet.callMethod({
+    this.data.pick_until_time += 30 * 1000
+    this.save()
+
+    console.log({
       contractId: BATTLE_CONTRACT,
       method: 'reveal',
       args: {
@@ -441,6 +513,15 @@ class BattleClient {
         action: this.data.actions[this.data.my_index],
       },
     })
+    // await wallet.callMethod({
+    //   contractId: BATTLE_CONTRACT,
+    //   method: 'reveal',
+    //   args: {
+    //     battle_id: this.data.battleId,
+    //     player_index: this.data.my_index,
+    //     action: this.data.actions[this.data.my_index],
+    //   },
+    // })
   }
 
   async sendCommit() {
@@ -570,15 +651,36 @@ class BattleClient {
     })
   }
 
-  // chain only (query chain to get battle)
-  async getBattle() {
+  async getAndEndBattle() {
+    console.log({
+      contractId: BATTLE_CONTRACT,
+      method: 'get_battle',
+      args: { battle_id: this.data.battleId },
+    })
     // var res = await wallet.viewMethod({
     //   contractId: BATTLE_CONTRACT,
     //   method: 'get_battle',
     //   args: { battle_id: this.data.battleId },
     // })
     // this.data.battleState = res.battle_state
-    // // TODO
+    var res = {
+      done: true,
+      winner: 0,
+    }
+    if (res.done) {
+      if (res.winner === this.data.my_index) {
+        this.close('WIN')
+      } else {
+        this.close('LOSE')
+      }
+    } else {
+      console.log('game not over yet')
+    }
+  }
+
+  close(result) {
+    endBattle(result)
+    clearInterval(this.timerId)
   }
 
   // channel only
@@ -588,11 +690,6 @@ class BattleClient {
     // var signature = '0x' + this.data.manager_signature
     // console.log(signature)
     // var expires_at = msg.expires_at
-    var expires_at = Date.now() + 10000
-    this.data.pick_until_time = Date.now() + 59 * 1000
-
-    this.data.player_signatures[1 - this.data.my_index] =
-      msg.consensus_signature
 
     // console.log(
     //   JSON.stringify({
@@ -611,7 +708,6 @@ class BattleClient {
     // next state is valid only until 2.5 minute from now
     // if (!(expires_at < Date.now() + 150 * 1000)) return
     // if (!(expires_at < Date.now() + 1000 * 1000)) return
-    var battleState = this.battleState.write()
     // var message = await ethers.utils.keccak256(
     //   ethers.utils.toUtf8Bytes(JSON.stringify(battleState))
     // )
@@ -619,15 +715,29 @@ class BattleClient {
     // var manager_addr = ethers.utils.computeAddress('0x' + this.data.manager_pk)
     // if (addr === manager_addr) {
     if (true) {
-      //   this.data.manager_signature = signature
-      this.data.oldBattleState = JSON.parse(JSON.stringify(battleState))
+      this.data.oldBattleState = JSON.parse(
+        JSON.stringify(this.battleState.write())
+      )
       this.choseAction = false
-      if (this.battleState.sequence === 1) enterBattle()
-      else {
+      if (this.battleState.sequence === 1) {
+        enterBattle()
+      } else {
         renderState(this.data, this.battleState)
         this.battleState.changeAttacker()
       }
-      setUpNextSetting()
+      this.data.player_signatures[1 - this.data.my_index] =
+        msg.consensus_signature
+      //   this.data.manager_signature = signature
+
+      if (this.battleState.winner !== undefined) {
+        console.log('battle finished')
+        this.data.pick_until_time = Date.now() + 30 * 1000
+        this.data.status.stage = 'wait-over'
+      } else {
+        this.data.pick_until_time = Date.now() + 50 * 1000
+        setUpNextSetting()
+        this.data.status.stage = 'commit'
+      }
       this.save()
       return true
     } else {

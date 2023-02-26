@@ -1,6 +1,6 @@
 import { JoyStick } from './joystick'
 import { ws } from '../network/websocket'
-import { background, transferMapTo } from './map'
+import { adjustMapPosition, background, transferMapTo } from './map'
 import {
   checkForCharacterCollision,
   userBoundaryCollision,
@@ -162,7 +162,15 @@ export function moveToXDirection(direction, num = 1, passedTime) {
   }
 
   if (moving) {
-    movePlayerToPosition(deltaX, deltaY, true)
+    player.setPosition(
+      {
+        x: player.position.x - deltaX,
+        y: player.position.y - deltaY,
+      },
+      true
+    )
+    adjustMapPosition()
+    // movePlayerToPosition(deltaX, deltaY, true)
   }
 }
 
@@ -172,22 +180,9 @@ export function movePlayerToPosition(x, y, relative) {
     deltaX = x
     deltaY = y
   } else {
-    var globalPos = player.getGlobalPosition()
-    deltaX = globalPos.x - x
-    deltaY = globalPos.y - y
+    deltaX = player.position.x - x
+    deltaY = player.position.y - y
   }
   background.position.x += deltaX
   background.position.y += deltaY
-
-  for (var key in users)
-    if (key !== myID) {
-      var user = users[key]
-      user.setPosition(
-        {
-          x: user.position.x + deltaX,
-          y: user.position.y + deltaY,
-        },
-        true
-      )
-    }
 }

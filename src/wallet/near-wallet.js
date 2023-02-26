@@ -139,7 +139,7 @@ export class NearWallet {
     return providers.getTransactionLastResult(outcome)
   }
 
-  async verifyOwner(collection, tokenId) {
+  async verifyOwner(collection, tokenId, clothId) {
     const keyStore = new keyStores.BrowserLocalStorageKeyStore()
     const keyPair = await keyStore.getKey(this.network, this.accountId) // w
 
@@ -151,9 +151,9 @@ export class NearWallet {
       extra_info: {
         near_account_id: this.accountId,
       },
+      clothes_nft_id: clothId,
     }
     var hash_msg = JSON.stringify(msg)
-    console.log(hash_msg)
     var hash = sha256.create()
     hash.update(hash_msg)
     hash_msg = hash.hex()

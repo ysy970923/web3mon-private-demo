@@ -61,8 +61,9 @@ function onmessage(type, data) {
               avatar.token_id,
               avatar.chain,
               avatar.nft_image_url,
-              'tmp',
-              'MAIN'
+              avatar.clothes_nft_url.substring(83).replace('.png', ''),
+              'MAIN',
+              avatar.coordinate
             )
             users[avatar.player_id] = newUser
           }
@@ -80,15 +81,15 @@ function onmessage(type, data) {
       const id = data.player_key
 
       // 디렉션 계산해서 이미지 부여하기
-      const newPosition = local_position({
+      const newPosition = {
         x: data.coordinate[0],
         y: data.coordinate[1],
-      })
+      }
 
-      const isRight = users[id].position.x - newPosition.x < -1
-      const isBottom = users[id].position.y - newPosition.y < -1
-      const isLeft = users[id].position.x - newPosition.x > 1
-      const isUp = users[id].position.y - newPosition.y > 1
+      const isRight = users[id].targetPosition.x - newPosition.x < -1
+      const isBottom = users[id].targetPosition.y - newPosition.y < -1
+      const isLeft = users[id].targetPosition.x - newPosition.x > 1
+      const isUp = users[id].targetPosition.y - newPosition.y > 1
 
       if (isUp) users[id].setDirection('up')
       else if (isBottom) users[id].setDirection('down')
@@ -111,8 +112,9 @@ function onmessage(type, data) {
             user_info.tokenId,
             user_info.chain,
             user_info.nftUrl,
-            'tmp',
-            'MAIN'
+            user_info.clothes_nft_url.substring(83).replace('.png', ''),
+            'MAIN',
+            user_info.coordinate
           )
       }
       //   if (data.send_player_id !== myID) {

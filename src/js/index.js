@@ -3,6 +3,7 @@ import { clickEvent } from '../battle/battleStart'
 import { setNFTInfo, setPlayerUrl, collection, setClothId } from '../user/logIn'
 import { battle } from '../battle/battleClient'
 import { connect } from '../network/websocket'
+import { selectedSkill } from '../battle/initialSetting'
 
 // 최초로 지갑 연결
 // connectWallets(nearAPI)
