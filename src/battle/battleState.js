@@ -8,17 +8,7 @@ import {
   SKILLS,
 } from './skills'
 import { battle } from './battleClient'
-
-const P1 = 49003
-const P2 = 56377
-const P3 = 34501
-const P4 = 53017
-const P5 = 94379
-const P6 = 74827
-const P7 = 30809
-const P8 = 29411
-const P9 = 65089
-const P10 = 84313
+import { random_success_nullify_defence } from './utils'
 
 export class BattleState {
   expires_at
@@ -83,13 +73,23 @@ export class BattleState {
     var random_number = actions[0].random_number + actions[1].random_number
     if (!this.checkSkillAvailability(action_indexes)) return false
     this.processSpecialEffect(action_indexes)
+    this.checkDeadPlayer()
+    if (this.winner !== undefined) return true
+
     this.createLastingEffect(action_indexes)
-    var damage = this.calculateCombatDamage(action_indexes, random_number % P2)
+    var damage = this.calculateCombatDamage(action_indexes, random_number)
     this.applyCombatDamage(damage)
+    this.checkDeadPlayer()
+    if (this.winner !== undefined) return true
+
     this.applyLastingEffectDamage()
+    this.checkDeadPlayer()
+    if (this.winner !== undefined) return true
+    
     this.arrangeLastingEffect()
     this.skillPostProcessing(action_indexes)
     this.checkDeadPlayer()
+    this.changeAttacker()
     return true
   }
 
@@ -127,10 +127,12 @@ export class BattleState {
       var action_index = action_indexes[i]
       var new_lasting_effect =
         this.player_skills[i][action_index].create_lasting_effect(i)
-      if (new_lasting_effect != undefined)
+      battle.event(new_lasting_effect)
+      if (new_lasting_effect !== undefined)
         new_lasting_effect.forEach((e) => {
           this.lasting_effect.push(e)
         })
+      battle.event(this.lasting_effect)
     }
   }
 
@@ -178,21 +180,47 @@ export class BattleState {
       ]
     var attack_damage = atk_skill.calculate_attack_damage()
     var total_damage = def_skill.calculate_damage(attack_damage, random_number)
+
+    this.lasting_effect.forEach((effect) => {
+      switch (effect.type) {
+        case LASTINGEFFECT.NullifySkill:
+          if (effect.params.caster_idx === this.defender_index) {
+            var nullify_is_success = random_success_nullify_defence(
+              random_number,
+              effect.params.probability
+            )
+            if (nullify_is_success) {
+              battle.event(effect)
+              return 0
+            }
+          }
+      }
+    })
+
+    this.lasting_effect.forEach((effect) => {
+      switch (effect.type) {
+        case LASTINGEFFECT.DamageMultiple:
+          if (effect.params.caster_idx === this.attacker_index) {
+            total_damage *= effect.params.multiplier
+          }
+      }
+    })
+
     battle.event(total_damage)
     return total_damage
   }
 
   applyLastingEffectDamage() {
     this.lasting_effect.forEach((effect) => {
-      switch (effect.params.type) {
+      switch (effect.type) {
         case LASTINGEFFECT.ContinuousAttack:
-          var target_idx = 1 - effect.caster_idx
+          var target_idx = 1 - effect.params.caster_idx
           this.player_lp[target_idx] -= effect.params.damage
           battle.event(effect)
           break
 
         case LASTINGEFFECT.DelayedAttack:
-          var target_idx = 1 - effect.caster_idx
+          var target_idx = 1 - effect.params.caster_idx
           if (effect.params.delayed_turn === 1) {
             this.player_lp[target_idx] -= effect.params.damage
             battle.event(effect)
@@ -203,12 +231,15 @@ export class BattleState {
   }
 
   arrangeLastingEffect() {
+    battle.event(this.lasting_effect)
     this.lasting_effect.forEach((effect) => {
       effect.minus_left_turn()
     })
-    this.lasting_effect = this.lasting_effect.filter((effect) => {
+    battle.event(this.lasting_effect)
+    this.lasting_effect = this.lasting_effect.filter((effect) =>
       effect.left_turn()
-    })
+    )
+    battle.event(this.lasting_effect)
   }
 
   skillPostProcessing(action_indexes) {

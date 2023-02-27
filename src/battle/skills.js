@@ -1,6 +1,7 @@
 import { Sprite } from '../object/Sprite'
 import { gsap } from 'gsap'
 import { battle } from './battleClient'
+import { random_success_defence } from './utils'
 
 export const LASTINGEFFECT = {
   ContinuousAttack: 'ContinuousAttack',
@@ -166,7 +167,7 @@ export class LastingEffect {
   }
 
   left_turn() {
-    this.params.remain_turn > 0
+    return this.params.remain_turn > 0
   }
 }
 
@@ -197,7 +198,7 @@ export class Skill {
       case SKILLS.DeathSpiral:
         this.params = {
           success_count: 0,
-          base_damage: 50,
+          base_damage: 25,
           multiplier: 150,
         }
         frame = 14
@@ -206,7 +207,7 @@ export class Skill {
         break
       case SKILLS.CelsiusExplosion:
         this.params = {
-          base_damage: 40,
+          base_damage: 20,
         }
         frame = 8
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -214,7 +215,7 @@ export class Skill {
         break
       case SKILLS.BlockOfFud:
         this.params = {
-          base_damage: 36,
+          base_damage: 18,
         }
         frame = 15
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -378,7 +379,7 @@ export class Skill {
 
   create_lasting_effect(caster_idx) {
     switch (this.type) {
-      case SKILLS.DeathSpiral:
+      case SKILLS.CelsiusExplosion:
         return [
           new LastingEffect(LASTINGEFFECT.DamageMultiple, {
             multiplier: 2,
@@ -419,12 +420,6 @@ export class Skill {
             recovery_lp: this.params.recovery_lp,
           }),
         ]
-      //   case SKILLS.ProofOfReserve:
-      //     return [
-      //       new SpecialEffect('Reflection', {
-      //         reflect_damage: this.params.reflect_damage,
-      //       }),
-      //     ]
       default:
         return undefined
     }
@@ -432,9 +427,11 @@ export class Skill {
 
   calculate_attack_damage() {
     if (this.type === 'DeathSpiral') {
-      if (this.params.success_count == 3) {
+      if (this.params.success_count === 3) {
         battle.event(`multiplied by ${this.params.multiplier}`)
-        return this.params.multiplier * this.params.base_damage
+        return Math.floor(
+          (this.params.base_damage * this.params.multiplier) / 100
+        )
       }
     } else if (this.type === 'HardForkArrow') {
       battle.event(`return last turn damage ${this.params.last_turn_damage}`)
@@ -452,26 +449,26 @@ export class Skill {
       battle.event(`absorb damage ${this.params.absorbed_damage}`)
       return Math.max(attack_skill_damage - this.params.base_shield, 0)
     } else if (this.type === 'MergeWall') {
-      if (random_number < this.params.defence_probability)
-        return (
-          attack_skill_damage -
-          multPercentage(this.params.defence_proportion, attack_skill_damage)
-        )
-      else return attack_skill_damage
+      return probabilitic_damage(
+        attack_skill_damage,
+        this.params.defence_probability,
+        this.params.defence_proportion,
+        random_number
+      )
     } else if (this.type === 'AuditField') {
-      if (random_number < this.params.defence_probability)
-        return (
-          attack_skill_damage -
-          multPercentage(this.params.defence_proportion, attack_skill_damage)
-        )
-      else return attack_skill_damage
+      return probabilitic_damage(
+        attack_skill_damage,
+        this.params.defence_probability,
+        this.params.defence_proportion,
+        random_number
+      )
     } else if (this.type === 'GraceOfCz') {
-      if (random_number < this.params.defence_probability)
-        return (
-          attack_skill_damage -
-          multPercentage(this.params.defence_proportion, attack_skill_damage)
-        )
-      else return attack_skill_damage
+      return probabilitic_damage(
+        attack_skill_damage,
+        this.params.defence_probability,
+        this.params.defence_proportion,
+        random_number
+      )
     } else if (this.type === 'WithdrawalCloak') {
       return attack_skill_damage
     } else if (this.type === 'ProofOfReserve') {
@@ -484,19 +481,19 @@ export class Skill {
       //   return attack_skill_damage - this.params.reflect_damage
       return attack_skill_damage
     } else if (this.type === 'BTCArmor') {
-      if (random_number < this.params.defence_probability)
-        return (
-          attack_skill_damage -
-          multPercentage(this.params.defence_proportion, attack_skill_damage)
-        )
-      else return attack_skill_damage
+      return probabilitic_damage(
+        attack_skill_damage,
+        this.params.defence_probability,
+        this.params.defence_proportion,
+        random_number
+      )
     } else if (this.type === 'SelfCustody') {
-      if (random_number < this.params.defence_probability)
-        return (
-          attack_skill_damage -
-          multPercentage(this.params.defence_proportion, attack_skill_damage)
-        )
-      else return attack_skill_damage
+      return probabilitic_damage(
+        attack_skill_damage,
+        this.params.defence_probability,
+        this.params.defence_proportion,
+        random_number
+      )
     }
   }
 
@@ -540,4 +537,22 @@ export class Skill {
 
 function multPercentage(a, b) {
   return Math.floor((a * b) / 100)
+}
+
+function probabilitic_damage(
+  attack_skill_damage,
+  defence_probability,
+  defence_proportion,
+  random_number
+) {
+  var defence_is_success = random_success_defence(
+    random_number,
+    defence_probability
+  )
+
+  if (defence_is_success) {
+    return Math.floor((attack_skill_damage * defence_proportion) / 100)
+  } else {
+    return attack_skill_damage
+  }
 }

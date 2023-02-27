@@ -28,7 +28,12 @@ const resume_data = {
 }
 
 function randInt() {
-  return Math.floor(Math.random() * 1000000000)
+  //   return Math.floor(Math.random() * 1000000)
+  return 0
+}
+
+function getCurrentTime() {
+  return Math.floor(Date.now() / 1000)
 }
 
 class BattleClient {
@@ -50,6 +55,7 @@ class BattleClient {
 
   // battle request to opponent
   async request(receiver_player_id) {
+    this.data.request = true
     safe_send({
       BattlePropose: {
         receiver_player_id: receiver_player_id,
@@ -61,6 +67,7 @@ class BattleClient {
 
   // accept offered battle from opponent
   async accept(battle_id, proposer_player_id) {
+    this.data.request = false
     safe_send({
       BattleAccept: {
         battle_id: battle_id,
@@ -81,7 +88,7 @@ class BattleClient {
   // start battle (move fund to battle contract)
   async start(msg) {
     var battleInfo = {
-      current_turn_expired_at: msg.next_turn_expired_at * 1000 + 2 * 60 * 1000,
+      current_turn_expired_at: msg.next_turn_expired_at,
       player_pk: [
         this.keyManager.publicKey.substring(2),
         msg.opponent_battle_exclusive_pub_key,
@@ -91,39 +98,29 @@ class BattleClient {
       game_turn_sequence: 0,
     }
 
-    console.log(
-      JSON.stringify({
-        receiver_id: 'game.web3mon.testnet',
-        amount: BET_AMOUNT,
-        msg: JSON.stringify({
-          battle_id: msg.battle_id,
-          battle_create_info: {
-            player_pk: battleInfo.player_pk,
-            manager_pk: battleInfo.manager_pk,
-            bet_amount: BET_AMOUNT,
-            players_account: ['bob.web3mon.testnet', 'bob.web3mon.testnet'],
-          },
-        }),
-      })
-    )
-    console.log(battleInfo)
-
-    // var battleInfo = await wallet.viewMethod({
+    // var res = await wallet.viewMethod({
     //   contractId: BATTLE_CONTRACT,
     //   method: 'get_battle',
     //   args: { battle_id: msg.battle_id },
     // })
+    // battleInfo.manager_pk = res.manager_pk
+    // battleInfo.player_pk = [Buffer.from(res.player_pk[0], 'base64').toString('hex'), Buffer.from(res.player_pk[1], 'base64').toString('hex')]
+    // battleInfo.bet_amount = res.bet_amount
     // console.log(battleInfo)
-
-    battleInfo.player_pk.sort()
 
     var my_index
 
-    if (battleInfo.player_pk[0] === this.keyManager.publicKey.substring(2))
+    if (this.data.request) {
       my_index = 0
-    else if (battleInfo.player_pk[1] === this.keyManager.publicKey.substring(2))
+    } else {
       my_index = 1
-    else return false
+    }
+
+    // if (battleInfo.player_pk[0] === this.keyManager.publicKey.substring(2))
+    //   my_index = 0
+    // else if (battleInfo.player_pk[1] === this.keyManager.publicKey.substring(2))
+    //   my_index = 1
+    // else return false
 
     this.battleState = new BattleState(battleInfo)
     this.choseAction = false
@@ -144,8 +141,9 @@ class BattleClient {
       manager_pk: battleInfo.manager_pk,
       my_sk: this.keyManager.privateKey,
       player_init_lp: this.battleState.player_lp,
-      pick_until_time: Date.now() + 1000 * 100,
+      pick_until_time: getCurrentTime + 100,
       battleBackground: 0,
+      request: this.data.request,
     }
 
     // this.types = await wallet.viewMethod({
@@ -178,7 +176,7 @@ class BattleClient {
   }
 
   event(content) {
-    console.log(content)
+    console.log(JSON.stringify(content))
   }
 
   save() {
@@ -212,6 +210,8 @@ class BattleClient {
             }
             document.getElementById('skill_box_temp').style.display = 'none'
             // 내 스킬타입 확정
+            selectedSkill.sort()
+            selectedDefenceSkills.sort()
             this.chooseAction({
               attacks: selectedSkill,
               defences: selectedDefenceSkills,
@@ -242,7 +242,7 @@ class BattleClient {
   }
 
   chooseAction(action) {
-    if (this.data.pick_until_time < Date.now()) {
+    if (this.data.pick_until_time < getCurrentTime()) {
       window.alert('Time is Over.')
       this.close('LOSE')
       return
@@ -316,19 +316,17 @@ class BattleClient {
   }
 
   timer() {
-    var current_time = Date.now()
+    var current_time = getCurrentTime()
     var left_time = this.data.pick_until_time - current_time
     if (left_time > 0)
-      document.getElementById('battle_left_time').innerText = `00:${Math.floor(
-        left_time / 1000
-      )}`
+      document.getElementById('battle_left_time').innerText = `00:${left_time}`
+    console.log(this.data.status.stage)
     if (this.data.status.stage === 'wait-over') {
       if (this.data.pick_until_time < current_time) {
         this.getAndEndBattle()
-        return
       }
+      return
     }
-    console.log(this.choseAction)
     if (left_time <= 0) {
       if (!this.choseAction) {
         window.alert('Time is Over.')
@@ -336,7 +334,6 @@ class BattleClient {
         return
       }
     }
-    console.log(this.data.mode)
     if (this.data.mode === 'channel') this.onChannelHandler()
     else this.onChainHandler()
   }
@@ -345,21 +342,20 @@ class BattleClient {
     // if last consensused state expired is only left 1 minute -> this moved to chain
     if (
       this.data.oldBattleState.current_turn_expired_at <
-      Date.now() + 60 * 1000
+      getCurrentTime() + 60
     ) {
       this.data.mode = 'chain'
       this.data.status.stage = 'choose'
       this.data.status.isOk = true
       // give 100 seconds to choose what to use -> 1 minute left for expiration, additional 1 minute
       this.data.pick_until_time =
-        this.data.oldBattleState.current_turn_expired_at + 10 * 1000
+        this.data.oldBattleState.current_turn_expired_at + 10
     }
     if (!this.data.status.isOk) return
 
     // console.log(this.data.oldBattleState.expires_at - Date.now())
     var msg = this.receiveQueue.shift()
     if (msg === undefined) return
-    console.log(msg)
     if (this.data.status.stage === 'commit') {
       this.data.status.isOk = false
       this.receiveCommit(msg)
@@ -448,14 +444,14 @@ class BattleClient {
       this.data.status.isOk = true
       this.data.status.stage = 'wait-choose'
     } else if (this.data.status.stage === 'wait-choose') {
-      if (this.data.pick_until_time < Date.now()) {
+      if (this.data.pick_until_time < getCurrentTime()) {
         this.data.status.stage = 'commit'
       }
     } else if (this.data.status.stage === 'commit') {
       this.data.status.isOk = false
       this.sendCommitForMultipleRoundsOnChain()
     } else if (this.data.status.stage === 'reveal') {
-      if (this.data.pick_until_time + 10 * 1000 < Date.now()) {
+      if (this.data.pick_until_time + 10 < getCurrentTime()) {
         this.data.status.isOk = false
         this.sendActionForMultipleRoundsOnChain()
       }
@@ -476,19 +472,9 @@ class BattleClient {
     var signature = await this.keyManager.signMessage(message)
 
     this.save()
+    window.alert('send commit to chain')
 
-    console.log({
-      contractId: BATTLE_CONTRACT,
-      method: 'commit',
-      args: {
-        battle_id: this.data.battleId,
-        player_index: this.data.my_index,
-        commit: commit,
-        sig: signature,
-      },
-    })
-
-    // await wallet.callMethod({
+    // console.log({
     //   contractId: BATTLE_CONTRACT,
     //   method: 'commit',
     //   args: {
@@ -498,22 +484,25 @@ class BattleClient {
     //     sig: signature,
     //   },
     // })
-  }
 
-  async sendActionForMultipleRoundsOnChain() {
-    this.data.pick_until_time += 30 * 1000
-    this.save()
-
-    console.log({
+    await wallet.callMethod({
       contractId: BATTLE_CONTRACT,
-      method: 'reveal',
+      method: 'commit',
       args: {
         battle_id: this.data.battleId,
         player_index: this.data.my_index,
-        action: this.data.actions[this.data.my_index],
+        commit: commit,
+        sig: signature,
       },
     })
-    // await wallet.callMethod({
+  }
+
+  async sendActionForMultipleRoundsOnChain() {
+    this.data.pick_until_time += 30
+    this.save()
+    window.alert('send reveal to chain')
+
+    // console.log({
     //   contractId: BATTLE_CONTRACT,
     //   method: 'reveal',
     //   args: {
@@ -522,6 +511,15 @@ class BattleClient {
     //     action: this.data.actions[this.data.my_index],
     //   },
     // })
+    await wallet.callMethod({
+      contractId: BATTLE_CONTRACT,
+      method: 'reveal',
+      args: {
+        battle_id: this.data.battleId,
+        player_index: this.data.my_index,
+        actions: this.data.actions[this.data.my_index],
+      },
+    })
   }
 
   async sendCommit() {
@@ -573,7 +571,9 @@ class BattleClient {
     message.set(b, a.length)
     var addr = ethers.utils.verifyMessage(message, signature)
     var op_addr = ethers.utils.computeAddress('0x' + this.data.op_pk)
-    if (addr === op_addr) {
+    // TODO
+    // if (addr === op_addr) {
+    if (true) {
       this.data.op_commit = commit.hashed_message
       this.data.op_commit_signature = signature
       this.sendAction()
@@ -587,7 +587,6 @@ class BattleClient {
   async sendAction() {
     console.log('send action')
     var action = this.data.actions[this.data.my_index]
-    console.log(action)
     if (this.battleState.sequence === 0)
       safe_send({
         BattleRevealReady: {
@@ -626,7 +625,6 @@ class BattleClient {
   // channel only
   async sendState() {
     console.log('send state')
-    console.log(this.data.battleId)
 
     if (this.battleState.sequence === 0)
       this.battleState.setPlayerSkills(this.data.actions)
@@ -641,7 +639,6 @@ class BattleClient {
     var signature = await this.keyManager.signMessage(message)
     signature = signature.substring(2)
     this.data.player_signatures[this.data.my_index] = signature
-    console.log(this.data.battleId)
     safe_send({
       BattleConsensusState: {
         battle_id: this.data.battleId,
@@ -679,14 +676,17 @@ class BattleClient {
   }
 
   close(result) {
-    endBattle(result)
     clearInterval(this.timerId)
+    document.getElementById('battle_banner').style.display = 'none'
+    endBattle(result)
   }
 
   // channel only
   async receiveStateSignature(msg) {
     console.log('receive state signature')
     msg = JSON.parse(msg)
+    console.log(this.data.actions)
+    console.log(msg)
     // var signature = '0x' + this.data.manager_signature
     // console.log(signature)
     // var expires_at = msg.expires_at
@@ -723,7 +723,6 @@ class BattleClient {
         enterBattle()
       } else {
         renderState(this.data, this.battleState)
-        this.battleState.changeAttacker()
       }
       this.data.player_signatures[1 - this.data.my_index] =
         msg.consensus_signature
@@ -731,10 +730,13 @@ class BattleClient {
 
       if (this.battleState.winner !== undefined) {
         console.log('battle finished')
-        this.data.pick_until_time = Date.now() + 30 * 1000
+        this.data.pick_until_time = getCurrentTime() + 10
+        document.getElementById('atk_or_def').innerText = 'Finalizing...'
         this.data.status.stage = 'wait-over'
       } else {
-        this.data.pick_until_time = Date.now() + 50 * 1000
+        // this.data.pick_until_time = getCurrentTime() + 50
+        this.data.pick_until_time =
+          this.data.oldBattleState.current_turn_expired_at - 70
         setUpNextSetting()
         this.data.status.stage = 'commit'
       }

@@ -74,11 +74,15 @@ function onmessage(type, data) {
       break
 
     case ACTION.MOVE:
-      if (data.player_key === myID) {
+      const id = data.player_key
+
+      if (id === myID) {
         return
       }
 
-      const id = data.player_key
+      if (!(id in users)) {
+        return
+      }
 
       // 디렉션 계산해서 이미지 부여하기
       const newPosition = {
@@ -116,10 +120,9 @@ function onmessage(type, data) {
             'MAIN',
             user_info.coordinate
           )
+      } else if (data.send_player_id !== myID) {
+        users[data.send_player_id].showChat(data['content'])
       }
-      //   if (data.send_player_id !== myID) {
-      //     users[data.send_player_id].showChat(data['content'])
-      //   }
       break
 
     case 'ReadyBattle':
@@ -132,9 +135,6 @@ function onmessage(type, data) {
 
     case NETWORK.BATTLE_INIT:
       console.log('배틀 열림!', data)
-      //   setTimeout(() => {
-      //     battle.start(data)
-      //   }, 1000*60)
       battle.start(data)
       break
 
@@ -165,6 +165,9 @@ function onmessage(type, data) {
         battle.battleState.expires_at = content.next_turn_expired_at
         battle.data.manager_signature = content.manager_signature
       }
+      break
+
+    case 'BattleCloseChannel':
       break
 
     case NETWORK.LEAVE_BATTLE:

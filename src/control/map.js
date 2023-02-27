@@ -51,7 +51,7 @@ export function transferMapTo(toMap) {
   // map UI 자체 변경 -> renderables, movables 가 바뀌는 것
   // map에 존재하는 유저들 변경
 
-  showMapLoading()
+  showLoadingScreen()
   var newBackgroundImage = new Image()
 
   switch (toMap) {
@@ -107,7 +107,7 @@ export function transferMapTo(toMap) {
   player.map = toMap
 }
 
-const showMapLoading = async () => {
+export const showLoadingScreen = async () => {
   document.querySelector('#loading_screen').style.display = 'block'
   document.querySelector('#loading_screen_gif').style.display = 'block'
   setTimeout(() => {

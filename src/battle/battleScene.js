@@ -98,7 +98,9 @@ export function endBattle(result) {
         animate()
         document.querySelector('#userInterface').style.display = 'none'
         document.getElementById('battleResultCard').style.display = 'block'
-        document.getElementById('battleResult').innerText = `You ${result}!`
+        document.getElementById(
+          'battleResult'
+        ).innerText = `You ${result}!\r\n${1}USDC MOVE To WINNER!`
         document.querySelector('#joyDiv').style.display = 'block'
         gsap.to('#overlappingDiv', {
           opacity: 0,

@@ -19,6 +19,7 @@ import { setupNearWallet } from '@near-wallet-selector/near-wallet'
 import { sha256 } from 'js-sha256'
 import axios from 'axios'
 import { wallet } from './multi-wallet'
+import { ethers } from 'ethers'
 
 const THREEHUN_TGAS = '300000000000000'
 const NO_DEPOSIT = '0'
@@ -154,9 +155,12 @@ export class NearWallet {
       clothes_nft_id: clothId,
     }
     var hash_msg = JSON.stringify(msg)
-    var hash = sha256.create()
-    hash.update(hash_msg)
-    hash_msg = hash.hex()
+    // var hash = sha256.create()
+    // hash.update(hash_msg)
+    // hash_msg = hash.hex()
+    hash_msg = await ethers.utils
+      .keccak256(ethers.utils.toUtf8Bytes(hash_msg))
+      .substring(2)
     var signature = keyPair.sign(Buffer.from(hash_msg))
     const body = {
       signature: Buffer.from(signature.signature).toString('hex'),
