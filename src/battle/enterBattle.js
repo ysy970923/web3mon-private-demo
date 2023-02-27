@@ -162,5 +162,5 @@ const enterImageAnimation = () => {
       'all 1.2s ease-out'
     document.querySelector('#battle_enter').style.opacity = 0
     document.querySelector('#battle_enter').style.zIndex = -5
-  }, 1000)
+  }, 5000)
 }

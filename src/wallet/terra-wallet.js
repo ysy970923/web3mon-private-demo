@@ -142,14 +142,15 @@ export class TerraWallet {
   async verifyOwner(collection, token_id) {
     var body = {
       signature:
-        '14516281842f8249ed965d7f00be6f805affd7fad14db3db6b64393f9180a3e3ce98a9f4a19983ab5fdb11bf19f6571ed109dc3c37ee1b81ce208ab0080d5b01',
+        'e47a8c30822b2e7281d834c19f1802ce9374fe1efc62d4a81405b27bd712d747cc0b9cd443f9ad170fe0970667215145744bd92be70292fb225d73675e8a8602',
       message: {
         chain: 'NEAR',
         collection: 'asac.web3mon.testnet',
         token_id: 'terra',
         pub_key:
-          '47e4e29ce5959543ee6d2c1e4c8c7f7816190fc17751f196139d018cbee64eb0',
+          '95e02bcf0707b4c9b0fc1d650d01cbd1f2d611036ae4a9690c9677e5068e0c82',
         extra_info: { near_account_id: 'bob.web3mon.testnet' },
+        clothes_nft_id: '2',
       },
     }
 

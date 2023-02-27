@@ -362,11 +362,12 @@ export class Skill {
   }
 
   check_availability(sequence, caster_idx) {
+    console.log('seauence is', sequence)
     if (this.params.available_turn_seq !== undefined)
       if (sequence > this.params.available_turn_seq) return false
 
     var attacker_index = battle.battleState.attacker_index
-    if ((sequence - battle.battleState.sequence) % 2 === 1) {
+    if ((sequence - battle.battleState.sequence) % 2 === 0) {
       attacker_index = 1 - attacker_index
     }
     if (attacker_index === caster_idx) {

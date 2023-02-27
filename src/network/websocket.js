@@ -48,6 +48,8 @@ function onmessage(type, data) {
                   chain: 'TERRA',
                   nftUrl:
                     'https://ipfs.talis.art/ipfs/QmdUGyDFFBZMf92nf1fXxjoy2sNNL8oJbk1YBDCQzYfLuz/0.png',
+                  clothes_nft_url: avatar.clothes_nft_url,
+                  coordinate: [0, 0],
                 }),
               },
             })

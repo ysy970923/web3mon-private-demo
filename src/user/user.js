@@ -275,7 +275,7 @@ export class User {
 
       canva.fillText(
         this.chat,
-        this.sprite.position.x + 55,
+        this.sprite.position.x + textWidth / 2 + 60,
         this.sprite.position.y - 39
       )
 

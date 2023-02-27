@@ -14,10 +14,11 @@ import { BattleState } from './battleState'
 import { animateBattle, enterBattle } from './enterBattle'
 import { wallet } from '../wallet/multi-wallet'
 import { SKILL_DESCRIPTIONS } from './skills'
+import { player } from '../user/user'
+import { betAmount } from '../data/betAmount'
 
 export const BATTLE_CONTRACT = 'game.web3mon.testnet'
 const FT_CONTRACT = 'usdc.web3mon.testnet' // USDC.e contract ID
-const BET_AMOUNT = '100000000'
 const resume_data = {
   battle_data: {},
   jwt: '',
@@ -28,7 +29,7 @@ const resume_data = {
 }
 
 function randInt() {
-  //   return Math.floor(Math.random() * 1000000)
+  // return Math.floor(Math.random() * 1000000)
   return 0
 }
 
@@ -144,6 +145,7 @@ class BattleClient {
       pick_until_time: getCurrentTime + 100,
       battleBackground: 0,
       request: this.data.request,
+      bet_amount: betAmount[player.map],
     }
 
     // this.types = await wallet.viewMethod({
@@ -157,19 +159,23 @@ class BattleClient {
     // location.reload()
 
     // moving funds to battle contract
-    await wallet.callMethod({
-      contractId: FT_CONTRACT,
-      method: 'ft_transfer_call',
-      args: {
-        receiver_id: BATTLE_CONTRACT,
-        amount: BET_AMOUNT,
-        msg: JSON.stringify({
-          battle_id: msg.battle_id,
-          player_index: my_index,
-        }),
-      },
-      deposit: 1,
-    })
+    if (player.map !== 'BATTLE0') {
+      await wallet.callMethod({
+        contractId: FT_CONTRACT,
+        method: 'ft_transfer_call',
+        args: {
+          receiver_id: BATTLE_CONTRACT,
+          amount: betAmount[player.map],
+          msg: JSON.stringify({
+            battle_id: msg.battle_id,
+            player_index: my_index,
+          }),
+        },
+        deposit: 1,
+      })
+    } else {
+      location.reload()
+    }
 
     this.started = true
     return true
@@ -195,6 +201,9 @@ class BattleClient {
     this.timerId = setInterval(() => this.timer(), 1000)
     this.started = true
     this.keyManager = new ethers.Wallet(this.data.my_sk)
+    document.getElementById('battle_banner').style.display = 'block'
+    this.data.pick_until_time = Math.floor(Date.now() / 1000) + 30
+    document.getElementById('atk_or_def').innerText = 'CHOOSE'
     if (this.data.mode === 'channel') {
       if (this.battleState.sequence === 0) {
         document.getElementById('skill_box_temp').style.display = 'block'
@@ -263,7 +272,7 @@ class BattleClient {
         var skill = this.battleState.player_skills[this.data.my_index][action]
         if (
           !skill.check_availability(
-            this.battleState.sequence,
+            this.battleState.sequence + 1,
             this.data.my_index
           )
         ) {
@@ -677,6 +686,7 @@ class BattleClient {
 
   close(result) {
     clearInterval(this.timerId)
+    sessionStorage.removeItem('resume-data')
     document.getElementById('battle_banner').style.display = 'none'
     endBattle(result)
   }

@@ -34,6 +34,10 @@ const skillBoxAdd = () => {
     }
 
     skillBox.onclick = (e) => {
+      if (i > 4) {
+        window.alert('Need Special Cloth to use Skill')
+        return
+      }
       if (selectedSkill.includes(i)) {
         skillBox.style.background = null
         selectedSkill = selectedSkill.filter((doc) => doc !== i)
@@ -80,6 +84,10 @@ const skillBoxAdd = () => {
     }
 
     skillBox.onclick = (e) => {
+      if (i > 4) {
+        window.alert('Need Special Cloth to use Skill')
+        return
+      }
       if (selectedDefenceSkills.includes(i)) {
         skillBox.style.background = null
         selectedDefenceSkills = selectedDefenceSkills.filter((doc) => doc !== i)

@@ -1,4 +1,5 @@
 import { NearWallet } from './near-wallet'
+import { PolygonWallet } from './polygon-wallet'
 import { TerraWallet } from './terra-wallet'
 
 class MultiWallet {
@@ -12,11 +13,13 @@ class MultiWallet {
       network: 'testnet',
     })
     this.wallets['terra'] = new TerraWallet()
+    this.wallets['polygon'] = new PolygonWallet()
   }
 
   startUp() {
     this.wallets['NEAR'].startUp()
     this.wallets['terra'].startUp()
+    // this.wallets['polygon'].startUp()
   }
 
   getAccountId() {

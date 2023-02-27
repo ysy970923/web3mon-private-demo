@@ -100,7 +100,10 @@ export function endBattle(result) {
         document.getElementById('battleResultCard').style.display = 'block'
         document.getElementById(
           'battleResult'
-        ).innerText = `You ${result}!\r\n${1}USDC MOVE To WINNER!`
+        ).innerText = `You ${result}!\r\n${battle.data.bet_amount.substring(
+          0,
+          2
+        )}$ MOVE To WINNER!`
         document.querySelector('#joyDiv').style.display = 'block'
         gsap.to('#overlappingDiv', {
           opacity: 0,
@@ -154,5 +157,4 @@ export function initBattle() {
   queue = []
 
   document.getElementById('battle_skills').style.display = 'block'
-  document.getElementById('battle_banner').style.display = 'block'
 }

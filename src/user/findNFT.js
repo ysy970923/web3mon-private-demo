@@ -46,7 +46,8 @@ export async function findMyNFT() {
 
       if (data.length !== 0) {
         data.forEach((nft) => {
-          if (nft.token_id !== 'terra') {
+            if (nft.token_id !== 'terra') {
+        //   if (true) {
             let img = document.createElement('img')
             if (nft.metadata.media.includes('https://'))
               img.src = nft.metadata.media

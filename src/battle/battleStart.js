@@ -18,11 +18,17 @@ export function clickEvent() {
       var y = e.offsetY - users[key].sprite.height / 2
       // 상대방을 클릭한지에 대한 체크
       if (
-        Math.abs(users[key].sprite.position.x - x) < users[key].sprite.width / 2 &&
-        Math.abs(users[key].sprite.position.y - y) < users[key].sprite.height / 2
+        Math.abs(users[key].sprite.position.x - x) <
+          users[key].sprite.width / 2 &&
+        Math.abs(users[key].sprite.position.y - y) <
+          users[key].sprite.height / 2
       ) {
         // opponent should be ready
         // if (!users[key].readyForBattle) break
+        if (player.map === 'MAIN') {
+          window.alert('MAIN MAP is not for BATTLE.')
+          return
+        }
         setUpBattleCard('request', key, null)
         break
       }

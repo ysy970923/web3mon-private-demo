@@ -85,7 +85,7 @@ export class BattleState {
     this.applyLastingEffectDamage()
     this.checkDeadPlayer()
     if (this.winner !== undefined) return true
-    
+
     this.arrangeLastingEffect()
     this.skillPostProcessing(action_indexes)
     this.checkDeadPlayer()
@@ -109,16 +109,17 @@ export class BattleState {
     var atk_skill = this.player_skills[this.attacker_index][atk_action_index]
     var def_skill = this.player_skills[this.defender_index][def_action_index]
 
-    atk_skill.check_availability(this.sequence, this.attacker_index)
-    def_skill.check_availability(this.sequence, this.defender_index)
-
+    // return (
+    //   atk_skill.check_availability(this.sequence, this.attacker_index) &&
+    //   def_skill.check_availability(this.sequence, this.defender_index)
+    // )
     return true
   }
 
   checkDeadPlayer() {
-    if (this.player_lp[this.defender_index] === 0)
+    if (this.player_lp[this.defender_index] <= 0)
       this.winner = this.attacker_index
-    if (this.player_lp[this.attacker_index] === 0)
+    if (this.player_lp[this.attacker_index] <= 0)
       this.winner = this.defender_index
   }
 
