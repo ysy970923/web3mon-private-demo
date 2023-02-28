@@ -29,6 +29,9 @@ terraLogo.src = './../img/terra.png'
 const nearLogo = new Image()
 nearLogo.src = './../img/near.png'
 
+const polygonLogo = new Image()
+polygonLogo.src = './../img/polygonlogo.png'
+
 const READYTEXT = 'Ready for Battle'
 
 export function setMyID(id) {
@@ -299,6 +302,14 @@ export class User {
     } else if (this.chain === 'NEAR') {
       canva.drawImage(
         nearLogo,
+        this.sprite.position.x + this.sprite.width / 2 - 5,
+        this.sprite.position.y - 36,
+        17,
+        17
+      )
+    } else if (this.chain === 'POLYGON') {
+      canva.drawImage(
+        polygonLogo,
         this.sprite.position.x + this.sprite.width / 2 - 5,
         this.sprite.position.y - 36,
         17,

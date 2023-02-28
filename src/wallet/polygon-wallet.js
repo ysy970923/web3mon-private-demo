@@ -14,42 +14,44 @@ export class PolygonWallet {
   accountId
 
   async startUp() {
-    this.provider = new ethers.providers.Web3Provider(window.ethereum)
-    console.log()
-    this.signer = this.provider.getSigner()
-    const nftAddress = '0x419e82D502f598Ca63d821D3bBD8dFEFAf9Bbc8D'
-    this.abi = [
-      'function tokenURI(uint) view returns (string)',
-    ]
+    if (window.ethereum !== undefined) {
+      this.provider = new ethers.providers.Web3Provider(window.ethereum)
+      this.signer = this.provider.getSigner()
+      console.log(this.signer)
+      const nftAddress = '0x419e82D502f598Ca63d821D3bBD8dFEFAf9Bbc8D'
+      this.abi = ['function tokenURI(uint) view returns (string)']
 
-    const nftContract = new ethers.Contract(nftAddress, this.abi, this.provider)
-    var name = await nftContract.tokenURI(2104)
-    console.log(name)
+      const nftContract = new ethers.Contract(
+        nftAddress,
+        this.abi,
+        this.provider
+      )
+      var name = await nftContract.tokenURI(2104)
+      try {
+        var accountId = await this.signer.getAddress()
+        this.accountId = accountId
+        wallet.selectedChain = 'polygon'
+        document.querySelector('#find_my_nft').style.display = 'block'
+        document.querySelector('#sign_out').style.display = 'block'
+        wallet.signIn()
+      } catch (e) {}
+    }
+    await this.setUpSignInModal()
   }
 
-  setUpSignInModal() {
-    document.querySelector('#terraWallets').innerHTML = ''
-    this.availableConnections.value.forEach((e) => {
-      if (e.name[0] !== 'V') {
-        var button = document.createElement('button')
-        button.classList.add('one_collection')
-        button.innerHTML = `<div class="img_outer">
-          <img src=${e.icon} />
-        </div>
-        <div class="collection_name">${e.name}</div>`
-        button.addEventListener('click', (ev) => {
-          this.controller.connect(e.type, e.identifier).then(() => {
-            location.reload()
-          })
-        })
-
-        document.querySelector('#terraWallets').appendChild(button)
+  async setUpSignInModal() {
+    document.getElementById('metamaskBtn').addEventListener('click', () => {
+      if (window.ethereum === undefined) {
+        window.alert('Install Metamask First')
+        return
       }
+      this.provider.send('eth_requestAccounts', []).then(() => {
+        location.reload()
+      })
     })
   }
 
   signOut() {
-    this.controller.disconnect()
     location.reload()
   }
 
@@ -72,11 +74,11 @@ export class PolygonWallet {
   async verifyOwner(collection, token_id) {
     var body = {
       signature:
-        'e47a8c30822b2e7281d834c19f1802ce9374fe1efc62d4a81405b27bd712d747cc0b9cd443f9ad170fe0970667215145744bd92be70292fb225d73675e8a8602',
+        'fd76dd8eb884aea25aff476f20c99cca8ff8e60f37cc6e882abacae86e8f36be36ab67120baf0534fd528449bb66962b386600dd27e9f38db4549ae1c6ab7f00',
       message: {
         chain: 'NEAR',
         collection: 'asac.web3mon.testnet',
-        token_id: 'terra',
+        token_id: 'polygon',
         pub_key:
           '95e02bcf0707b4c9b0fc1d650d01cbd1f2d611036ae4a9690c9677e5068e0c82',
         extra_info: { near_account_id: 'bob.web3mon.testnet' },

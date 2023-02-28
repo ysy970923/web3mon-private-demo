@@ -39,7 +39,21 @@ function onmessage(type, data) {
         currentUsers.add(avatar.player_id)
         // temporary
         if (avatar.player_id === myID) {
-          if (avatar.token_id === 'terra')
+          if (avatar.token_id === 'polygon')
+            safe_send({
+              BoardCastChat: {
+                content: JSON.stringify({
+                  nftCollection: 'Polygon Apes',
+                  tokenId: '10',
+                  chain: 'POLYGON',
+                  nftUrl:
+                    'https://ipfs.io/ipfs/Qmd6B6zQodChv6mMaWjMLidvRKvASXyjXEhF5McsiEr2tV/10.png',
+                  clothes_nft_url: avatar.clothes_nft_url,
+                  coordinate: [0, 0],
+                }),
+              },
+            })
+          if (avatar.token_id === 'polygon')
             safe_send({
               BoardCastChat: {
                 content: JSON.stringify({
@@ -56,7 +70,7 @@ function onmessage(type, data) {
         }
 
         if (!(avatar.player_id in users)) {
-          if (avatar.token_id !== 'terra') {
+          if (avatar.token_id !== 'terra' && avatar.token_id !== 'polygon') {
             var newUser = new User(
               avatar.player_id,
               avatar.collection,

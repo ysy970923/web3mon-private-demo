@@ -655,6 +655,14 @@ class BattleClient {
         consensus_signature: signature,
       },
     })
+
+    if (this.battleState.winner !== undefined) {
+      renderState(this.data, this.battleState)
+      console.log('battle finished')
+      this.data.pick_until_time = getCurrentTime() + 10
+      document.getElementById('atk_or_def').innerText = 'Finalizing...'
+      this.data.status.stage = 'wait-over'
+    }
   }
 
   async getAndEndBattle() {

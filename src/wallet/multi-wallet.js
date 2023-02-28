@@ -19,7 +19,7 @@ class MultiWallet {
   startUp() {
     this.wallets['NEAR'].startUp()
     this.wallets['terra'].startUp()
-    // this.wallets['polygon'].startUp()
+    this.wallets['polygon'].startUp()
   }
 
   getAccountId() {
@@ -46,6 +46,7 @@ class MultiWallet {
   }
 
   async verifyOwner(collection, token_id, cloth_id) {
+    console.log(this.selectedChain)
     return await this.wallets[this.selectedChain].verifyOwner(
       collection,
       token_id,

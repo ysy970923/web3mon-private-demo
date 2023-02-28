@@ -552,7 +552,10 @@ function probabilitic_damage(
   )
 
   if (defence_is_success) {
-    return Math.floor((attack_skill_damage * defence_proportion) / 100)
+    return (
+      attack_skill_damage -
+      Math.floor((attack_skill_damage * defence_proportion) / 100)
+    )
   } else {
     return attack_skill_damage
   }

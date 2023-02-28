@@ -46,8 +46,8 @@ export async function findMyNFT() {
 
       if (data.length !== 0) {
         data.forEach((nft) => {
-            if (nft.token_id !== 'terra') {
-        //   if (true) {
+          if (nft.token_id !== 'terra' && nft.token_id !== 'polygon') {
+            //   if (true) {
             let img = document.createElement('img')
             if (nft.metadata.media.includes('https://'))
               img.src = nft.metadata.media
@@ -91,7 +91,6 @@ export async function findMyNFT() {
       document.querySelector('#clothesBox').appendChild(p)
     }
   }
-  console.log(wallet.selectedChain === 'terra')
 
   // terra
   if (wallet.selectedChain === 'terra') {
@@ -140,6 +139,67 @@ export async function findMyNFT() {
         imgs.push(img)
       }
     }
+
+    tmpClothes.forEach((e) => {
+      var img = document.createElement('img')
+      img.src = e.src
+      img.style = 'width: min(100px, 15%); opacity: 0.5;'
+      img.setAttribute('collection', e.collection)
+      img.setAttribute('asset_id', e.asset_id)
+      img.setAttribute('name', e.name)
+      clothes.push(img)
+      img.onclick = onClothClick
+    })
+
+    imgs.forEach((i) => {
+      document.querySelector('#nftListBox').appendChild(i)
+    })
+
+    clothes.forEach((i) => {
+      document.querySelector('#clothesBox').appendChild(i)
+    })
+
+    if (imgs.length === 0) {
+      let p = document.createElement('p')
+      p.innerHTML = 'There is no NFT'
+      document.querySelector('#nftListBox').appendChild(p)
+    }
+
+    if (clothes.length === 0) {
+      let p = document.createElement('p')
+      p.innerHTML = 'There are no Clothes'
+      document.querySelector('#clothesBox').appendChild(p)
+    }
+  }
+
+  if (wallet.selectedChain === 'polygon') {
+    var tmpImgs = [
+      {
+        asset_id: '10',
+        name: 'tmp',
+        src: 'https://ipfs.io/ipfs/Qmd6B6zQodChv6mMaWjMLidvRKvASXyjXEhF5McsiEr2tV/10.png',
+        collection: 'tmp',
+      },
+    ]
+    var tmpClothes = [
+      {
+        src: 'https://bafybeihppeux4ojitk5nii4znq4t4vw6oa26arg2u7tv276vnhsklibpgy.ipfs.dweb.link/2.png',
+        collection: 'tmp',
+        asset_id: '2',
+        name: 'Web3Mon #2',
+      },
+    ]
+
+    tmpImgs.forEach((e) => {
+      var img = document.createElement('img')
+      img.src = e.src
+      img.style = 'width: min(100px, 15%); opacity: 0.5;'
+      img.setAttribute('collection', e.collection)
+      img.setAttribute('asset_id', e.asset_id)
+      img.setAttribute('name', e.name)
+      imgs.push(img)
+      img.onclick = onImgClick
+    })
 
     tmpClothes.forEach((e) => {
       var img = document.createElement('img')

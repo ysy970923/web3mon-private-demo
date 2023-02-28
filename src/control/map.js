@@ -65,6 +65,17 @@ export function transferMapTo(toMap) {
       return
     }
   }
+  if (wallet.selectedChain === 'polygon') {
+    if (!(toMap === 'MAIN' || toMap === 'BATTLE0')) {
+      document.querySelector('#actionContent').innerText =
+        'Polygon Players not Allowed to Bet yet!'
+      document.querySelector('#battlePopUpCard').style.display = 'block'
+      setTimeout(() => {
+        document.querySelector('#battlePopUpCard').style.display = 'none'
+      }, 5000)
+      return
+    }
+  }
   showLoadingScreen()
 
   switch (toMap) {
