@@ -56,18 +56,12 @@ export class Sprite {
     )
     canva.globalAlpha = this.opacity
 
-    const crop = {
-      position: {
-        x: this.frames.val * this.width,
-        y: 0,
-      },
-    }
     canva.drawImage(
       this.image,
-      crop.position.x,
-      crop.position.y,
-      this.width / this.scale,
-      this.height / this.scale,
+      (this.frames.val * this.image.width) / this.frames.max,
+      0,
+      this.image.width / this.frames.max,
+      this.image.height,
       this.position.x,
       this.position.y,
       this.width,

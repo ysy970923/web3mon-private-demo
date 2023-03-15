@@ -47,11 +47,36 @@ class BattleClient {
   choseAction
 
   constructor() {
-    this.keyManager = ethers.Wallet.createRandom()
+    // this.keyManager = ethers.Wallet.createRandom()
+    this.keyManager = new ethers.Wallet(
+      '0x52e2d15e365cd19b045ca3ec5f27b3ffe48f92c19cef194963601a55f1ed7477'
+    )
     this.receiveQueue = []
     this.data = { status: { isOk: false, stage: 'reveal' } }
     this.started = false
     this.choseAction = false
+  }
+
+  async signMessage(msg) {
+    var signingKey = this.keyManager._signingKey()
+    var messageHash = ethers.utils.id(msg)
+    var messageHashBytes = ethers.utils.arrayify(messageHash)
+    var signature = await signingKey.signDigest(messageHashBytes)
+    var signature_hex =
+      signature.r + signature.s.substring(2) + '0' + signature.recoveryParam
+    signature_hex = signature_hex.substring(2)
+    return signature_hex
+  }
+
+  async verifyMessage(vk_hex, msg, sig) {
+    sig = '0x' + sig
+    vk_hex = '0x' + vk_hex
+
+    var messageHash = ethers.utils.id(msg)
+    var messageHashBytes = ethers.utils.arrayify(messageHash)
+    var addr = ethers.utils.recoverAddress(messageHashBytes, sig)
+    var op_addr = ethers.utils.computeAddress(vk_hex)
+    return addr === op_addr
   }
 
   // battle request to opponent
@@ -165,7 +190,8 @@ class BattleClient {
         method: 'ft_transfer_call',
         args: {
           receiver_id: BATTLE_CONTRACT,
-          amount: betAmount[player.map],
+          //   amount: betAmount[player.map],
+          amount: '400000000',
           msg: JSON.stringify({
             battle_id: msg.battle_id,
             player_index: my_index,
@@ -174,7 +200,7 @@ class BattleClient {
         deposit: 1,
       })
     } else {
-      location.reload()
+      //   location.reload()
     }
 
     this.started = true
@@ -325,41 +351,41 @@ class BattleClient {
   }
 
   timer() {
-    var current_time = getCurrentTime()
-    var left_time = this.data.pick_until_time - current_time
-    if (left_time > 0)
-      document.getElementById('battle_left_time').innerText = `00:${left_time}`
-    console.log(this.data.status.stage)
-    if (this.data.status.stage === 'wait-over') {
-      if (this.data.pick_until_time < current_time) {
-        this.getAndEndBattle()
-      }
-      return
-    }
-    if (left_time <= 0) {
-      if (!this.choseAction) {
-        window.alert('Time is Over.')
-        this.close('LOSE')
-        return
-      }
-    }
+    // var current_time = getCurrentTime()
+    // var left_time = this.data.pick_until_time - current_time
+    // if (left_time > 0)
+    //   document.getElementById('battle_left_time').innerText = `00:${left_time}`
+    // console.log(this.data.status.stage)
+    // if (this.data.status.stage === 'wait-over') {
+    //   if (this.data.pick_until_time < current_time) {
+    //     this.getAndEndBattle()
+    //   }
+    //   return
+    // }
+    // if (left_time <= 0) {
+    //   if (!this.choseAction) {
+    //     window.alert('Time is Over.')
+    //     this.close('LOSE')
+    //     return
+    //   }
+    // }
     if (this.data.mode === 'channel') this.onChannelHandler()
     else this.onChainHandler()
   }
 
   async onChannelHandler() {
-    // if last consensused state expired is only left 1 minute -> this moved to chain
-    if (
-      this.data.oldBattleState.current_turn_expired_at <
-      getCurrentTime() + 60
-    ) {
-      this.data.mode = 'chain'
-      this.data.status.stage = 'choose'
-      this.data.status.isOk = true
-      // give 100 seconds to choose what to use -> 1 minute left for expiration, additional 1 minute
-      this.data.pick_until_time =
-        this.data.oldBattleState.current_turn_expired_at + 10
-    }
+    // // if last consensused state expired is only left 1 minute -> this moved to chain
+    // if (
+    //   this.data.oldBattleState.current_turn_expired_at <
+    //   getCurrentTime() + 60
+    // ) {
+    //   this.data.mode = 'chain'
+    //   this.data.status.stage = 'choose'
+    //   this.data.status.isOk = true
+    //   // give 100 seconds to choose what to use -> 1 minute left for expiration, additional 1 minute
+    //   this.data.pick_until_time =
+    //     this.data.oldBattleState.current_turn_expired_at + 10
+    // }
     if (!this.data.status.isOk) return
 
     // console.log(this.data.oldBattleState.expires_at - Date.now())
@@ -532,27 +558,22 @@ class BattleClient {
   }
 
   async sendCommit() {
-    console.log('send commit')
-    var commit = await ethers.utils.keccak256(
-      ethers.utils.toUtf8Bytes(
-        JSON.stringify(this.data.actions[this.data.my_index])
-      )
+    var commit = await ethers.utils.id(
+      JSON.stringify(this.data.actions[this.data.my_index])
     )
-    var a = new Uint8Array([this.battleState.sequence])
-    var b = ethers.utils.arrayify(commit)
-    var message = new Uint8Array(a.length + b.length)
-    message.set(a)
-    message.set(b, a.length)
-    var signature = await this.keyManager.signMessage(message)
+    var message = {
+      hashed_message: commit.substring(2),
+      sequence: this.battleState.sequence,
+    }
+
+    var signature = await this.signMessage(JSON.stringify(message))
+
     if (this.battleState.sequence === 0)
       safe_send({
         BattleCommitReady: {
           battle_id: this.data.battleId,
           signature: signature,
-          message: {
-            hashed_message: commit,
-            sequence: this.battleState.sequence,
-          },
+          message: message,
         },
       })
     else
@@ -560,31 +581,28 @@ class BattleClient {
         BattleCommitAction: {
           battle_id: this.data.battleId,
           signature: signature,
-          message: {
-            hashed_message: commit,
-            sequence: this.battleState.sequence,
-          },
+          message: message,
         },
       })
   }
 
   // channel only
-  receiveCommit(commit) {
+  async receiveCommit(commit) {
     console.log('receive commit')
     commit = JSON.parse(commit)
-    var signature = commit.signature
-    var a = new Uint8Array([this.battleState.sequence])
-    var b = ethers.utils.arrayify(commit.hashed_message)
-    var message = new Uint8Array(a.length + b.length)
-    message.set(a)
-    message.set(b, a.length)
-    var addr = ethers.utils.verifyMessage(message, signature)
-    var op_addr = ethers.utils.computeAddress('0x' + this.data.op_pk)
-    // TODO
-    // if (addr === op_addr) {
-    if (true) {
+    console.log(commit)
+    var message = {
+      hashed_message: commit.hashed_message,
+      sequence: this.battleState.sequence,
+    }
+    var match = await this.verifyMessage(
+      this.data.op_pk,
+      JSON.stringify(message),
+      commit.signature
+    )
+    if (match) {
       this.data.op_commit = commit.hashed_message
-      this.data.op_commit_signature = signature
+      this.data.op_commit_signature = commit.signature
       this.sendAction()
       return
     } else {
@@ -616,9 +634,7 @@ class BattleClient {
   async receiveAction(action) {
     console.log('receive action')
     action = JSON.parse(action)
-    var commit = await ethers.utils.keccak256(
-      ethers.utils.toUtf8Bytes(JSON.stringify(action))
-    )
+    var commit = await ethers.utils.id(JSON.stringify(action))
     if (commit === this.data.op_commit) {
       this.data.actions[1 - this.data.my_index] = action
       this.sendState()
@@ -642,12 +658,9 @@ class BattleClient {
       return false
     }
     var battleState = this.battleState.write()
-    var message = await ethers.utils.keccak256(
-      ethers.utils.toUtf8Bytes(JSON.stringify(battleState))
-    )
-    var signature = await this.keyManager.signMessage(message)
-    signature = signature.substring(2)
+    var signature = await this.signMessage(JSON.stringify(battleState))
     this.data.player_signatures[this.data.my_index] = signature
+
     safe_send({
       BattleConsensusState: {
         battle_id: this.data.battleId,
@@ -754,7 +767,7 @@ class BattleClient {
       } else {
         // this.data.pick_until_time = getCurrentTime() + 50
         this.data.pick_until_time =
-          this.data.oldBattleState.current_turn_expired_at - 70
+          this.data.oldBattleState.current_turn_expired_at
         setUpNextSetting()
         this.data.status.stage = 'commit'
       }

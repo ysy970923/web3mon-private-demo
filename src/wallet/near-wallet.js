@@ -169,7 +169,7 @@ export class NearWallet {
     console.log(JSON.stringify(body))
 
     var res = await axios.post(
-      'http://ec2-44-201-5-87.compute-1.amazonaws.com:8080/login',
+      'https://dev-server.web3mon.io/login',
       body,
       {
         headers: {

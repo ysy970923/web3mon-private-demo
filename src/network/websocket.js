@@ -10,6 +10,7 @@ import { battle } from '../battle/battleClient'
 import { myID, setMyID, users, User, player } from '../user/user'
 import { turnToGameScreen } from '../user/logIn'
 import { moveUser } from '../control/move'
+import { transferMapTo } from '../control/map'
 
 export let ws = null
 const wsQueue = []
@@ -261,26 +262,15 @@ export function safe_send(msg) {
  */
 export function connect() {
   let serverUrl
-  let scheme = 'ws'
-  const hostName = 'ec2-44-201-5-87.compute-1.amazonaws.com:8080/ws'
-  // var hostName = 'web3mon.yusangyoon.com'
-  log('Hostname: ' + hostName)
-
-  if (document.location.protocol === 'https:') {
-    scheme += 's'
-  }
-
-  serverUrl = scheme + '://' + hostName
-  log(`Connecting to server: ${serverUrl}`)
 
   if (ws != undefined) {
     ws.onerror = ws.onopen = ws.onclose = null
     ws.close()
   }
 
-  serverUrl =
-    'ws://ec2-44-201-5-87.compute-1.amazonaws.com:8080/ws-login?token='
+  serverUrl = 'wss://dev-server.web3mon.io/ws-login?token='
   serverUrl = serverUrl + sessionStorage.getItem('jwt')
+  log(`Connecting to server: ${serverUrl}`)
 
   ws = new WebSocket(serverUrl)
 

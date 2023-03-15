@@ -263,9 +263,7 @@ export class BattleState {
   }
 
   applyCombatDamage(damage) {
-    this.player_lp[this.defender_index] = Math.max(
-      this.player_lp[this.defender_index] - damage,
-      0
-    )
+    this.player_lp[this.defender_index] =
+      this.player_lp[this.defender_index] - damage
   }
 }
