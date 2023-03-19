@@ -1,11 +1,10 @@
 import { joyToKey } from './control/move'
 import { stopAllPlay } from './js/index'
-import { keys, lastKey } from './control/move'
 import { sendPosition } from './control/move'
-import { moveToXDirection } from './control/move'
+import { movePlayer } from './control/move'
 import { battle } from './battle/battleClient'
-import { player, users } from './user/user'
-import { background, foreground } from './control/map'
+import { player, users } from './js/global'
+import { background } from './js/global'
 import { setRenderables, setMovables, renderables } from './js/renderables'
 
 export const npcId = '250'
@@ -26,9 +25,6 @@ export const animate = () => {
 
   background.draw()
 
-  for (var key in users) {
-    users[key].draw()
-  }
   //   foreground.draw()
 
   // NPC가 말하는거
@@ -38,9 +34,6 @@ export const animate = () => {
 
   if (battle.started) return
 
-  // 만약 채팅 중이라면 움직이지 않는다.
-  if (document.getElementById('chatForm').style.display !== 'none') return
-
   // 아래부터는 나의 이동
   var newTime = performance.now()
   var passedTime = newTime - previousTime
@@ -49,18 +42,14 @@ export const animate = () => {
   for (var key in users) {
     users[key].draw(passedTime)
   }
+
+  // 만약 채팅 중이라면 움직이지 않는다.
+  if (document.getElementById('chatForm').style.display !== 'none') return
+  
   if (stopAllPlay) return
 
   player.setMoving(false)
+  movePlayer(1, passedTime)
 
-  if (keys.w.pressed && lastKey === 'w') {
-    moveToXDirection('up', 1, passedTime)
-  } else if (keys.a.pressed && lastKey === 'a') {
-    moveToXDirection('left', 1, passedTime)
-  } else if (keys.s.pressed && lastKey === 's') {
-    moveToXDirection('down', 1, passedTime)
-  } else if (keys.d.pressed && lastKey === 'd') {
-    moveToXDirection('right', 1, passedTime)
-  }
   sendPosition(player.position)
 }

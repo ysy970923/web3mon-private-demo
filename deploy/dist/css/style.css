@@ -7,7 +7,7 @@
   --outline: 4px solid rgba(210, 210, 210, 0.28);
   --btn-outline: 3.5px solid rgba(255, 255, 255, 0.44);
   --btn-outline-hover: 3.5px solid rgba(255, 255, 255, 0.64);
-  --card-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  --card-shadow: 4px 4px 8px 0 rgba(0, 0, 0, 0.3);
 }
 
 @font-face {
@@ -66,6 +66,7 @@ canvas {
 
 .game_button_container {
   margin: 10px;
+  display: inline-block;
 }
 
 .chat-popup {
@@ -218,7 +219,7 @@ canvas {
   color: rgba(242, 242, 242, 0.93);
 }
 
-.guideCard {
+.multiPageDialog {
   color: #111111;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   margin: auto;
@@ -231,7 +232,6 @@ canvas {
   width: 500px;
   height: 380px;
   padding: 20px;
-  padding-top: 10px;
   overflow: hidden;
   display: block;
   /* From https://css.glass */
@@ -243,14 +243,14 @@ canvas {
   border: 1px solid rgba(23, 23, 23, 0.67);
   color: rgba(242, 242, 242, 0.93);
 }
-.guideCard .guideContainer {
+.multiPageDialog .contentContainer {
   float: left;
   overflow: scroll;
   width: 500px;
   height: 350px;
   transition: 0.8s all ease;
 }
-.guideCard .guide {
+.multiPageDialog .page {
   width: 460px;
   height: 350px;
   margin: 0px 0px;
@@ -261,11 +261,11 @@ canvas {
   justify-content: center;
 }
 
-.guideButtons {
+.buttonContainer {
   display: flex;
   flex-direction: row;
 }
-.guideButtons .guideBtn {
+.buttonContainer .pageBtn {
   margin-right: 10px;
   background-color: rgba(0, 0, 0, 0.3);
   width: 45px;
@@ -273,7 +273,7 @@ canvas {
   border: var(--btn-outline);
   border-radius: 4px;
 }
-.guideButtons .guideBtn:hover {
+.buttonContainer .pageBtn:hover {
   border: var(--btn-outline-hover);
   transition: all 0.3s ease;
 }
@@ -337,13 +337,19 @@ img {
   max-width: 800px;
 }
 
-#buttonSection {
+#settingSection {
   position: absolute;
   opacity: 1;
   top: 0;
   right: 0;
   z-index: 9;
   text-align: right;
+}
+
+#buttonSection {
+  display: none;
+  background-color: #ccc;
+  width: 300px;
 }
 
 .fixed_container {
@@ -384,13 +390,35 @@ img {
   flex-direction: column;
   max-width: 400px;
   position: absolute;
-  top: 150px;
   left: 50px;
-  border: 4px rgb(29, 0, 73) solid;
+  border: 6px rgb(29, 0, 128) solid;
   padding: 12px;
   border-radius: 2px;
   border-top-left-radius: 10px;
   border-bottom-right-radius: 10px;
+  /* Text container */
+  /* Image container */
+  /* Responsive image */
+}
+.battleNameTag .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0 auto;
+}
+.battleNameTag .text {
+  padding-right: 20px;
+  font-size: 23px;
+  font-weight: bold;
+  text-shadow: 2px 2px 5px #000;
+}
+.battleNameTag .image {
+  padding-left: 20px;
+}
+.battleNameTag .image img {
+  height: 30px;
+  width: 30px;
 }
 .battleNameTag .health_container {
   margin-top: 3px;
@@ -407,13 +435,50 @@ img {
   font-size: 12px;
   font-weight: 700;
   color: rgb(233, 175, 0);
+  padding-right: 10px;
 }
-.battleNameTag .healthBar {
+.battleNameTag .health_bar {
+  position: relative;
+  width: 250px;
+}
+.battleNameTag .health_bar_outer {
   top: 0;
   left: 0;
   height: 14px;
   width: 100%;
   border-radius: 2px;
+  background-color: #ccc;
+}
+.battleNameTag .health_bar_inner {
+  top: 0;
+  left: 0;
+  height: 14px;
+  width: 100%;
+  border-radius: 2px;
+  position: absolute;
+  background-color: green;
+}
+.battleNameTag .effect_box {
+  background-color: #ccc;
+  display: flex;
+}
+.battleNameTag .effect_box .effect_img_container {
+  width: 30px;
+  height: 30px;
+  margin: 5px;
+}
+.battleNameTag .effect_box .tooltip {
+  background: rgba(255, 255, 255, 0.757);
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  top: 73px;
+  right: 0px;
+  padding: 10px;
+  z-index: 6;
 }
 .battleNameTag #playerHealthBar {
   position: absolute;
@@ -454,12 +519,13 @@ img {
 }
 
 .custom_button_1 {
-  background-color: white;
-  color: black;
+  background-color: black;
+  color: white;
   border: 3px solid black;
-  border-radius: 0px;
+  border-radius: 5px;
   padding: 10px 15px;
   position: relative;
+  box-shadow: 4px 4px 3px 2px purple;
   cursor: pointer;
   z-index: 1;
   overflow: hidden;
@@ -867,6 +933,7 @@ img {
   color: black;
   position: relative;
   background: rgba(52, 152, 219, 0.5333333333);
+  box-shadow: 4px 4px 1px 4px rebeccapurple;
 }
 #battle_skills .battle_skills_container .battle_one_skill:hover {
   background: #3498db;
@@ -913,6 +980,7 @@ img {
 
 .battleCard {
   color: rgba(242, 242, 242, 0.93);
+  width: 400px;
   margin: auto;
   text-align: center;
   left: calc(50% - 200px);

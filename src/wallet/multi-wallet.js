@@ -13,13 +13,13 @@ class MultiWallet {
       network: 'testnet',
     })
     this.wallets['terra'] = new TerraWallet()
-    this.wallets['polygon'] = new PolygonWallet()
+    // this.wallets['polygon'] = new PolygonWallet()
   }
 
   startUp() {
     this.wallets['NEAR'].startUp()
     this.wallets['terra'].startUp()
-    this.wallets['polygon'].startUp()
+    // this.wallets['polygon'].startUp()
   }
 
   getAccountId() {

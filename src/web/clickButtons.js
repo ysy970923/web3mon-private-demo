@@ -2,7 +2,7 @@ import { login } from '../user/logIn'
 import * as nearAPI from 'near-api-js'
 import { findMyNFT } from '../user/findNFT'
 import { wallet } from '../wallet/multi-wallet'
-import { player } from '../user/user'
+import { player } from '../js/global'
 
 function addBtnClickEvent(btnID, func) {
   document.getElementById(btnID).addEventListener('click', func)
@@ -10,6 +10,17 @@ function addBtnClickEvent(btnID, func) {
 
 addBtnClickEvent('closeResultBtn', (e) => {
   document.getElementById('battleResultCard').style.display = 'none'
+})
+
+addBtnClickEvent('openButtonBtn', (e) => {
+  var currentText = document.getElementById('openButtonBtn').innerText
+  if (currentText === 'Close') {
+    document.getElementById('openButtonBtn').innerText = 'Open'
+    document.getElementById('buttonSection').style.display = 'none'
+  } else {
+    document.getElementById('openButtonBtn').innerText = 'Close'
+    document.getElementById('buttonSection').style.display = 'block'
+  }
 })
 
 addBtnClickEvent('find_my_nft', (e) => {

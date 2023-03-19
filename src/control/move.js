@@ -1,18 +1,18 @@
 import { JoyStick } from './joystick'
 import { ws } from '../network/websocket'
-import { adjustMapPosition, background, transferMapTo } from './map'
+import { adjustMapPosition, transferMapTo } from './map'
 import {
   checkForCharacterCollision,
   userBoundaryCollision,
 } from './checkCollision'
 import { movables } from '../js/renderables'
-import { users, myID, player } from '../user/user'
+import { users, myID, player, background } from '../js/global'
 import { allowedBlocks } from '../data/collisions'
 import { portals } from '../data/portals'
 
-export let lastKey = ''
+let lastKey = ''
 
-export let keys = {
+let keys = {
   w: {
     pressed: false,
   },
@@ -114,13 +114,11 @@ export function sendPosition(position) {
   // 버튼 안 눌렀으면 0 이상 차이나면 전송
   // 버튼 안 눌렀는데 0 인데 움직이고 있었으면 멈춤
   if (delta > 50) {
-    moveUser(position)
-    lastSentPosition.x = position.x
-    lastSentPosition.y = position.y
+    sendPositionToServer(position)
   }
 }
 
-function moveUser(position) {
+function sendPositionToServer(position) {
   const body = {
     Move: {
       coordinate: [position.x, position.y],
@@ -134,9 +132,22 @@ function moveUser(position) {
   ws.send(msg)
 }
 
+function checkDirection() {
+  if (keys.w.pressed && lastKey === 'w') return 'up'
+  if (keys.a.pressed && lastKey === 'a') return 'left'
+  if (keys.s.pressed && lastKey === 's') return 'down'
+  if (keys.d.pressed && lastKey === 'd') return 'right'
+  return 'not moving'
+}
+
 const speed = 0.2
-export function moveToXDirection(direction, num = 1, passedTime) {
+export function movePlayer(num = 1, passedTime) {
+
+  const direction = checkDirection()
+  if (direction === 'not moving') return
+  
   var moving = true
+
   const plusOrNot = (direction === 'up') | (direction === 'left') ? 1 : -1
   const isX = (direction === 'left') | (direction === 'right') ? 1 : 0
   const isY = (direction === 'up') | (direction === 'down') ? 1 : 0

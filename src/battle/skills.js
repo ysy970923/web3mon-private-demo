@@ -350,7 +350,7 @@ export class Skill {
         },
         frames: {
           max: frame,
-          hold: 10,
+          fps: 6,
         },
         animate: true,
         rotation: 0,

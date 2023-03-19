@@ -2,9 +2,10 @@ import { Sprite } from '../object/Sprite'
 import { ws } from '../network/websocket'
 import { characters, local_position } from '../js/index'
 import { movePlayerToPosition } from './move'
-import { player, users } from '../user/user'
+import { background, player, users } from '../js/global'
 import { setMovables, setRenderables } from '../js/renderables'
 import { wallet } from '../wallet/multi-wallet'
+import { endLoadingScreen, startLoadingScreen } from '../web/loading'
 
 const mainBackgroundImage = new Image()
 mainBackgroundImage.src = '../img/Island.png'
@@ -23,12 +24,6 @@ const MAP = {
   BATTLE6: 'BATTLE6',
 }
 
-export let background = new Sprite({
-  position: {
-    x: 0,
-    y: 0,
-  },
-})
 background.setImage(mainBackgroundImage)
 
 export let foreground = new Sprite({
@@ -76,7 +71,8 @@ export function transferMapTo(toMap) {
       return
     }
   }
-  showLoadingScreen()
+  startLoadingScreen()
+  endLoadingScreen()
 
   switch (toMap) {
     case MAP.MAIN:
@@ -159,13 +155,4 @@ export function transferMapTo(toMap) {
   const msg = JSON.stringify(body)
   ws.send(msg)
   player.map = toMap
-}
-
-export const showLoadingScreen = async () => {
-  document.querySelector('#loading_screen').style.display = 'block'
-  document.querySelector('#loading_screen_gif').style.display = 'block'
-  setTimeout(() => {
-    document.querySelector('#loading_screen').style.display = 'none'
-    document.querySelector('#loading_screen_gif').style.display = 'none'
-  }, 3000)
 }

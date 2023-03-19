@@ -1,435 +1,301 @@
 <!DOCTYPE html>
 <html class="no-js" lang="">
-  <head>
-    <link rel="shortcut icon" type="image/x-icon" href="./img/favicon.png" />
-    <!-- latest -->
-    <link
-      href="https://unpkg.com/nes.css@latest/css/nes.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./dist/css/style.css" />
-  </head>
-  <body>
-    <div class="loading_screen" id="loading_screen">
-      <img
-        class="loading_screen_gif"
-        id="loading_screen_gif"
-        src="./img/loadingpixel.gif"
-      />
-    </div>
-    <div class="battle_enter" id="battle_enter">
-      <img src="./img/Beach sunset.jpg" style="filter: brightness(50%)" />
-      <div class="container">
-        <div class="title">Get Ready for the Next Battle...</div>
-        <div class="char_container">
-          <div class="char">
-            <div class="img_container">
-              <img id="enter_img" />
-            </div>
-            <div class="desc_row">
-              <div class="desc_item">
-                <div class="label">Collection/ID</div>
-                <div class="value" id="enter_collection">OkeyBears</div>
-              </div>
-              <div class="desc_item">
-                <div class="label">Username</div>
-                <div class="value" id="enter_name">OkeyBears</div>
-              </div>
-            </div>
-            <div class="desc_row" id="selected_attack_skills"></div>
-            <div class="desc_row" id="selected_defence_skills"></div>
+
+<head>
+  <link rel="shortcut icon" type="image/x-icon" href="./img/favicon.png" />
+  <!-- latest -->
+  <link href="https://unpkg.com/nes.css@latest/css/nes.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./dist/css/style.css" />
+</head>
+
+<body>
+  <div class="loading_screen" id="loading_screen">
+    <img class="loading_screen_gif" id="loading_screen_gif" src="./img/loadingpixel.gif" />
+  </div>
+  <div class="battle_enter" id="battle_enter">
+    <img src="./img/Beach sunset.jpg" style="filter: brightness(50%)" />
+    <div class="container">
+      <div class="title">Get Ready for the Next Battle...</div>
+      <div class="char_container">
+        <div class="char">
+          <div class="img_container">
+            <img id="enter_img" />
           </div>
-          <div class="char">
-            <div class="img_container">
-              <img id="opp_enter_img" />
+          <div class="desc_row">
+            <div class="desc_item">
+              <div class="label">Collection/ID</div>
+              <div class="value" id="enter_collection">OkeyBears</div>
             </div>
-            <div class="desc_row">
-              <div class="desc_item">
-                <div class="opp_label">Collection/ID</div>
-                <div class="value" id="opp_enter_collection">OkeyBears</div>
-              </div>
-              <div class="desc_item">
-                <div class="opp_label">Username</div>
-                <div class="value" id="opp_enter_name">OkeyBears</div>
-              </div>
+            <div class="desc_item">
+              <div class="label">Username</div>
+              <div class="value" id="enter_name">OkeyBears</div>
             </div>
-            <div class="desc_row" id="op_selected_attack_skills"></div>
-            <div class="desc_row" id="op_selected_defence_skills"></div>
           </div>
+          <div class="desc_row" id="selected_attack_skills"></div>
+          <div class="desc_row" id="selected_defence_skills"></div>
+        </div>
+        <div class="char">
+          <div class="img_container">
+            <img id="opp_enter_img" />
+          </div>
+          <div class="desc_row">
+            <div class="desc_item">
+              <div class="opp_label">Collection/ID</div>
+              <div class="value" id="opp_enter_collection">OkeyBears</div>
+            </div>
+            <div class="desc_item">
+              <div class="opp_label">Username</div>
+              <div class="value" id="opp_enter_name">OkeyBears</div>
+            </div>
+          </div>
+          <div class="desc_row" id="op_selected_attack_skills"></div>
+          <div class="desc_row" id="op_selected_defence_skills"></div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="main_container">
-      <!-- canvas to draw things -->
-      <canvas style="display: none"></canvas>
-      <div id="game_screen" style="display: none">
-        <div id="loading" class="loader"></div>
-        <div id="overlappingDiv"></div>
+  <div class="main_container">
+    <!-- canvas to draw things -->
+    <canvas id="game_canvas" style="display: none"></canvas>
+    <div id="game_screen" style="display: none">
+      <div id="overlappingDiv"></div>
 
-        <button id="chatOpenBtn" class="nes-btn">Chat</button>
-        <div class="chat-popup" id="chatForm" style="display: none">
-          <form class="form-container">
-            <h2>Chat</h2>
-            <input
-              id="chat"
-              type="text"
-              class="text_input"
-              placeholder="Up to 13 words..."
-              name="msg"
-              maxlength="13"
-              required
-              autocomplete="off"
-              autofocus
-            />
-            <div class="button_container">
-              <button id="sendChatBtn" type="button" class="custom_button">
-                Send
-              </button>
-              <button
-                id="chatCloseBtn"
-                type="button"
-                class="custom_button cancel"
-              >
-                Close
-              </button>
-            </div>
-          </form>
+      <button id="chatOpenBtn" class="nes-btn">Chat</button>
+      <div class="chat-popup" id="chatForm" style="display: none">
+        <form class="form-container">
+          <h2>Chat</h2>
+          <input id="chat" type="text" class="text_input" placeholder="Up to 13 words..." name="msg" maxlength="13"
+            required autocomplete="off" autofocus />
+          <div class="button_container">
+            <button id="sendChatBtn" type="button" class="custom_button">
+              Send
+            </button>
+            <button id="chatCloseBtn" type="button" class="custom_button cancel">
+              Close
+            </button>
+          </div>
+        </form>
+      </div>
+      <div id="settingSection">
+        <div class="game_button_container">
+          <div id="map_identifier" style="color: red; font-size: x-large">
+            Clear
+          </div>
+        </div>
+        <div class="game_button_container">
+          <button class="custom_button_1" id="openButtonBtn" type="button" class="nes-btn">
+            Open
+          </button>
         </div>
         <div id="buttonSection">
           <div class="game_button_container">
-            <div id="map_identifier" style="color: red; font-size: x-large">
-              Clear
-            </div>
-          </div>
-          <div class="game_button_container">
-            <button
-              class="custom_button_1"
-              id="profileBtn"
-              type="button"
-              class="nes-btn"
-            >
+            <button class="custom_button_1" id="profileBtn" type="button" class="nes-btn">
               My Profile
               <span class="bg" />
             </button>
           </div>
           <div class="game_button_container">
-            <button
-              class="custom_button_1"
-              id="guidanceBtn"
-              type="button"
-              class="nes-btn"
-            >
+            <button class="custom_button_1" id="guidanceBtn" type="button" class="nes-btn">
               Guidance
               <span class="bg" />
             </button>
           </div>
           <div class="game_button_container">
-            <button
-              class="custom_button_1"
-              onclick="location.reload()"
-              type="button"
-              class="nes-btn"
-            >
+            <button class="custom_button_1" onclick="location.reload()" type="button" class="nes-btn">
               Leave Game
               <span class="bg" />
             </button>
           </div>
           <div class="game_button_container">
-            <button
-              class="custom_button_1"
-              id="battleHistoryBtn"
-              type="button"
-              class="nes-btn"
-            >
+            <button class="custom_button_1" id="battleHistoryBtn" type="button" class="nes-btn">
               Battle History
               <span class="bg" />
             </button>
           </div>
           <div class="game_button_container" id="readyButtonContainer">
-            <button
-              class="custom_button_1"
-              id="readyButton"
-              type="button"
-              class="nes-btn"
-            >
+            <button class="custom_button_1" id="readyButton" type="button" class="nes-btn">
               Get Ready
               <span class="bg" />
             </button>
           </div>
         </div>
+      </div>
 
-        <!-- Add icon library -->
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-        />
+      <!-- Add icon library -->
+      <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 
-        <div id="battle_banner">
-          <h1 id="battle_sequence">Round: X</h1>
-          <h1 id="battle_left_time">XX:XX</h1>
-          <h1 id="atk_or_def">Attack</h1>
+      <div id="battle_banner">
+        <h1 id="battle_sequence">Round: X</h1>
+        <h1 id="battle_left_time">XX:XX</h1>
+        <h1 id="atk_or_def">Attack</h1>
+      </div>
+
+      <!-- Skill during battle -->
+      <div id="battle_skills">
+        <!-- 원이 6개 -->
+        <div class="battle_skills_container" id="battle_skills_attack"></div>
+        <div class="battle_skills_container" id="battle_skills_defense"></div>
+      </div>
+
+      <div id="profileCard">
+        <img id="profileImg" src="" alt="John" style="width: 100%" />
+        <p id="profileName"></p>
+        <p id="profileNFT" class="title"></p>
+        <p id="profileHP"></p>
+        <p id="profileAP"></p>
+        <button id="parasUrl" class="nes-btn is-primary">see on paras</button>
+      </div>
+
+      <div id="guidanceCard" class="multiPageDialog" style="display: none">
+      </div>
+
+      <!-- Battle Squence 1 : Choose fight or not -->
+      <div id="battleCard" class="battle_modal"></div>
+      <!-- Battle Squence 2 : Choose your skill -->
+      <div id="skill_box_temp" class="battle_modal">
+        <p class="title">Selections</p>
+        <div id="skill_box_wrapper">
+          <div class="attack_skill_box"></div>
+          <div class="defense_skill_box"></div>
         </div>
+        <button id="selectTypeBtn">Choosen All</button>
+      </div>
+      <div id="wait_modal" class="battle_modal">
+        <h4>Waiting for acceptance...</h4>
+      </div>
+      <div id="battleResultCard" class="card" style="padding: 20px">
+        <h2 id="battleResult"></h2>
+        <button id="closeResultBtn" class="nes-btn">YES</button>
+      </div>
 
-        <!-- Skill during battle -->
-        <div id="battle_skills">
-          <!-- 원이 6개 -->
-          <div class="battle_skills_container" id="battle_skills_attack"></div>
-          <div class="battle_skills_container" id="battle_skills_defense"></div>
-        </div>
+      <div id="battlePopUpCard" class="card" style="z-index: 150;">
+        <h2 id="actionContent"></h2>
+      </div>
 
-        <div id="profileCard">
-          <img id="profileImg" src="" alt="John" style="width: 100%" />
-          <p id="profileName"></p>
-          <p id="profileNFT" class="title"></p>
-          <p id="profileHP"></p>
-          <p id="profileAP"></p>
-          <button id="parasUrl" class="nes-btn is-primary">see on paras</button>
-        </div>
+      <div id="battleHistoryCard" class="card">
+        <h2 id="battleHistoryContent"></h2>
+      </div>
 
-        <div id="guidanceCard" class="guideCard" style="display: none">
-          <div class="guideButtons">
-            <div class="guideBtn leftButton" value="1">1</div>
-            <div class="guideBtn rightButton" value="2">2</div>
-          </div>
-          <div id="guideContainer" class="guideContainer">
-            <div class="guide">
-              <h2>Game Guidance</h2>
-              <p>This is a multiplayer game.</p>
-              <p>
-                You can walk, chat and battle with other players within the
-                game.
-              </p>
-              <p>
-                Step into the same Battle Zone box with other player to enter
-                battle.
-              </p>
-            </div>
-            <div class="guide">
-              <h2>Skill Types</h2>
-              <p>Attack :</p>
-              <p>Defense :</p>
-              <p>Lucky :</p>
-            </div>
-          </div>
-        </div>
+      <div id="multipleActionCard" class="battle_modal">
+        <h2>Choose Skills For 5 Rounds</h2>
+        <div id="action_box_container" class="action_box"></div>
+      </div>
 
-        <!-- Battle Squence 1 : Choose fight or not -->
-        <div id="battleCard" class="battle_modal"></div>
-        <!-- Battle Squence 2 : Choose your skill -->
-        <div id="skill_box_temp" class="battle_modal">
-          <p class="title">Selections</p>
-          <div id="skill_box_wrapper">
-            <div class="attack_skill_box"></div>
-            <div class="defense_skill_box"></div>
-          </div>
-          <button id="selectTypeBtn">Choosen All</button>
-        </div>
-        <div id="wait_modal" class="battle_modal">
-          <h4>Waiting for acceptance...</h4>
-        </div>
-        <div id="battleResultCard" class="card" style="padding: 20px">
-          <h2 id="battleResult"></h2>
-          <button id="closeResultBtn" class="nes-btn">YES</button>
-        </div>
-
-        <div id="battlePopUpCard" class="card" style="z-index: 150;">
-          <h2 id="actionContent"></h2>
-        </div>
-
-        <div id="battleHistoryCard" class="card">
-          <h2 id="battleHistoryContent"></h2>
-        </div>
-
-        <div id="multipleActionCard" class="battle_modal">
-          <h2>Choose Skills For 5 Rounds</h2>
-          <div id="action_box_container" class="action_box"></div>
-        </div>
-
-        <div id="userInterface" style="display: none">
-          <!-- Represents health bar of draggle (enemy) -->
-          <div class="battleNameTag" style="top: 30px">
-            <h1 style="font-size: 16px" id="battleOpponentName"></h1>
-            <div class="health_container">
-              <div class="hp_desc">HP:</div>
-              <div style="position: relative; width: 250px">
-                <div class="healthBar" style="background-color: #ccc"></div>
-                <div
-                  class="healthBar"
-                  id="enemyHealthBar"
-                  style="background-color: green"
-                ></div>
-              </div>
-            </div>
-            <div id="enemyEffectsBox" style="background-color: #ccc"></div>
-          </div>
-
-          <!-- Represents health bar of emby (us) -->
-          <div class="battleNameTag">
-            <h1 style="font-size: 16px" id="battleMyName"></h1>
-            <div class="health_container">
-              <div class="hp_desc">HP:</div>
-              <div style="position: relative; width: 250px">
-                <div class="healthBar" style="background-color: #ccc"></div>
-                <div
-                  class="healthBar"
-                  id="playerHealthBar"
-                  style="background-color: green"
-                ></div>
-              </div>
-            </div>
-            <div id="playerEffectsBox" style="background-color: #ccc"></div>
-          </div>
-
-          <div
-            style="
+      <div id="userInterface" style="display: none">
+        <div style="
               margin-bottom: 40px;
               opacity: 0;
               position: absolute;
               z-index: 0;
-            "
-          >
-            <label for="tokenId">NFT ID:</label>
-            <input
-              type="text"
-              placeholder="Enter NFT ID"
-              id="tokenId"
-              class="nes-input"
-              disabled
-            />
-          </div>
+            ">
+          <label for="tokenId">NFT ID:</label>
+          <input type="text" placeholder="Enter NFT ID" id="tokenId" class="nes-input" disabled />
         </div>
       </div>
-      <div
-        id="login_screen"
-        class="modal"
-        style="background-image: url('./img/main/background.jpg')"
-      >
-        <div id="resumePopUp" class="card">
-          <p>You have Resume Data. Resume from checkpoint?</p>
-          <button id="resumeButton" class="web_custom_button">Yes</button>
-          <button id="notResumeButton" class="web_custom_button">No</button>
+    </div>
+    <div id="login_screen" class="modal" style="background-image: url('./img/main/background.jpg')">
+      <div id="resumePopUp" class="card">
+        <p>You have Resume Data. Resume from checkpoint?</p>
+        <button id="resumeButton" class="web_custom_button">Yes</button>
+        <button id="notResumeButton" class="web_custom_button">No</button>
+      </div>
+      <div class="app_bar">
+        <img class="logo" src="./img/w3mlogonew.png" />
+        <div class="icons">
+          <a href="http://discord.gg/jwfpBe7qbU"><img class="discord" src="./img/main/discord.png" /></a>
+          <a href="https://twitter.com/web3mon"><img class="twitter" src="./img/main/twitter.png" /></a>
         </div>
-        <div class="app_bar">
-          <img class="logo" src="./img/w3mlogonew.png" />
-          <div class="icons">
-            <a href="http://discord.gg/jwfpBe7qbU"
-              ><img class="discord" src="./img/main/discord.png"
-            /></a>
-            <a href="https://twitter.com/web3mon"
-              ><img class="twitter" src="./img/main/twitter.png"
-            /></a>
+      </div>
+      <div class="login_main_container">
+        <div class="main_box">
+          <div class="connect_text">
+            Welcome to Web3Mon
+            <br />
+            Please Connect Your Wallet to start Playing!
           </div>
+          <button id="start_login_button" class="web_custom_button" disabled>
+            Start Now
+          </button>
         </div>
-        <div class="login_main_container">
-          <div class="main_box">
-            <div class="connect_text">
-              Welcome to Web3Mon
-              <br />
-              Please Connect Your Wallet to start Playing!
-            </div>
-            <button id="start_login_button" class="web_custom_button" disabled>
-              Start Now
-            </button>
-          </div>
-          <div
-            id="connect_modal_box"
-            class="connect_modal_box"
-            style="
+        <div id="connect_modal_box" class="connect_modal_box" style="
               background: url('./img/main/grad.png') center;
               background-size: cover;
               display: none;
-            "
-          >
-            <div id="chain_containers" style="height: 100%; width: 100%">
-              <div class="connect_text">Connect Your Wallet</div>
-              <div class="chain_containers">
-                <div class="one_chain">
-                  <div class="list" id="nearWallets"></div>
-                  <img class="logo" src="./img/main/near.png" />
-                </div>
-                <div class="one_chain">
-                  <div class="list" id="terraWallets"></div>
-                  <img class="logo" src="./img/main/terra.png" />
-                </div>
-                <div class="one_chain">
-                  <div class="list">
-                    <button id="metamaskBtn" class="one_collection" value="near-punks.near">
-                      <div class="img_outer">
-                        <img src="./img/main/metamask.png" />
-                      </div>
-                      <div class="collection_name">Metamask</div>
-                    </button>
-                  </div>
-                  <img class="logo" src="./img/main/monochrome.png" />
-                </div>
+            ">
+          <div id="chain_containers" style="height: 100%; width: 100%">
+            <div class="connect_text">Connect Your Wallet</div>
+            <div class="chain_containers">
+              <div class="one_chain">
+                <div class="list" id="nearWallets"></div>
+                <img class="logo" src="./img/main/near.png" />
               </div>
-              <div class="input_container">
-                <p>Logged With:</p>
-                <p id="loggedInWith">Not Logged In</p>
-                <button
-                  id="sign_out"
-                  type="button"
-                  class="web_custom_button"
-                  style="margin: 0px; margin-left: 10px; display: none"
-                >
-                  Sign Out
-                </button>
-                <button
-                  id="find_my_nft"
-                  type="button"
-                  class="web_custom_button"
-                  style="margin: 0px; margin-left: 10px; display: none"
-                >
-                  Find My NFT
-                </button>
+              <div class="one_chain">
+                <div class="list" id="terraWallets"></div>
+                <img class="logo" src="./img/main/terra.png" />
+              </div>
+              <div class="one_chain">
+                <div class="list">
+                  <button id="metamaskBtn" class="one_collection" value="near-punks.near">
+                    <div class="img_outer">
+                      <img src="./img/main/metamask.png" />
+                    </div>
+                    <div class="collection_name">Metamask</div>
+                  </button>
+                </div>
+                <img class="logo" src="./img/main/monochrome.png" />
               </div>
             </div>
-            <div id="loading_container" style="display: none">
-              <img src="./img/main/loading.gif" width="50%" />
-            </div>
-            <div
-              id="nft_choose_container"
-              class="nft_choose_container"
-              style="display: none"
-            >
-              <div id="nft_choose_container_back" class="back">⬅</div>
-              <div class="nft_outer">
-                <div class="title">Select NFT to use</div>
-                <div id="nftListBox"></div>
-              </div>
-              <div class="nft_outer">
-                <div class="mt20 title">Choose clothes to wear</div>
-                <div class="img_container">
-                  <div id="clothesBox" />
-                </div>
-              </div>
-              <button class="web_custom_button" id="joinGame">
-                Start Game
+            <div class="input_container">
+              <p>Logged With:</p>
+              <p id="loggedInWith">Not Logged In</p>
+              <button id="sign_out" type="button" class="web_custom_button"
+                style="margin: 0px; margin-left: 10px; display: none">
+                Sign Out
+              </button>
+              <button id="find_my_nft" type="button" class="web_custom_button"
+                style="margin: 0px; margin-left: 10px; display: none">
+                Find My NFT
               </button>
             </div>
           </div>
+          <div id="loading_container" style="display: none">
+            <img src="./img/main/loading.gif" width="50%" />
+          </div>
+          <div id="nft_choose_container" class="nft_choose_container" style="display: none">
+            <div id="nft_choose_container_back" class="back">⬅</div>
+            <div class="nft_outer">
+              <div class="title">Select NFT to use</div>
+              <div id="nftListBox"></div>
+            </div>
+            <div class="nft_outer">
+              <div class="mt20 title">Choose clothes to wear</div>
+              <div class="img_container">
+                <div id="clothesBox" />
+              </div>
+            </div>
+            <button class="web_custom_button" id="joinGame">
+              Start Game
+            </button>
+          </div>
         </div>
       </div>
-
-      <div id="joyDiv"></div>
     </div>
-    <script src="https://cdn.jsdelivr.net/gh/nearprotocol/near-api-js/dist/near-api-js.js"></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"
-      integrity="sha512-6+YN/9o9BWrk6wSfGxQGpt3EUK6XeHi6yeHV+TYD2GR0Sj/cggRpXr1BrAQf0as6XslxomMUxXp2vIl+fv0QRA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"
-      integrity="sha512-H6cPm97FAsgIKmlBA4s774vqoN24V5gSQL4yBTDOY2su2DeXZVhQPxFK4P6GPdnZqM9fg1G3cMv5wD7e6cFLZQ=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script src="https://unpkg.com/jimp@0.14.0/browser/lib/jimp.js"></script>
-    <!-- <script src="data/audio.js"></script> -->
-    <script src="./dist/bundle.js"></script>
-    <script src="./pleaseRotate.js"></script>
-  </body>
+
+    <div id="joyDiv"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/gh/nearprotocol/near-api-js/dist/near-api-js.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"
+    integrity="sha512-6+YN/9o9BWrk6wSfGxQGpt3EUK6XeHi6yeHV+TYD2GR0Sj/cggRpXr1BrAQf0as6XslxomMUxXp2vIl+fv0QRA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"
+    integrity="sha512-H6cPm97FAsgIKmlBA4s774vqoN24V5gSQL4yBTDOY2su2DeXZVhQPxFK4P6GPdnZqM9fg1G3cMv5wD7e6cFLZQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://unpkg.com/jimp@0.14.0/browser/lib/jimp.js"></script>
+  <!-- <script src="data/audio.js"></script> -->
+  <script src="./dist/bundle.js"></script>
+  <script src="./pleaseRotate.js"></script>
+</body>
+
 </html>

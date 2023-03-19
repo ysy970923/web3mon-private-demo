@@ -1,5 +1,6 @@
 import { wallet } from '../wallet/multi-wallet'
 import { connect } from '../network/websocket'
+import { startLoadingScreen } from '../web/loading'
 
 export let playerUrl
 export let tokenId
@@ -52,6 +53,7 @@ export const login = async () => {
         .focus()
     })
   }
+  startLoadingScreen()
   connect()
 }
 
@@ -61,7 +63,7 @@ export const login = async () => {
 export const turnToGameScreen = () => {
   document.getElementById('login_screen').style.display = 'none'
   document.getElementById('game_screen').style.display = 'block'
-  document.querySelector('canvas').style.display = 'block'
+  document.getElementById('game_canvas').style.display = 'block'
 }
 
 export const logout = () => {

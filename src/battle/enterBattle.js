@@ -8,10 +8,11 @@ import {
 import { animate } from '../animate'
 import { addBattleSkillBox } from './initialSetting'
 import { battle } from './battleClient'
-import { player, users } from '../user/user'
 import { SKILL_DESCRIPTIONS } from './skills'
+import { users, player } from '../js/global'
 
 export let battleAnimationId
+let previousTime
 
 /**
  * battle animation start logic
@@ -64,15 +65,20 @@ export function animateBattle() {
     y: window.innerHeight / 2 - battleBackground.height / 2,
   }
 
-  battleBackground.draw()
+  var newTime = performance.now()
+  var passedTime = newTime - previousTime
+  previousTime = newTime
+
+  battleBackground.draw(passedTime)
 
   if (queue.length > 0) {
     queue[0]()
     queue.shift()
   }
+  
 
   for (const key in renderedSprites) {
-    renderedSprites[key].draw()
+    renderedSprites[key].draw(passedTime)
   }
 }
 

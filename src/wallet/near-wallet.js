@@ -33,10 +33,6 @@ export class NearWallet {
   accountId
 
   constructor({ createAccessKeyFor = undefined, network = 'testnet' }) {
-    // Login to a wallet passing a contractId will create a local
-    // key, so the user skips signing non-payable transactions.
-    // Omitting the accountId will result in the user being
-    // asked to sign all transactions.
     this.createAccessKeyFor = createAccessKeyFor
     this.network = network
     this.accountId = undefined
@@ -52,6 +48,10 @@ export class NearWallet {
       ],
     })
 
+    this.walletSelector.on('signedIn', (e) => {
+      location.reload()
+    })
+
     const isSignedIn = this.walletSelector.isSignedIn()
 
     if (isSignedIn) {
@@ -63,13 +63,7 @@ export class NearWallet {
       document.querySelector('#sign_out').style.display = 'block'
       wallet.signIn()
     }
-    this.setUpSignInModal()
-    document.querySelector('#start_login_button').removeAttribute('disabled')
-    return isSignedIn
-  }
 
-  // Sign-in method
-  setUpSignInModal() {
     const description = 'Please select a wallet to sign in.'
     const modal = setupModal(this.walletSelector, {
       contractId: this.createAccessKeyFor,
@@ -88,6 +82,9 @@ export class NearWallet {
     while (elements.length > 0) {
       elements[0].parentNode.removeChild(elements[0])
     }
+
+    document.querySelector('#start_login_button').removeAttribute('disabled')
+    return isSignedIn
   }
 
   // Sign-out method
@@ -141,8 +138,16 @@ export class NearWallet {
   }
 
   async verifyOwner(collection, tokenId, clothId) {
-    const keyStore = new keyStores.BrowserLocalStorageKeyStore()
-    const keyPair = await keyStore.getKey(this.network, this.accountId) // w
+    const { selectedWalletId } = this.walletSelector.store.getState();
+    console.log(selectedWalletId); // "near-wallet"
+    var keyStore
+    if (selectedWalletId === 'near-wallet') {
+      keyStore = new keyStores.BrowserLocalStorageKeyStore(window.localStorage)
+    }
+    else if (selectedWalletId === 'meteor-wallet') {
+      keyStore = new keyStores.BrowserLocalStorageKeyStore(window.localStorage, "_meteor_wallet")
+    }
+    const keyPair = await keyStore.getKey(this.network, this.accountId)
 
     let msg = {
       chain: 'NEAR',
@@ -155,9 +160,6 @@ export class NearWallet {
       clothes_nft_id: clothId,
     }
     var hash_msg = JSON.stringify(msg)
-    // var hash = sha256.create()
-    // hash.update(hash_msg)
-    // hash_msg = hash.hex()
     hash_msg = await ethers.utils
       .keccak256(ethers.utils.toUtf8Bytes(hash_msg))
       .substring(2)

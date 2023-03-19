@@ -1,5 +1,5 @@
 import { Sprite } from '../object/Sprite'
-import { canva, local_position, setRenderables } from '../js/index'
+import { local_position, setRenderables } from '../js/index'
 import { selectedClothId, playerUrl } from './logIn'
 import { animate } from '../animate'
 import { adjustMapPosition, background, foreground, transferMapTo } from '../control/map'
@@ -7,6 +7,8 @@ import { battle } from '../battle/battleClient'
 import { safe_send } from '../network/websocket'
 import axios from 'axios'
 import { movePlayerToPosition, moveUser, stopUser } from '../control/move'
+import { setPlayer, users } from '../js/global'
+import { endLoadingScreen } from '../web/loading'
 
 const clothStorageLink = 'https://web3mon.s3.amazonaws.com/nftv1/'
 
@@ -15,13 +17,7 @@ export const worker = new Worker('./worker.js')
 const chatBubble = new Image()
 chatBubble.src = './../img/chatBubble2.png'
 
-export let player
-
-export function setPlayer(a) {
-  player = a
-}
 export let myID
-export const users = {}
 
 const terraLogo = new Image()
 terraLogo.src = './../img/terra.png'
@@ -34,8 +30,18 @@ polygonLogo.src = './../img/polygonlogo.png'
 
 const READYTEXT = 'Ready for Battle'
 
+const canvas = document.getElementById('game_canvas')
+
+const canva = canvas.getContext('2d')
+
 export function setMyID(id) {
   myID = id
+}
+
+export function startGame() {
+  adjustMapPosition()
+  endLoadingScreen()
+  animate()
 }
 
 worker.onmessage = function (event) {
@@ -56,19 +62,17 @@ worker.onmessage = function (event) {
   if (resume_data !== null) {
     resume_data = JSON.parse(resume_data)
     var opponent_id = resume_data.battle_data.opponent_id
+    transferMapTo(resume_data.map)
     if (event.data.id === myID || event.data.id === opponent_id)
       if (myID in users && opponent_id in users) {
         if (users[myID].made && users[opponent_id].made) {
-          document.getElementById('loading').style.display = 'none'
-          animate()
+          startGame()
           battle.resume(resume_data.battle_data)
         }
       }
   } else {
     if (event.data.id === myID) {
-      adjustMapPosition()
-      document.getElementById('loading').style.display = 'none'
-      animate()
+      startGame()
     }
   }
 }
@@ -107,7 +111,7 @@ export class User {
   ) {
     console.log(clothId)
     if (id === myID) {
-      player = this
+      setPlayer(this)
     }
 
     this.position = { x: coordinate[0], y: coordinate[1] }
@@ -135,7 +139,7 @@ export class User {
       position: this.position,
       frames: {
         max: 4,
-        hold: 10,
+        fps: 8,
       },
     })
     this.spriteImgs = {
@@ -317,6 +321,6 @@ export class User {
       )
     }
 
-    this.sprite.draw()
+    this.sprite.draw(passedTime)
   }
 }

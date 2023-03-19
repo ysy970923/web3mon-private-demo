@@ -4,13 +4,12 @@
   --outline: 4px solid rgba(210, 210, 210, 0.28);
   --btn-outline: 3.5px solid rgba(255, 255, 255, 0.44);
   --btn-outline-hover: 3.5px solid rgba(255, 255, 255, 0.64);
-  --card-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  --card-shadow: 4px 4px 8px 0 rgba(0, 0, 0, 0.3);
 }
 
 @font-face {
   font-family: 'Pretendard';
-  src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff')
-    format('woff');
+  src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
   font-weight: 500;
   font-style: normal;
 }
@@ -70,6 +69,7 @@ canvas {
 
 .game_button_container {
   margin: 10px;
+  display: inline-block;
 }
 
 .chat-popup {
@@ -140,6 +140,7 @@ canvas {
       height: 113%;
       z-index: -1;
     }
+
     .button_container {
       display: flex;
       flex-direction: row;
@@ -240,7 +241,7 @@ canvas {
   color: rgba(242, 242, 242, 0.93);
 }
 
-.guideCard {
+.multiPageDialog {
   color: #111111;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   margin: auto;
@@ -253,7 +254,6 @@ canvas {
   width: 500px;
   height: 380px;
   padding: 20px;
-  padding-top: 10px;
   overflow: hidden;
   display: block;
 
@@ -266,7 +266,7 @@ canvas {
   border: 1px solid rgba(23, 23, 23, 0.67);
   color: rgba(242, 242, 242, 0.93);
 
-  .guideContainer {
+  .contentContainer {
     float: left;
     overflow: scroll;
     width: 500px;
@@ -274,7 +274,7 @@ canvas {
     transition: 0.8s all ease;
   }
 
-  .guide {
+  .page {
     width: 460px;
     height: 350px;
     margin: 0px 0px;
@@ -286,10 +286,11 @@ canvas {
   }
 }
 
-.guideButtons {
+.buttonContainer {
   display: flex;
   flex-direction: row;
-  .guideBtn {
+
+  .pageBtn {
     margin-right: 10px;
     background-color: rgba(0, 0, 0, 0.3);
     width: 45px;
@@ -365,13 +366,19 @@ img {
   max-width: 800px;
 }
 
-#buttonSection {
+#settingSection {
   position: absolute;
   opacity: 1;
   top: 0;
   right: 0;
   z-index: 9;
   text-align: right;
+}
+
+#buttonSection {
+  display: none;
+  background-color: #ccc;
+  width: 300px;
 }
 
 .fixed_container {
@@ -402,6 +409,7 @@ img {
 #nftListBox {
   margin-top: min(20px, 1%);
   text-align: center;
+
   img {
     margin: 6px;
   }
@@ -413,13 +421,39 @@ img {
   flex-direction: column;
   max-width: 400px;
   position: absolute;
-  top: 150px;
   left: 50px;
-  border: 4px rgb(29, 0, 73) solid;
+  border: 6px rgb(29, 0, 128) solid;
   padding: 12px;
   border-radius: 2px;
   border-top-left-radius: 10px;
   border-bottom-right-radius: 10px;
+
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* Text container */
+  .text {
+    padding-right: 20px;
+    font-size: 23px;
+    font-weight: bold;
+    text-shadow: 2px 2px 5px #000;
+  }
+
+  /* Image container */
+  .image {
+    padding-left: 20px;
+  }
+
+  /* Responsive image */
+  .image img {
+    height: 30px;
+    width: 30px;
+  }
 
   .health_container {
     margin-top: 3px;
@@ -437,19 +471,62 @@ img {
     font-size: 12px;
     font-weight: 700;
     color: rgb(233, 175, 0);
+    padding-right: 10px;
   }
 
-  .healthBar {
+  .health_bar {
+    position: relative;
+    width: 250px
+  }
+
+  .health_bar_outer {
     top: 0;
     left: 0;
     height: 14px;
     width: 100%;
     border-radius: 2px;
+    background-color: #ccc;
+  }
+
+  .health_bar_inner {
+    top: 0;
+    left: 0;
+    height: 14px;
+    width: 100%;
+    border-radius: 2px;
+    position: absolute;
+    background-color: green;
+  }
+
+  .effect_box {
+    background-color: #ccc;
+    display: flex;
+
+    .effect_img_container {
+      width: 30px;
+      height: 30px;
+      margin: 5px;
+    }
+
+    .tooltip {
+      background: rgba(255, 255, 255, 0.757);
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      top: 73px;
+      right: 0px;
+      padding: 10px;
+      z-index: 6;
+    }
   }
 
   #playerHealthBar {
     position: absolute;
   }
+
   #enemyHealthBar {
     position: absolute;
   }
@@ -487,19 +564,20 @@ img {
 }
 
 .custom_button_1 {
-  background-color: white;
-  color: black;
+  background-color: black;
+  color: white;
   border: 3px solid black;
-  border-radius: 0px;
+  border-radius: 5px;
   padding: 10px 15px;
   position: relative;
+  box-shadow: 4px 4px 3px 2px purple;
   cursor: pointer;
   z-index: 1;
   overflow: hidden;
   transition: all 0.5s ease-in-out;
 }
 
-.custom_button_1 > span.bg {
+.custom_button_1>span.bg {
   background: black;
   width: 100%;
   height: 100%;
@@ -512,18 +590,19 @@ img {
   color: white;
 }
 
-.custom_button_1:hover > span.bg {
+.custom_button_1:hover>span.bg {
   transition: all 0.3s ease-in-out;
 }
+
 /* left */
 
-.custom_button_1 > .bg {
+.custom_button_1>.bg {
   left: 0;
   bottom: 0;
   transform: translateX(-100%);
 }
 
-.custom_button_1:hover > .bg {
+.custom_button_1:hover>.bg {
   transform: translateX(0);
 }
 
@@ -562,9 +641,11 @@ img {
     flex-direction: row;
     justify-content: center;
     align-items: center;
+
     .twitter {
       width: 40px;
     }
+
     .discord {
       width: 70px;
     }
@@ -709,6 +790,7 @@ img {
           outline: none;
           cursor: pointer;
         }
+
         &:focus {
           outline: 2px solid rgba(240, 240, 240, 0.2);
         }
@@ -745,6 +827,7 @@ img {
           outline: none;
           cursor: pointer;
         }
+
         &:focus {
           outline: 2px solid rgba(240, 240, 240, 0.2);
         }
@@ -780,6 +863,7 @@ img {
     input {
       width: 50%;
     }
+
     button {
       margin-left: 20px;
     }
@@ -788,6 +872,7 @@ img {
       outline: none;
     }
   }
+
   @media (max-width: 900px) {
     .input_container {
       flex-direction: column;
@@ -812,6 +897,7 @@ img {
     padding: 13px 20px;
     border-radius: 6px;
     background-color: rgba(250, 250, 250, 0.15);
+
     &:hover {
       background-color: rgba(250, 250, 250, 0.3);
     }
@@ -906,6 +992,7 @@ img {
   justify-content: center;
   z-index: 10;
 }
+
 #battle_skills {
   display: none;
   flex-direction: column;
@@ -940,6 +1027,9 @@ img {
       color: black;
       position: relative;
       background: #3498db88;
+
+      box-shadow: 4px 4px 1px 4px rebeccapurple;
+
       &:hover {
         background: #3498db;
       }
@@ -948,12 +1038,15 @@ img {
     .a0 {
       margin-top: 30px;
     }
+
     .a2 {
       margin-top: 20px;
     }
+
     .d0 {
       margin-top: 30px;
     }
+
     .d2 {
       margin-top: 20px;
     }

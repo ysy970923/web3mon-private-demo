@@ -1,4 +1,6 @@
-import { canva } from '../js/index'
+const canvas = document.getElementById('game_canvas')
+
+const canva = canvas.getContext('2d')
 
 export class Sprite {
   image
@@ -7,7 +9,7 @@ export class Sprite {
   shouldDraw
   constructor({
     position,
-    frames = { max: 1, hold: 10 },
+    frames = { max: 1, fps: 10 },
     animate = false,
     rotation = 0,
     scale = 1,
@@ -34,7 +36,7 @@ export class Sprite {
     this.scale = scale
   }
 
-  draw() {
+  draw(passedTime) {
     if (!this.shouldDraw) {
       if (this.image !== undefined)
         if (this.image.complete) {
@@ -72,11 +74,9 @@ export class Sprite {
 
     if (!this.animate) return
 
-    if (this.frames.max > 1) {
-      this.frames.elapsed++
-    }
-
-    if (this.frames.elapsed % this.frames.hold === 0) {
+    this.frames.elapsed += passedTime
+    if (this.frames.elapsed > 1000 / this.frames.fps) {
+      this.frames.elapsed = 0
       if (this.frames.val < this.frames.max - 1) this.frames.val++
       else this.frames.val = 0
     }

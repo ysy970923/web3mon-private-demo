@@ -4,9 +4,10 @@ import { battle } from './battleClient'
 import { Monster } from '../object/Monster'
 import { gsap } from 'gsap'
 import { battleAnimationId } from './enterBattle'
-import { users, player } from '../user/user'
+import { users, player } from '../js/global'
 import { removeBattleSkillBox } from './initialSetting'
 import { adjustMapPosition } from '../control/map'
+import { battleNameTagMaker } from '../web/battleNameTag'
 
 export const battleBackground = new Sprite({
   position: {
@@ -22,8 +23,8 @@ export function setBattleBackground(i) {
   battleBackground.setImage(im)
 }
 
-export let opponent
-export let myMonster
+let opponent
+let myMonster
 export let renderedSprites = {}
 export let queue
 
@@ -47,6 +48,8 @@ export function renderState(data, battleState) {
   opponent.adjustHealth(battleState.player_lp[1 - data.my_index])
   mySkill.render(myMonster, opponent, renderedSprites)
   opSkill.render(opponent, myMonster, renderedSprites)
+  myMonster.addEffects(battleState.lasting_effect)
+  opponent.addEffects(battleState.lasting_effect)
 
   if (myMonster.health <= 0) {
     myMonster.faint()
@@ -55,15 +58,6 @@ export function renderState(data, battleState) {
   else if (opponent.health <= 0) {
     opponent.faint()
   }
-  document.querySelector('#playerEffectsBox').innerHTML = ''
-  battleState.lasting_effect.forEach((e) => {
-    document.querySelector('#playerEffectsBox').append(`${JSON.stringify(e)}`)
-  })
-
-  document.querySelector('#enemyEffectsBox').innerHTML = ''
-  battleState.lasting_effect.forEach((e) => {
-    document.querySelector('#enemyEffectsBox').append(`${JSON.stringify(e)}`)
-  })
 }
 
 export function setUpNextSetting() {
@@ -119,28 +113,27 @@ export function endBattle(result) {
  */
 export function initBattle() {
   document.querySelector('#joyDiv').style.display = 'none'
+
+  var opponent_user = users[battle.data.opponent_id]
+  battleNameTagMaker(player.name, player.nftUrl, 'ME')
+  battleNameTagMaker(opponent_user.name, opponent_user.nftUrl, 'OP')
+
   document.querySelector('#userInterface').style.display = 'block'
-  document.querySelector('#enemyHealthBar').style.width = '100%'
-  document.querySelector('#playerHealthBar').style.width = '100%'
-  document.querySelector('#battleMyName').innerHTML = `me(${player.name})`
-  document.querySelector('#battleOpponentName').innerHTML = `opponent(${
-    users[battle.data.opponent_id].name
-  })`
 
   var battleState = battle.battleState
   const opponentUser = {
-    isEnemy: true,
-    name: users[battle.data.opponent_id].name,
+    me_or_op: 'OP',
+    name: opponent_user.name,
     health: battle.data.player_init_lp[1 - battle.data.my_index],
     skills: battleState.player_skills[1 - battle.data.my_index],
   }
 
   opponent = new Monster(opponentUser)
-  opponent.setImage(users[battle.data.opponent_id].spriteImgs.base)
+  opponent.setImage(opponent_user.spriteImgs.base)
   opponent.adjustHealth(battleState.player_lp[1 - battle.data.my_index])
 
   const myCharacter = {
-    isEnemy: false,
+    me_or_op: 'ME',
     name: player.name,
     health: battle.data.player_init_lp[battle.data.my_index],
     skills: battleState.player_skills[battle.data.my_index],

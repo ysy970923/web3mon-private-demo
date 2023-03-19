@@ -7,10 +7,11 @@ import {
   setUpBattleCard,
 } from '../battle/battleStart'
 import { battle } from '../battle/battleClient'
-import { myID, setMyID, users, User, player } from '../user/user'
+import { myID, setMyID, User, player } from '../user/user'
 import { turnToGameScreen } from '../user/logIn'
 import { moveUser } from '../control/move'
 import { transferMapTo } from '../control/map'
+import { users } from '../js/global'
 
 export let ws = null
 const wsQueue = []
@@ -152,7 +153,7 @@ function onmessage(type, data) {
 
     case NETWORK.BATTLE_INIT:
       console.log('배틀 열림!', data)
-      battle.start(data)
+      battle.setUp(data)
       break
 
     case NETWORK.BATTLE_OFFER:
@@ -174,13 +175,22 @@ function onmessage(type, data) {
       if (data.message_type === 'Ok') {
         battle.data.status.isOk = true
       } else if (data.message_type === 'Next') {
+        // switch (battle.data.status.stage) {
+        //   case 'commit':
+        //     battle.data.status.stage = 'reveal'
+        //     break
+        //   case 'reveal':
+        //     battle.data.status.stage = 'state'
+        //     break
+        //   case 'state':
       } else if (data.message_type === 'ByPass') {
         battle.receiveQueue.push(data.content)
       } else if (data.message_type === 'ConsensusState') {
         var content = JSON.parse(data.content)
         console.log(content)
-        battle.battleState.expires_at = content.next_turn_expired_at
+        battle.data.pick_until_time = content.next_turn_expired_at
         battle.data.manager_signature = content.manager_signature
+        battle.data.status.stage = 'state'
       }
       break
 

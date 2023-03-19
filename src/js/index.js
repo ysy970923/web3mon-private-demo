@@ -1,4 +1,4 @@
-import { background, foreground } from '../control/map'
+import { background, foreground } from './global'
 import { clickEvent } from '../battle/battleStart'
 import { setNFTInfo, setPlayerUrl, collection, setClothId } from '../user/logIn'
 import { battle } from '../battle/battleClient'
@@ -13,7 +13,7 @@ export const setStopAllPlay = (bol) => {
   stopAllPlay = bol
 }
 
-export const canvas = document.querySelector('canvas')
+const canvas = document.querySelector('canvas')
 clickEvent()
 
 const body = document.querySelector('body')
@@ -36,7 +36,7 @@ body.addEventListener('keydown', (event) => {
   //   }
 })
 
-export const canva = canvas.getContext('2d')
+const canva = canvas.getContext('2d')
 canva.textAlign = 'center'
 
 export const offset = {
