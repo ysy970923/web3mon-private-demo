@@ -14,12 +14,12 @@ addBtnClickEvent('closeResultBtn', (e) => {
 
 addBtnClickEvent('openButtonBtn', (e) => {
   var currentText = document.getElementById('openButtonBtn').innerText
-  if (currentText === 'Close') {
-    document.getElementById('openButtonBtn').innerText = 'Open'
+  if (currentText === '▲') {
+    document.getElementById('openButtonBtn').innerText = '▼'
     document.getElementById('buttonSection').style.display = 'none'
   } else {
-    document.getElementById('openButtonBtn').innerText = 'Close'
-    document.getElementById('buttonSection').style.display = 'block'
+    document.getElementById('openButtonBtn').innerText = '▲'
+    document.getElementById('buttonSection').style.display = 'inline-block'
   }
 })
 

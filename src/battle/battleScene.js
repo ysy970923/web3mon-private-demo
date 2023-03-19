@@ -23,25 +23,24 @@ export function setBattleBackground(i) {
   battleBackground.setImage(im)
 }
 
-let opponent
-let myMonster
 export let renderedSprites = {}
-export let queue
 
 /** 공격이 들어와서 내가 공격을 받음 */
 export function renderState(data, battleState) {
+  var myMonster = renderedSprites['me']
+  var opponent = renderedSprites['op']
   var mySkill = battle.getPlayerAction(data.my_index)
   var opSkill = battle.getPlayerAction(1 - data.my_index)
   document
     .querySelector('#battleHistoryContent')
     .append(
       myMonster.name +
-        ' used ' +
-        mySkill.type +
-        '\n' +
-        opponent.name +
-        ' used ' +
-        opSkill.type
+      ' used ' +
+      mySkill.type +
+      '\n' +
+      opponent.name +
+      ' used ' +
+      opSkill.type
     )
 
   myMonster.adjustHealth(battleState.player_lp[data.my_index])
@@ -83,28 +82,26 @@ export function endBattle(result) {
   removeBattleSkillBox()
   adjustMapPosition()
 
-  queue.push(() => {
-    // fade back to black
-    gsap.to('#overlappingDiv', {
-      opacity: 1,
-      onComplete: () => {
-        cancelAnimationFrame(battleAnimationId)
-        animate()
-        document.querySelector('#userInterface').style.display = 'none'
-        document.getElementById('battleResultCard').style.display = 'block'
-        document.getElementById(
-          'battleResult'
-        ).innerText = `You ${result}!\r\n${battle.data.bet_amount.substring(
-          0,
-          2
-        )}$ MOVE To WINNER!`
-        document.querySelector('#joyDiv').style.display = 'block'
-        gsap.to('#overlappingDiv', {
-          opacity: 0,
-        })
-        battle.started = false
-      },
-    })
+  // fade back to black
+  gsap.to('#overlappingDiv', {
+    opacity: 1,
+    onComplete: () => {
+      cancelAnimationFrame(battleAnimationId)
+      animate()
+      document.querySelector('#userInterface').style.display = 'none'
+      document.getElementById('battleResultCard').style.display = 'block'
+      document.getElementById(
+        'battleResult'
+      ).innerText = `You ${result}!\r\n${battle.data.bet_amount.substring(
+        0,
+        2
+      )}$ MOVE To WINNER!`
+      document.querySelector('#joyDiv').style.display = 'block'
+      gsap.to('#overlappingDiv', {
+        opacity: 0,
+      })
+      battle.started = false
+    },
   })
 }
 
@@ -128,7 +125,8 @@ export function initBattle() {
     skills: battleState.player_skills[1 - battle.data.my_index],
   }
 
-  opponent = new Monster(opponentUser)
+  var opponent = new Monster(opponentUser)
+  opponent.setScale(1.5)
   opponent.setImage(opponent_user.spriteImgs.base)
   opponent.adjustHealth(battleState.player_lp[1 - battle.data.my_index])
 
@@ -139,15 +137,14 @@ export function initBattle() {
     skills: battleState.player_skills[battle.data.my_index],
   }
 
-  myMonster = new Monster(myCharacter)
+  var myMonster = new Monster(myCharacter)
+  myMonster.setScale(1.5)
   myMonster.setImage(player.spriteImgs.base)
   myMonster.adjustHealth(battleState.player_lp[battle.data.my_index])
 
   renderedSprites['op'] = opponent
   renderedSprites['me'] = myMonster
   console.log(renderedSprites)
-
-  queue = []
 
   document.getElementById('battle_skills').style.display = 'block'
 }

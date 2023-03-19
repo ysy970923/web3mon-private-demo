@@ -22,8 +22,8 @@ body.addEventListener('keydown', (event) => {
   if (document.getElementById('chatForm').style.display !== 'none') {
     return
   }
-//   let key = event.code
-//   let keyCode = event.keyCode
+  //   let key = event.code
+  //   let keyCode = event.keyCode
   //   if (key === 'Space' || keyCode === 32) {
   //     moveToXDirection(true, lastKey, 4)
   //     moveToXDirection(true, lastKey, 4)
@@ -61,6 +61,7 @@ function initalSetting() {
 // make other charaters or objects.
 var resume_data = sessionStorage.getItem('resume-data')
 if (resume_data !== null) {
+  document.getElementById('resume-background').style.display = 'block'
   document.getElementById('resumePopUp').style.display = 'block'
   document.getElementById('resumeButton').addEventListener('click', (e) => {
     resume_data = JSON.parse(resume_data)
@@ -73,5 +74,6 @@ if (resume_data !== null) {
   document.getElementById('notResumeButton').addEventListener('click', (e) => {
     sessionStorage.removeItem('resume-data')
     document.getElementById('resumePopUp').style = 'none'
+    document.getElementById('resume-background').style.display = 'none'
   })
 }

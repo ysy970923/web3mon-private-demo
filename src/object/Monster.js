@@ -18,13 +18,13 @@ export class Monster extends Sprite {
     var position
     if (me_or_op === 'OP')
       position = {
-        x: window.innerWidth * 0.9 - 200,
-        y: window.innerHeight * 0.1 + 200,
+        x: window.innerWidth * 0.7 - 96 * 1.5,
+        y: window.innerHeight * 0.3 - 96 * 1.5,
       }
     else
       position = {
-        x: window.innerWidth * 0.1 + 200,
-        y: window.innerHeight * 0.9 - 200,
+        x: window.innerWidth * 0.3 - 96 * 1.5,
+        y: window.innerHeight * 0.7 - 96 * 1.5,
       }
     super({
       position,
@@ -96,15 +96,15 @@ export class Monster extends Sprite {
   }
 
   draw() {
-    if (this.me_or_op == 'OP')
+    if (this.me_or_op === 'OP')
       super.position = {
-        x: window.innerWidth * 0.9 - 100,
-        y: window.innerHeight * 0.1 + 200,
+        x: window.innerWidth * 0.7 - 96 * 1.5,
+        y: window.innerHeight * 0.3 - 96 * 1.5,
       }
     else
       super.position = {
-        x: window.innerWidth * 0.1 + 100,
-        y: window.innerHeight * 0.9 - 200,
+        x: window.innerWidth * 0.3 - 96 * 1.5,
+        y: window.innerHeight * 0.7 - 96 * 1.5,
       }
     super.draw()
   }

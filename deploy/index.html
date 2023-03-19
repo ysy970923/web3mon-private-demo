@@ -61,7 +61,6 @@
     <div id="game_screen" style="display: none">
       <div id="overlappingDiv"></div>
 
-      <button id="chatOpenBtn" class="nes-btn">Chat</button>
       <div class="chat-popup" id="chatForm" style="display: none">
         <form class="form-container">
           <h2>Chat</h2>
@@ -85,38 +84,36 @@
         </div>
         <div class="game_button_container">
           <button class="custom_button_1" id="openButtonBtn" type="button" class="nes-btn">
-            Open
+            ▼
           </button>
         </div>
         <div id="buttonSection">
           <div class="game_button_container">
+            <button id="chatOpenBtn" class="custom_button_1" type="button" class="nes-btn">Chat</button>
+          </div>
+          <div class="game_button_container">
             <button class="custom_button_1" id="profileBtn" type="button" class="nes-btn">
               My Profile
-              <span class="bg" />
             </button>
           </div>
           <div class="game_button_container">
             <button class="custom_button_1" id="guidanceBtn" type="button" class="nes-btn">
               Guidance
-              <span class="bg" />
             </button>
           </div>
           <div class="game_button_container">
             <button class="custom_button_1" onclick="location.reload()" type="button" class="nes-btn">
               Leave Game
-              <span class="bg" />
             </button>
           </div>
           <div class="game_button_container">
             <button class="custom_button_1" id="battleHistoryBtn" type="button" class="nes-btn">
               Battle History
-              <span class="bg" />
             </button>
           </div>
           <div class="game_button_container" id="readyButtonContainer">
             <button class="custom_button_1" id="readyButton" type="button" class="nes-btn">
               Get Ready
-              <span class="bg" />
             </button>
           </div>
         </div>
@@ -196,10 +193,12 @@
       </div>
     </div>
     <div id="login_screen" class="modal" style="background-image: url('./img/main/background.jpg')">
-      <div id="resumePopUp" class="card">
-        <p>You have Resume Data. Resume from checkpoint?</p>
-        <button id="resumeButton" class="web_custom_button">Yes</button>
-        <button id="notResumeButton" class="web_custom_button">No</button>
+      <div id="resume-background" class="modal-overlay">
+        <div id="resumePopUp" class="card">
+          <p>You have Resume Data. Resume from checkpoint?</p>
+          <button id="resumeButton" class="web_custom_button">Yes</button>
+          <button id="notResumeButton" class="web_custom_button">No</button>
+        </div>
       </div>
       <div class="app_bar">
         <img class="logo" src="./img/w3mlogonew.png" />

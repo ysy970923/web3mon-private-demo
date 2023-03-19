@@ -41,7 +41,6 @@ export const login = async () => {
     window.alert('Owner Verification Fail')
     return
   }
-  document.getElementById('chatOpenBtn').style.display = 'block'
   document.getElementById('profileImg').src = playerUrl
   if (wallet.selectedChain === 'NEAR') {
     document.getElementById('parasUrl').addEventListener('click', (e) => {

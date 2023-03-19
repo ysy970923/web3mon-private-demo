@@ -658,7 +658,7 @@ class BattleClient {
 
   close(result) {
     clearInterval(this.timerId)
-    // sessionStorage.removeItem('resume-data')
+    sessionStorage.removeItem('resume-data')
     document.getElementById('battle_banner').style.display = 'none'
     endBattle(result)
   }

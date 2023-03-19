@@ -58,18 +58,8 @@ canvas {
   }
 }
 
-/* Button used to open the chat form - fixed at the bottom of the page */
-#chatOpenBtn {
-  opacity: 0.8;
-  position: fixed;
-  bottom: 23px;
-  left: 28px;
-  width: 280px;
-}
-
 .game_button_container {
   margin: 10px;
-  display: inline-block;
 }
 
 .chat-popup {
@@ -202,6 +192,17 @@ canvas {
   }
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 8;
+  display: none;
+}
+
 .card {
   color: #111111;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
@@ -210,8 +211,10 @@ canvas {
   text-align: center;
   background-color: white;
   position: absolute;
-  top: calc(50% - 300px);
-  left: calc(50% - 200px);
+  top: 50%;
+  left: 50%;
+  padding: 10px;
+  transform: translate(-50%, -50%);
   z-index: 9;
   display: none;
 }
@@ -378,7 +381,7 @@ img {
 #buttonSection {
   display: none;
   background-color: #ccc;
-  width: 300px;
+  padding: 10px;
 }
 
 .fixed_container {
@@ -566,12 +569,10 @@ img {
 .custom_button_1 {
   background-color: black;
   color: white;
-  border: 3px solid black;
   border-radius: 5px;
   padding: 10px 15px;
   position: relative;
-  box-shadow: 4px 4px 3px 2px purple;
-  cursor: pointer;
+  box-shadow: 4px 4px 3px 3px purple;
   z-index: 1;
   overflow: hidden;
   transition: all 0.5s ease-in-out;

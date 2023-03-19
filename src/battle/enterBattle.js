@@ -2,7 +2,6 @@ import { gsap } from 'gsap'
 import {
   initBattle,
   battleBackground,
-  queue,
   renderedSprites,
 } from './battleScene'
 import { animate } from '../animate'
@@ -70,12 +69,6 @@ export function animateBattle() {
   previousTime = newTime
 
   battleBackground.draw(passedTime)
-
-  if (queue.length > 0) {
-    queue[0]()
-    queue.shift()
-  }
-  
 
   for (const key in renderedSprites) {
     renderedSprites[key].draw(passedTime)

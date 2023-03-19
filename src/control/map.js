@@ -149,9 +149,6 @@ export function transferMapTo(toMap) {
 
   // moveToPosition(200, -100)
 
-  console.log(player.map)
-  console.log(toMap)
-  console.log(newBackgroundImage.src)
   const msg = JSON.stringify(body)
   ws.send(msg)
   player.map = toMap
