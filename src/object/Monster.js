@@ -3,9 +3,18 @@ import { gsap } from 'gsap'
 import { LASTINGEFFECT } from '../battle/skills'
 import { addEffect } from '../web/battleNameTag'
 
+const canvas = document.getElementById('game_canvas')
+
+const canva = canvas.getContext('2d')
+
+const chatBubble = new Image()
+chatBubble.src = './../img/chatBubble2.png'
+
 export class Monster extends Sprite {
   name
   me_or_op
+  chat
+  chatShowTime
   constructor({
     frames = { max: 1, fps: 6 },
     animate = false,
@@ -37,6 +46,8 @@ export class Monster extends Sprite {
     this.health = health
     this.me_or_op = me_or_op
     this.skills = skills
+    this.chat = ''
+    this.chatShowTime = 0
   }
 
   faint() {
@@ -46,6 +57,11 @@ export class Monster extends Sprite {
     gsap.to(this, {
       opacity: 0,
     })
+  }
+
+  showChat(chat) {
+    this.chat = chat
+    this.chatShowTime = 0
   }
 
   adjustHealth(health) {
@@ -106,6 +122,28 @@ export class Monster extends Sprite {
         x: window.innerWidth * 0.3 - 96 * 1.5,
         y: window.innerHeight * 0.7 - 96 * 1.5,
       }
+
+    canva.fillStyle = 'black'
+    canva.font = '30px "210L"'
+    if (this.chat.length > 0) {
+      var textWidth = canva.measureText(this.chat).width
+      this.chatShowTime += 1
+      canva.drawImage(
+        chatBubble,
+        this.position.x + 88,
+        this.position.y - 70,
+        300,
+        160
+      )
+
+      canva.fillText(
+        this.chat,
+        this.position.x + textWidth / 2 + 100,
+        this.position.y - 39
+      )
+
+      if (this.chatShowTime > 600) this.chat = ''
+    }
     super.draw()
   }
 }

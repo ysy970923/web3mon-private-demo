@@ -7,7 +7,8 @@ import {
   setUpBattleCard,
 } from '../battle/battleStart'
 import { battle } from '../battle/battleClient'
-import { myID, setMyID, User, player } from '../user/user'
+import { User, player } from '../user/user'
+import { myID, setMyID } from '../js/global'
 import { turnToGameScreen } from '../user/logIn'
 import { moveUser } from '../control/move'
 import { transferMapTo } from '../control/map'
@@ -142,6 +143,10 @@ function onmessage(type, data) {
         users[data.send_player_id].showChat(data['content'])
       }
       break
+    
+    case CHAT.WHISPER_CHAT:
+      console.log(data)
+      battle.receiveChat(data)
 
     case 'ReadyBattle':
       console.log(data)
@@ -153,7 +158,7 @@ function onmessage(type, data) {
 
     case NETWORK.BATTLE_INIT:
       console.log('배틀 열림!', data)
-      battle.setUp(data)
+      battle.init(data.battle_id, data.next_turn_expired_at)
       break
 
     case NETWORK.BATTLE_OFFER:
@@ -173,35 +178,17 @@ function onmessage(type, data) {
 
     case NETWORK.BATTLE:
       if (data.message_type === 'Ok') {
-        battle.data.status.isOk = true
+        battle.channelHandler.status.is_ok = true
       } else if (data.message_type === 'Next') {
-        // switch (battle.data.status.stage) {
-        //   case 'commit':
-        //     battle.data.status.stage = 'reveal'
-        //     break
-        //   case 'reveal':
-        //     battle.data.status.stage = 'state'
-        //     break
-        //   case 'state':
+        battle.channelHandler.receive_queue.push('next')
       } else if (data.message_type === 'ByPass') {
-        battle.receiveQueue.push(data.content)
+        battle.channelHandler.receive_queue.push(data.content)
       } else if (data.message_type === 'ConsensusState') {
-        var content = JSON.parse(data.content)
-        console.log(content)
-        battle.data.pick_until_time = content.next_turn_expired_at
-        battle.data.manager_signature = content.manager_signature
-        battle.data.status.stage = 'state'
+        battle.channelHandler.receive_queue.push(data.content)
       }
       break
 
     case 'BattleCloseChannel':
-      break
-
-    case NETWORK.LEAVE_BATTLE:
-      if (battle.started && id === battle.data.opponent_id) {
-        window.alert('opponent left the battle')
-        endBattle()
-      }
       break
 
     default:
@@ -279,6 +266,7 @@ export function connect() {
   }
 
   serverUrl = 'wss://dev-server.web3mon.io/ws-login?token='
+  // serverUrl = 'wss://real-server.web3mon.io/ws-login?token='
   serverUrl = serverUrl + sessionStorage.getItem('jwt')
   log(`Connecting to server: ${serverUrl}`)
 

@@ -1,7 +1,7 @@
 import { stopAllPlay } from '../js/index'
 import { battle } from './battleClient'
 import { myID, users, player } from '../js/global'
-import { showSelectCard } from '../web/selectCard'
+import { showCard, showSelectCard } from '../web/battleCard'
 
 /**
  * check whether click another player to battle.
@@ -58,12 +58,11 @@ export function setUpBattleCard(type, key, battle_id) {
   var yes = (e) => {
     if (type === 'request') {
       battle.request(key)
+      showCard('Waiting...', 'Waiting for opponent to accept...')
     } else if (type === 'accept') {
       battle.accept(battle_id, key)
+      showCard('Waiting...', 'Waiting for battle to start...')
     }
-    document.getElementById('battleCard').style.display = 'none'
-    document.getElementById('battleCard').innerHTML = ''
-    document.getElementById('wait_modal').style.display = 'flex'
   }
 
   var no = (e) => {

@@ -362,6 +362,15 @@ img {
   object-fit: cover;
 }
 
+#loading_container {
+  text-align: center;
+
+  img {
+    width: min(100%, 200px);
+    object-fit: cover;
+  }
+}
+
 .landing-container {
   margin: 0px auto;
   padding: 30px 0px;
@@ -380,8 +389,14 @@ img {
 
 #buttonSection {
   display: none;
-  background-color: #ccc;
   padding: 10px;
+  background: rgba(23, 23, 23, 0.89);
+  border-radius: 10px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(14.2px);
+  -webkit-backdrop-filter: blur(14.2px);
+  border: 1px solid rgba(23, 23, 23, 0.67);
+  color: rgba(242, 242, 242, 0.93);
 }
 
 .fixed_container {
@@ -544,16 +559,18 @@ img {
   left: 0;
   display: none;
   background-color: black;
+
+  img {
+    width: 150px;
+    z-index: 1002;
+    position: fixed;
+    top: calc(50% - 20px);
+    left: calc(50% - 75px);
+    display: none;
+  }
 }
 
-.loading_screen_gif {
-  width: 95px;
-  z-index: 1002;
-  position: fixed;
-  top: 41vh;
-  left: 46vw;
-  display: none;
-}
+
 
 .battle_skill_box {
   background-color: white;

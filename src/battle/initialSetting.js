@@ -2,10 +2,7 @@ import { player, setPlayer, users } from '../user/user'
 import { battle } from './battleClient'
 import { initBattle } from './battleScene'
 import { ATTACKS, DEFENCES, SKILL_DESCRIPTIONS } from './skills'
-
-export let selectedSkill = []
-export let selectedDefenceSkills = []
-
+import { selectedSkill, selectedDefenceSkills } from '../js/global'
 /**
  * Choose which skill to bring in battle
  */
@@ -35,13 +32,14 @@ const skillBoxAdd = () => {
     }
 
     skillBox.onclick = (e) => {
-      if (i > 4) {
-        window.alert('Need Special Cloth to use Skill')
-        return
-      }
       if (selectedSkill.includes(i)) {
         skillBox.style.background = null
-        selectedSkill = selectedSkill.filter((doc) => doc !== i)
+        for (let j = 0; i < selectedSkill.length; i++) {
+          if (selectedSkill[i] === j) {
+            people.splice(j, 1);
+            j--; // Adjust the index to account for the removed element
+          }
+        }
       } else {
         console.log(selectedSkill, 'Qq')
         if (selectedSkill.length < 3) {
@@ -85,15 +83,15 @@ const skillBoxAdd = () => {
     }
 
     skillBox.onclick = (e) => {
-      if (i > 4) {
-        window.alert('Need Special Cloth to use Skill')
-        return
-      }
       if (selectedDefenceSkills.includes(i)) {
         skillBox.style.background = null
-        selectedDefenceSkills = selectedDefenceSkills.filter((doc) => doc !== i)
+        for (let j = 0; i < selectedDefenceSkills.length; i++) {
+          if (selectedDefenceSkills[i] === j) {
+            people.splice(j, 1);
+            j--; // Adjust the index to account for the removed element
+          }
+        }
       } else {
-        console.log(selectedDefenceSkills, 'Qq')
         if (selectedDefenceSkills.length < 3) {
           selectedDefenceSkills.push(i)
           skillBox.style.background = 'var(--primary-color01)'
@@ -116,7 +114,7 @@ export const removeBattleSkillBox = () => {
   box2.innerHTML = ''
 }
 
-export const addBattleSkillBox = () => {
+export const addBattleSkillBox = (battleState, my_index) => {
   let box = document.getElementById('battle_skills_attack')
   let box2 = document.getElementById('battle_skills_defense')
 
@@ -133,7 +131,7 @@ export const addBattleSkillBox = () => {
   for (let i = 0; i < 3; i++) {
     let skillBox = document.createElement('div')
     var skillType =
-      battle.battleState.player_skills[battle.data.my_index][i].type
+      battleState.player_skills[my_index][i].type
     skillBox.className = `battle_one_skill a${i} atk_skill_buttons`
     skillBox.innerHTML = `
     <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />
@@ -148,7 +146,7 @@ export const addBattleSkillBox = () => {
     }
     skillBox.onclick = (e) => {
       // 스킬 사용
-      battle.chooseSingleAction(e.currentTarget.value)
+      battle.chooseAction(e.currentTarget.value)
       document.querySelector('#actionContent').innerText =
         'Used ' + e.currentTarget.id.substring(4)
       document.querySelector('#battlePopUpCard').style.display = 'block'
@@ -164,7 +162,7 @@ export const addBattleSkillBox = () => {
   for (let i = 0; i < 3; i++) {
     let skillBox = document.createElement('div')
     var skillType =
-      battle.battleState.player_skills[battle.data.my_index][i + 3].type
+      battleState.player_skills[my_index][i + 3].type
     skillBox.className = `battle_one_skill a${i} def_skill_buttons`
     skillBox.innerHTML = `
     <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />
@@ -179,7 +177,7 @@ export const addBattleSkillBox = () => {
     }
     skillBox.onclick = (e) => {
       // 스킬 사용
-      battle.chooseSingleAction(e.currentTarget.value)
+      battle.chooseAction(e.currentTarget.value)
       document.querySelector('#actionContent').innerText =
         'Used ' + e.currentTarget.id.substring(4)
       document.querySelector('#battlePopUpCard').style.display = 'block'
@@ -213,7 +211,7 @@ const hoverTooltip = (skillType, tooltip, skillBox) => {
 }
 
 const hoverBattleToolTip = (i, tooltip, skillBox) => {
-  var skill = battle.battleState.player_skills[battle.data.my_index][i]
+  var skill = battle.channelHandler.battle_state.player_skills[battle.my_index][i]
   var skillDesc = SKILL_DESCRIPTIONS[skill.type]
 
   tooltip.innerHTML = `

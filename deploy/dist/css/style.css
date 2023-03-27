@@ -333,6 +333,14 @@ img {
   object-fit: cover;
 }
 
+#loading_container {
+  text-align: center;
+}
+#loading_container img {
+  width: min(100%, 200px);
+  object-fit: cover;
+}
+
 .landing-container {
   margin: 0px auto;
   padding: 30px 0px;
@@ -351,8 +359,14 @@ img {
 
 #buttonSection {
   display: none;
-  background-color: #ccc;
   padding: 10px;
+  background: rgba(23, 23, 23, 0.89);
+  border-radius: 10px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(14.2px);
+  -webkit-backdrop-filter: blur(14.2px);
+  border: 1px solid rgba(23, 23, 23, 0.67);
+  color: rgba(242, 242, 242, 0.93);
 }
 
 .fixed_container {
@@ -500,13 +514,12 @@ img {
   display: none;
   background-color: black;
 }
-
-.loading_screen_gif {
-  width: 95px;
+.loading_screen img {
+  width: 150px;
   z-index: 1002;
   position: fixed;
-  top: 41vh;
-  left: 46vw;
+  top: calc(50% - 20px);
+  left: calc(50% - 75px);
   display: none;
 }
 
@@ -970,13 +983,24 @@ img {
 .battle_modal {
   display: none;
   position: fixed;
-  top: calc(50vh - 300px);
+  top: calc(50% - max(200px, 35%));
+  left: calc(50% - max(200px, 35%));
+  width: max(400px, 70%);
+  height: max(400px, 70%);
   z-index: 5;
   border-radius: 4px;
   background-color: rgba(23, 23, 23, 0.89);
   padding: 25px 25px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   color: rgba(242, 242, 242, 0.93);
+  text-align: center;
+}
+.battle_modal .battle_modal_content {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .battleCard {
@@ -1034,7 +1058,6 @@ img {
   box-shadow: var(--card-shadow);
   text-align: center;
   font-family: Pretendard;
-  left: calc(50vw - 410px);
   z-index: 5;
 }
 #skill_box_temp .title {
@@ -1104,11 +1127,6 @@ img {
 #selectTypeBtn:focus {
   border: none;
   outline: 3px solid rgba(0, 0, 0, 0.1);
-}
-
-#wait_modal {
-  display: none;
-  left: calc(50% - 200px);
 }
 /*!**********************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./style/game.scss ***!

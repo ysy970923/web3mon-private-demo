@@ -23,6 +23,10 @@ export const animate = () => {
   canvas.height = window.innerHeight
   const animationId = window.requestAnimationFrame(animate)
 
+  var ctx = canvas.getContext("2d");
+  ctx.fillStyle = 'rgb(41,46,104)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
   background.draw()
 
   //   foreground.draw()
@@ -45,7 +49,7 @@ export const animate = () => {
 
   // 만약 채팅 중이라면 움직이지 않는다.
   if (document.getElementById('chatForm').style.display !== 'none') return
-  
+
   if (stopAllPlay) return
 
   player.setMoving(false)

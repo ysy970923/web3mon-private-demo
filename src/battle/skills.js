@@ -1,7 +1,7 @@
 import { Sprite } from '../object/Sprite'
 import { gsap } from 'gsap'
 import { battle } from './battleClient'
-import { random_success_defence } from './utils'
+import { battleLog, random_success_defence } from './utils'
 
 export const LASTINGEFFECT = {
   ContinuousAttack: 'ContinuousAttack',
@@ -362,16 +362,15 @@ export class Skill {
     this.renderParam.sprite.setScale(1.5)
   }
 
-  check_availability(sequence, caster_idx) {
-    console.log('seauence is', sequence)
+  check_availability(sequence, caster_idx, last_attacker_index, last_sequence) {
+    console.log('sequence is', sequence)
     if (this.params.available_turn_seq !== undefined)
       if (sequence > this.params.available_turn_seq) return false
 
-    var attacker_index = battle.battleState.attacker_index
-    if ((sequence - battle.battleState.sequence) % 2 === 0) {
-      attacker_index = 1 - attacker_index
+    if ((sequence - last_sequence) % 2 === 0) {
+      last_attacker_index = 1 - last_attacker_index
     }
-    if (attacker_index === caster_idx) {
+    if (last_attacker_index === caster_idx) {
       if (this.atkOrDef === 'def') return false
     } else {
       if (this.atkOrDef === 'atk') return false
@@ -430,13 +429,13 @@ export class Skill {
   calculate_attack_damage() {
     if (this.type === 'DeathSpiral') {
       if (this.params.success_count === 3) {
-        battle.event(`multiplied by ${this.params.multiplier}`)
+        battleLog(`multiplied by ${this.params.multiplier}`)
         return Math.floor(
           (this.params.base_damage * this.params.multiplier) / 100
         )
       }
     } else if (this.type === 'HardForkArrow') {
-      battle.event(`return last turn damage ${this.params.last_turn_damage}`)
+      battleLog(`return last turn damage ${this.params.last_turn_damage}`)
       return this.params.last_turn_damage + this.params.base_damage
     }
     return this.params.base_damage
@@ -448,7 +447,7 @@ export class Skill {
         attack_skill_damage,
         this.params.base_shield
       )
-      battle.event(`absorb damage ${this.params.absorbed_damage}`)
+      battleLog(`absorb damage ${this.params.absorbed_damage}`)
       return Math.max(attack_skill_damage - this.params.base_shield, 0)
     } else if (this.type === 'MergeWall') {
       return probabilitic_damage(

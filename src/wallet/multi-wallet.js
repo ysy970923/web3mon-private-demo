@@ -9,7 +9,9 @@ class MultiWallet {
   constructor() {
     this.wallets = {}
     this.wallets['NEAR'] = new NearWallet({
+      // createAccessKeyFor: 'game-v1.web3mon.near',
       createAccessKeyFor: 'web3mon.testnet',
+      // network: 'mainnet',
       network: 'testnet',
     })
     this.wallets['terra'] = new TerraWallet()

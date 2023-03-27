@@ -1,6 +1,7 @@
 export const CHAT = {
   SEND: 'send-chat',
   BOARD_CAST_CHAT: 'BoardCastChat',
+  WHISPER_CHAT: 'WhisperChat',
 }
 
 export const ACTION = {

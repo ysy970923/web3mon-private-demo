@@ -2,13 +2,12 @@ import { gsap } from 'gsap'
 import {
   initBattle,
   battleBackground,
-  renderedSprites,
 } from './battleScene'
 import { animate } from '../animate'
 import { addBattleSkillBox } from './initialSetting'
 import { battle } from './battleClient'
 import { SKILL_DESCRIPTIONS } from './skills'
-import { users, player } from '../js/global'
+import { users, player, battleRenderedSprites } from '../js/global'
 
 export let battleAnimationId
 let previousTime
@@ -17,10 +16,10 @@ let previousTime
  * battle animation start logic
  * @param {any} animationId idk
  */
-export function enterBattle() {
+export function enterBattle(battleState, my_index, opponent_id) {
   console.log('enter battle')
   document.getElementById('skill_box_temp').style.display = 'none'
-  addBattleSkillBox()
+  addBattleSkillBox(battleState, my_index)
   const animationId = window.requestAnimationFrame(animate)
   // deactivate current animation loop
   window.cancelAnimationFrame(animationId)
@@ -36,8 +35,8 @@ export function enterBattle() {
         duration: 0.1,
         onComplete() {
           // activate a new animation loop
-          enterImageAnimation()
-          initBattle()
+          enterImageAnimation(opponent_id, my_index, battleState)
+          initBattle(opponent_id, battleState, my_index)
           animateBattle()
           gsap.to('#overlappingDiv', {
             opacity: 0,
@@ -70,20 +69,18 @@ export function animateBattle() {
 
   battleBackground.draw(passedTime)
 
-  for (const key in renderedSprites) {
-    renderedSprites[key].draw(passedTime)
+  for (const key in battleRenderedSprites) {
+    battleRenderedSprites[key].draw(passedTime)
   }
 }
 
-const enterImageAnimation = () => {
+const enterImageAnimation = (opponent_id, my_index, battleState) => {
   document.getElementById('enter_img').src = player.nftUrl
-  document.getElementById('opp_enter_img').src =
-    users[battle.data.opponent_id].nftUrl
+  document.getElementById('opp_enter_img').src = users[opponent_id].nftUrl
   document.getElementById('enter_collection').innerText = player.nftCollection
   document.getElementById('enter_name').innerText = player.name
   for (var i = 0; i < 3; i++) {
-    var skillType =
-      battle.battleState.player_skills[battle.data.my_index][i].type
+    var skillType = battleState.player_skills[my_index][i].type
     var desc_item = document.createElement('div')
     desc_item.setAttribute('class', 'desc_item')
     var skill_label = document.createElement('div')
@@ -99,8 +96,7 @@ const enterImageAnimation = () => {
     desc_item.append(skill_img_container)
     document.getElementById('selected_attack_skills').append(desc_item)
 
-    var skillType =
-      battle.battleState.player_skills[battle.data.my_index][i + 3].type
+    var skillType = battleState.player_skills[my_index][i + 3].type
     var desc_item = document.createElement('div')
     desc_item.setAttribute('class', 'desc_item')
     var skill_label = document.createElement('div')
@@ -118,8 +114,7 @@ const enterImageAnimation = () => {
   }
 
   for (var i = 0; i < 3; i++) {
-    var skillType =
-      battle.battleState.player_skills[1 - battle.data.my_index][i].type
+    var skillType = battleState.player_skills[1 - my_index][i].type
     var desc_item = document.createElement('div')
     desc_item.setAttribute('class', 'desc_item')
     var skill_label = document.createElement('div')
@@ -135,8 +130,7 @@ const enterImageAnimation = () => {
     desc_item.append(skill_img_container)
     document.getElementById('op_selected_attack_skills').append(desc_item)
 
-    var skillType =
-      battle.battleState.player_skills[1 - battle.data.my_index][i + 3].type
+    var skillType = battleState.player_skills[1 - my_index][i + 3].type
     var desc_item = document.createElement('div')
     desc_item.setAttribute('class', 'desc_item')
     var skill_label = document.createElement('div')

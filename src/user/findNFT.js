@@ -10,7 +10,6 @@ export async function findMyNFT() {
   // 초기화
   document.querySelector('#nftListBox').innerHTML = ''
   document.querySelector('#clothesBox').innerHTML = ''
-  document.getElementById('tokenId').value = ''
 
   // 체인이 니어일 때
   if (wallet.selectedChain === 'NEAR') {
@@ -18,9 +17,10 @@ export async function findMyNFT() {
       'asac.web3mon.testnet',
       'nearnauts.web3mon.testnet',
       'nftv1.web3mon.testnet',
-      //   'near-punks.near',
-      //   'nearnautnft.near',
-      //   'asac.near',
+      // 'near-punks.near',
+      // 'nearnautnft.near',
+      // 'asac.near',
+      // 'nftv1.web3mon.near',
       //   'tinkerunion_nft.enleap.near',
       //   'v0.apemetaerror.near',
       //   'cartelgen1.neartopia.near',
@@ -59,6 +59,7 @@ export async function findMyNFT() {
             img.setAttribute('collection', contract_id)
             img.setAttribute('asset_id', nft.token_id)
             img.setAttribute('name', name)
+            // if (contract_id === 'nftv1.web3mon.testnet') {
             if (contract_id === 'nftv1.web3mon.testnet') {
               clothes.push(img)
               img.onclick = onClothClick

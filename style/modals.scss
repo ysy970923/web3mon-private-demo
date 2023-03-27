@@ -1,13 +1,25 @@
 .battle_modal {
   display: none;
   position: fixed;
-  top: calc(50vh - 300px);
+  top: calc(50% - max(200px, 35%));
+  left: calc(50% - max(200px, 35%));
+  width: max(400px, 70%);
+  height: max(400px, 70%);
   z-index: 5;
   border-radius: 4px;
   background-color: rgba(23, 23, 23, 0.89);
   padding: 25px 25px;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   color: rgba(242, 242, 242, 0.93);
+  text-align: center;
+
+  .battle_modal_content {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .battleCard {
@@ -69,7 +81,6 @@
   box-shadow: var(--card-shadow);
   text-align: center;
   font-family: Pretendard;
-  left: calc(50vw - 410px);
   z-index: 5;
 
   .title {
@@ -134,16 +145,13 @@
   background-color: #ccd5dfaa;
   font-weight: 700;
   margin-top: 15px;
+
   &:hover {
     background-color: #b3bfcdaa;
   }
+
   &:focus {
     border: none;
     outline: 3px solid rgba(0, 0, 0, 0.1);
   }
-}
-
-#wait_modal {
-  display: none;
-  left: calc(50% - 200px);
 }

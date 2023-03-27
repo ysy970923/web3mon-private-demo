@@ -2,6 +2,7 @@ import { log, safe_send } from '../network/websocket'
 import { closeForm } from './chatForm'
 import { CHAT } from '../network/callType'
 import { player } from '../js/global'
+import { battle } from '../battle/battleClient'
 
 document
   .getElementById('sendChatBtn')
@@ -16,25 +17,18 @@ export function sendChat() {
   console.log('클릭은됨')
 
   const chat = document.querySelector('#chat').value
-  player.showChat(chat)
 
-  safe_send({
-    BoardCastChat: {
-      content: chat,
-    },
-  })
-  closeForm()
-}
+  if (!battle.started) {
+    player.showChat(chat)
 
-export function sendWhisperChat(receiver_id) {
-  const chat = document.querySelector('#chat').value
-
-  safe_send({
-    WhisperChat: {
-      content: chat,
-      receiver_player_id: receiver_id,
-    },
-  })
+    safe_send({
+      BoardCastChat: {
+        content: chat,
+      },
+    })
+  } else {
+    battle.sendChat(chat)
+  }
   closeForm()
 }
 

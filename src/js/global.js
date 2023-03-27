@@ -7,6 +7,8 @@ export const background = new Sprite({
         y: 0,
     },
 })
+
+export const battleRenderedSprites = {}
 export let myID
 export let player
 
@@ -17,3 +19,6 @@ export function setPlayer(p) {
 export function setMyID(id) {
     myID = id
 }
+
+export let selectedSkill = []
+export let selectedDefenceSkills = []

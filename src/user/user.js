@@ -5,9 +5,7 @@ import { animate } from '../animate'
 import { adjustMapPosition, background, foreground, transferMapTo } from '../control/map'
 import { battle } from '../battle/battleClient'
 import { safe_send } from '../network/websocket'
-import axios from 'axios'
-import { movePlayerToPosition, moveUser, stopUser } from '../control/move'
-import { setPlayer, users } from '../js/global'
+import { myID, setPlayer, users } from '../js/global'
 import { endLoadingScreen } from '../web/loading'
 
 const clothStorageLink = 'https://web3mon.s3.amazonaws.com/nftv1/'
@@ -16,8 +14,6 @@ export const worker = new Worker('./worker.js')
 
 const chatBubble = new Image()
 chatBubble.src = './../img/chatBubble2.png'
-
-export let myID
 
 const terraLogo = new Image()
 terraLogo.src = './../img/terra.png'
@@ -33,10 +29,6 @@ const READYTEXT = 'Ready for Battle'
 const canvas = document.getElementById('game_canvas')
 
 const canva = canvas.getContext('2d')
-
-export function setMyID(id) {
-  myID = id
-}
 
 export function startGame() {
   adjustMapPosition()
