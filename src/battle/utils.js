@@ -1,24 +1,14 @@
 import { ethers } from 'ethers'
 
-const P2 = 43
-const P3 = 8353
-const P4 = 7643
-const P5 = 9973
+const P1 = 8353
+const P2 = 7643
 
-export function random_success_reflection(r, prob) {
-  return (r % P2) % 100 < prob
-}
-
-export function random_success_nullify_attack(r, prob) {
-  return (r % P3) % 100 < prob
-}
-
-export function random_success_nullify_defence(r, prob) {
-  return (r % P4) % 100 < prob
+export function random_success_critical(r, prob) {
+  return (r % P1) % 100 < prob
 }
 
 export function random_success_defence(r, prob) {
-  return (r % P5) % 100 < prob
+  return (r % P2) % 100 < prob
 }
 
 export function signMessage(signingKey, msg) {

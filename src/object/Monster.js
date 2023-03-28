@@ -95,16 +95,6 @@ export class Monster extends Sprite {
           title = 'Fire'
           description = 'Damage is multiplied'
           break
-        case LASTINGEFFECT.DelayedAttack:
-          effect_img_src = '../../img/bomb.jpg'
-          title = 'Bomb'
-          description = 'Delayed Damage is given'
-          break
-        case LASTINGEFFECT.NullifySkill:
-          effect_img_src = '../../img/null.png'
-          title = 'Null'
-          description = 'Skill is nullified'
-          break
       }
       addEffect(effect_img_src, this.me_or_op, title, description, effect_counter)
       effect_counter += 1

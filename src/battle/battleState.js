@@ -6,9 +6,10 @@ import {
   LASTINGEFFECT,
   Skill,
   SKILLS,
+  SPECIALEFFECT,
 } from './skills'
 import { battle } from './battleClient'
-import { random_success_nullify_defence, battleLog } from './utils'
+import { random_success_nullify_defence, battleLog, random_success_critical } from './utils'
 
 export class BattleState {
   expires_at
@@ -39,14 +40,16 @@ export class BattleState {
     this.attacker_index = state_info.attacker_index
     this.defender_index = state_info.defender_index
 
-    this.lasting_effect = []
-    state_info.lasting_effect.forEach((e) => {
-      var type = e.type
-      var params = e
-      delete params.type
-      var lasting_effect = new LastingEffect(type, params)
-      this.lasting_effect.push(lasting_effect)
-    })
+    this.lasting_effect = [[], []]
+    for (var i = 0; i < 2; i++) {
+      state_info.lasting_effect[i].forEach((e) => {
+        var type = e.type
+        var params = e
+        delete params.type
+        var lasting_effect = new LastingEffect(type, params)
+        this.lasting_effect[i].push(lasting_effect)
+      })
+    }
     this.winner = undefined
   }
 
@@ -56,10 +59,12 @@ export class BattleState {
       this.player_skills[i].forEach((e) => {
         player_skills[i].push(e.write())
       })
-    var lasting_effect = []
-    this.lasting_effect.forEach((e) => {
-      lasting_effect.push(e.write())
-    })
+    var lasting_effect = [[], []]
+    for (var i = 0; i < 2; i++) {
+      this.lasting_effect[i].forEach((e) => {
+        lasting_effect[i].push(e.write())
+      })
+    }
     return {
       player_lp: this.player_lp,
       player_skills,
@@ -88,28 +93,29 @@ export class BattleState {
     setBattleBackground(this.background)
   }
 
-  doNext(actions) {
+  do_next(actions) {
     this.addSequence()
     var action_indexes = [actions[0].action_index, actions[1].action_index]
     var random_number = actions[0].random_number + actions[1].random_number
+    var attacker_skill_idx = action_indexes[this.attacker_index]
+    var defender_skill_idx = action_indexes[this.defender_index]
+
     if (!this.checkSkillAvailability(action_indexes)) return false
-    this.processSpecialEffect(action_indexes)
     this.checkDeadPlayer()
     if (this.winner !== undefined) return true
 
-    this.createLastingEffect(action_indexes)
-    var damage = this.calculateCombatDamage(action_indexes, random_number)
-    this.applyCombatDamage(damage)
+    this.create_lasting_effect(attacker_skill_idx, defender_skill_idx)
+    var special_effects = this.create_special_effect(attacker_skill_idx, defender_skill_idx)
+    var damage = this.calculate_combat_damage(attacker_skill_idx, defender_skill_idx, random_number, special_effects)
+    this.apply_combat_damage(damage)
     this.checkDeadPlayer()
     if (this.winner !== undefined) return true
 
-    this.applyLastingEffectDamage()
+    this.apply_lasting_effect_damage()
     this.checkDeadPlayer()
     if (this.winner !== undefined) return true
 
-    this.arrangeLastingEffect()
-    this.skillPostProcessing(action_indexes)
-    this.checkDeadPlayer()
+    this.arrange_lasting_effect()
     this.changeAttacker()
     return true
   }
@@ -144,147 +150,144 @@ export class BattleState {
       this.winner = this.defender_index
   }
 
-  createLastingEffect(action_indexes) {
-    for (var i = 0; i < 2; i++) {
-      var action_index = action_indexes[i]
-      var new_lasting_effect =
-        this.player_skills[i][action_index].create_lasting_effect(i)
-      battleLog(new_lasting_effect)
-      if (new_lasting_effect !== undefined)
-        new_lasting_effect.forEach((e) => {
-          this.lasting_effect.push(e)
-        })
-      battleLog(this.lasting_effect)
-    }
+  create_lasting_effect(attacker_skill_idx, defender_skill_idx) {
+    var lasting_effect_vec = this.player_skills[this.attacker_index][attacker_skill_idx].create_lasting_effect()
+    lasting_effect_vec.forEach((e) => {
+      if (e.params.effect_on_caster)
+        this.lasting_effect[this.attacker_index].push(e)
+      else
+        this.lasting_effect[this.defender_index].push(e)
+    })
+
+    var lasting_effect_vec = this.player_skills[this.defender_index][defender_skill_idx].create_lasting_effect()
+    lasting_effect_vec.forEach((e) => {
+      if (e.params.effect_on_caster)
+        this.lasting_effect[this.defender_index].push(e)
+      else
+        this.lasting_effect[this.attacker_index].push(e)
+    })
+
   }
 
-  processSpecialEffect(action_indexes) {
-    console.log(this.player_skills)
-    console.log(action_indexes)
-    for (var i = 0; i < 2; i++) {
-      var action_index = action_indexes[i]
-      var new_special_effects =
-        this.player_skills[i][action_index].create_special_effects(i)
-      if (new_special_effects != undefined)
-        new_special_effects.forEach((e) => {
-          this.applySpecialEffect(e, i)
-        })
-    }
-  }
+  create_special_effect(attacker_skill_idx, defender_skill_idx) {
+    var special_effects = [[], []]
 
-  applySpecialEffect(effect, caster_idx) {
-    battleLog(effect)
-    if (effect.type === 'Cleanse') this.lasting_effect = []
-    else if (effect.type === 'SelfHealing') {
-      var healed_hp = Math.min(
-        this.player_lp[caster_idx] + effect.params.recovery_lp,
-        100
-      )
-      this.player_lp[caster_idx] = healed_hp
+    var special_effect_vec = this.player_skills[this.attacker_index][attacker_skill_idx].create_special_effect()
+    special_effect_vec.forEach((e) => {
+      if (e.params.effect_on_caster)
+        special_effects[this.attacker_index].push(e)
+      else
+        special_effects[this.defender_index].push(e)
+    })
+
+    var special_effect_vec = this.player_skills[this.defender_index][defender_skill_idx].create_special_effect()
+    special_effect_vec.forEach((e) => {
+      if (e.params.effect_on_caster)
+        special_effects[this.defender_index].push(e)
+      else
+        special_effects[this.attacker_index].push(e)
+    })
+
+    for (var i = 0; i < 2; i++) {
+      special_effects[i].forEach((e) => {
+        if (e.type === SPECIALEFFECT.Cleanse) {
+          this.lasting_effect[i].length = 0
+        }
+      })
     }
-    // else if (effect.type === 'Reflection') {
-    //   this.player_lp[1 - caster_idx] = Math.min(
-    //     this.player_lp[1 - caster_idx] - effect.params.reflect_damage,
-    //     0
-    //   )
-    // }
+
+    return special_effects
   }
 
   // TODO: nullify and multiple
-  calculateCombatDamage(action_indexes, random_number) {
-    var atk_skill =
-      this.player_skills[this.attacker_index][
-      action_indexes[this.attacker_index]
-      ]
-    var def_skill =
-      this.player_skills[this.defender_index][
-      action_indexes[this.defender_index]
-      ]
+  calculate_combat_damage(attacker_skill_idx, defender_skill_idx, random_number, special_effect) {
+    var atk_skill = this.player_skills[this.attacker_index][attacker_skill_idx]
+    var def_skill = this.player_skills[this.defender_index][defender_skill_idx]
     var attack_damage = atk_skill.calculate_attack_damage()
     var total_damage = def_skill.calculate_damage(attack_damage, random_number)
 
-    this.lasting_effect.forEach((effect) => {
-      switch (effect.type) {
-        case LASTINGEFFECT.NullifySkill:
-          if (effect.params.caster_idx === this.defender_index) {
-            var nullify_is_success = random_success_nullify_defence(
-              random_number,
-              effect.params.probability
-            )
-            if (nullify_is_success) {
-              battleLog(effect)
-              return 0
-            }
-          }
+    // attack nullify
+    for (var i in special_effect[this.attacker_index]) {
+      var effect = special_effect[this.attacker_index][i]
+      if (effect.nullify_check(def_skill)) {
+        return 0
       }
-    })
+    }
 
-    this.lasting_effect.forEach((effect) => {
-      switch (effect.type) {
-        case LASTINGEFFECT.DamageMultiple:
-          if (effect.params.caster_idx === this.attacker_index) {
-            total_damage *= effect.params.multiplier
-          }
+    // defence nullify
+    for (var i in special_effect[this.defender_index]) {
+      var effect = special_effect[this.defender_index][i]
+      console.log(effect)
+      if (effect.nullify_check(def_skill)) {
+        console.log(effect)
+        total_damage = attack_damage
+        break
       }
-    })
+    }
+
+    // damage multiple
+    for (var i in this.lasting_effect[this.attacker_index]) {
+      var effect = this.lasting_effect[this.attacker_index][i]
+      if (effect.type === LASTINGEFFECT.DamageMultiple) {
+        total_damage *= effect.params.multiplier
+      }
+    }
+
+    // critical hit
+    for (var i in special_effect[this.attacker_index]) {
+      var effect = special_effect[this.attacker_index][i]
+      if (effect.type === SPECIALEFFECT.Critical) {
+        if (random_success_critical(random_number, effect.params.probability)) {
+          total_damage *= effect.params.multiplier
+        }
+      }
+    }
+
+    // reflect
+    for (var i in special_effect[this.defender_index]) {
+      var effect = special_effect[this.defender_index][i]
+      if (effect.reflect_check(atk_skill)) {
+        total_damage *= -1
+        break
+      }
+    }
 
     battleLog(total_damage)
     return total_damage
   }
 
-  applyLastingEffectDamage() {
-    this.lasting_effect.forEach((effect) => {
-      switch (effect.type) {
-        case LASTINGEFFECT.ContinuousAttack:
-          var target_idx = 1 - effect.params.caster_idx
-          this.player_lp[target_idx] -= effect.params.damage
-          battleLog(effect)
-          break
-
-        case LASTINGEFFECT.DelayedAttack:
-          var target_idx = 1 - effect.params.caster_idx
-          if (effect.params.delayed_turn === 1) {
-            this.player_lp[target_idx] -= effect.params.damage
+  apply_lasting_effect_damage() {
+    for (var i = 0; i < 2; i++) {
+      this.lasting_effect[i].forEach((effect) => {
+        switch (effect.type) {
+          case LASTINGEFFECT.ContinuousAttack:
+            this.player_lp[i] -= effect.params.damage
             battleLog(effect)
-          }
-          break
-      }
-    })
-  }
-
-  arrangeLastingEffect() {
-    battleLog(this.lasting_effect)
-    this.lasting_effect.forEach((effect) => {
-      effect.minus_left_turn()
-    })
-    battleLog(this.lasting_effect)
-    this.lasting_effect = this.lasting_effect.filter((effect) =>
-      effect.left_turn()
-    )
-    battleLog(this.lasting_effect)
-  }
-
-  skillPostProcessing(action_indexes) {
-    var def_skill =
-      this.player_skills[this.defender_index][
-      action_indexes[this.defender_index]
-      ]
-    switch (def_skill.type) {
-      case SKILLS.PowShield:
-        var lasting_effect = new LastingEffect(LASTINGEFFECT.DelayedAttack, {
-          damage: def_skill.params.absorbed_damage,
-          delayed_turn: 1,
-          remain_turn: 1,
-          caster_idx: this.defender_index,
-        })
-        this.lasting_effect.push(lasting_effect)
-        battleLog(lasting_effect)
-        break
+            break
+          default:
+            break
+        }
+      })
     }
   }
 
-  applyCombatDamage(damage) {
-    this.player_lp[this.defender_index] =
-      this.player_lp[this.defender_index] - damage
+  arrange_lasting_effect() {
+    battleLog(this.lasting_effect)
+    for (var i = 0; i < 2; i++) {
+      this.lasting_effect[i].forEach((effect) => {
+        effect.minus_left_turn()
+      })
+      this.lasting_effect[i] = this.lasting_effect[i].filter((effect) =>
+        effect.left_turn()
+      )
+    }
+    battleLog(this.lasting_effect)
+  }
+
+  apply_combat_damage(damage) {
+    if (damage > 0)
+      this.player_lp[this.defender_index] -= damage
+    else
+      this.player_lp[this.attacker_index] -= damage
   }
 }

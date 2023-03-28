@@ -22,7 +22,7 @@ import { ChannelHandler } from './channelHandler'
 import { ChainHandler } from './chainHandler'
 import { startGame } from '../user/user'
 
-export const BATTLE_CONTRACT = 'game.web3mon.testnet'
+export const BATTLE_CONTRACT = 'game-v1.web3mon.testnet'
 const FT_CONTRACT = 'usdc.web3mon.testnet' // USDC.e contract ID
 const resume_data = {
   battle_data: {},
@@ -102,13 +102,13 @@ class BattleClient {
   }
 
   async init(battle_id, next_turn_expired_at) {
-
+    this.bet_amount = betAmount[player.map]
     var battleInfo = await wallet.viewMethod({
       contractId: BATTLE_CONTRACT,
       method: 'get_battle',
       args: { battle_id: battle_id },
     })
-    battleInfo.current_turn_expired_at = next_turn_expired_at
+    battleInfo.state.current_turn_expired_at = next_turn_expired_at
 
     if (battleInfo.player_pk[0] === this.keyManager.publicKey.substring(2)) {
       this.my_index = 0
@@ -144,7 +144,7 @@ class BattleClient {
         method: 'ft_transfer_call',
         args: {
           receiver_id: BATTLE_CONTRACT,
-          amount: betAmount[player.map],
+          amount: this.bet_amount,
           msg: JSON.stringify({
             battle_id: this.battle_id,
             player_index: this.my_index,

@@ -5,9 +5,14 @@ import { battleLog, random_success_defence } from './utils'
 
 export const LASTINGEFFECT = {
   ContinuousAttack: 'ContinuousAttack',
-  DelayedAttack: 'DelayedAttack',
   DamageMultiple: 'DamageMultiple',
-  NullifySkill: 'NullifySkill',
+}
+
+export const SPECIALEFFECT = {
+  Cleanse: 'Cleanse',
+  NullifyIfSkillIsIn: 'NullifyIfSkillIsIn',
+  Critical: 'Critical',
+  ReflectIfOpSkillIsIn: 'ReflectIfOpSkillIsIn',
 }
 
 export const SKILLS = {
@@ -178,6 +183,30 @@ class SpecialEffect {
     this.type = type
     this.params = params
   }
+
+  nullify_check(skill) {
+    if (this.type == SPECIALEFFECT.NullifyIfSkillIsIn) {
+      for (var i in this.params.skill_list) {
+        var s = this.params.skill_list[i]
+        if (s === skill.type) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  reflect_check(skill) {
+    if (this.type === SPECIALEFFECT.ReflectIfOpSkillIsIn) {
+      for (var i in this.params.skill_list) {
+        var s = this.params.skill_list[i]
+        if (s === skill.type) {
+          return true
+        }
+      }
+    }
+    return false
+  }
 }
 
 export class Skill {
@@ -197,9 +226,7 @@ export class Skill {
     switch (type) {
       case SKILLS.DeathSpiral:
         this.params = {
-          success_count: 0,
-          base_damage: 25,
-          multiplier: 150,
+          base_damage: 10,
         }
         frame = 14
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -208,6 +235,8 @@ export class Skill {
       case SKILLS.CelsiusExplosion:
         this.params = {
           base_damage: 20,
+          critical_multiplier: 3,
+          critical_probability: 25,
         }
         frame = 8
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -215,7 +244,7 @@ export class Skill {
         break
       case SKILLS.BlockOfFud:
         this.params = {
-          base_damage: 18,
+          base_damage: 20,
         }
         frame = 15
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -224,7 +253,6 @@ export class Skill {
       case SKILLS.Hacked:
         this.params = {
           base_damage: 20,
-          recovery_lp: 15,
         }
         frame = 13
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -232,7 +260,9 @@ export class Skill {
         break
       case SKILLS.FTTTsunami:
         this.params = {
-          base_damage: 20,
+          base_damage: 0,
+          lasting_damage_on_me: 10,
+          lasting_damage_on_op: 20,
         }
         frame = 13
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -241,8 +271,8 @@ export class Skill {
         break
       case SKILLS.FallOfVoyager:
         this.params = {
-          available_turn_seq: 2,
-          base_damage: 40,
+          available_turn_seq: 4,
+          base_damage: 20,
         }
         frame = 9
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -250,8 +280,9 @@ export class Skill {
         break
       case SKILLS.HardForkArrow:
         this.params = {
-          base_damage: 0,
-          last_turn_damage: 0,
+          base_damage: 20,
+          critical_multiplier: 2,
+          critical_probability: 50,
         }
         frame = 12
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -259,7 +290,8 @@ export class Skill {
         break
       case SKILLS.ShortSelling:
         this.params = {
-          base_damage: 15,
+          base_damage: 0,
+          lasting_damage_on_op: 15,
         }
         frame = 10
         renderType = SKILL_RENDER_TYPE.ON_RECEIVER
@@ -267,8 +299,7 @@ export class Skill {
         break
       case SKILLS.PowShield:
         this.params = {
-          base_shield: 15, // 15
-          absorbed_damage: 0,
+          defence_ad: 0
         }
         frame = 4
         renderType = SKILL_RENDER_TYPE.ON_CASTER
@@ -294,7 +325,7 @@ export class Skill {
         break
       case SKILLS.GraceOfCz:
         this.params = {
-          defence_probability: 33, //0.33
+          defence_probability: 10, //0.1
           defence_proportion: 100, //1
         }
         frame = 8
@@ -303,39 +334,31 @@ export class Skill {
         break
       case SKILLS.WithdrawalCloak:
         this.params = {
-          defence_probability: 0, //0.33
-          defence_proportion: 0, //1
+          lasting_damage_on_me: 8,
+          lasting_damage_on_op: 10,
         }
         frame = 10
         renderType = SKILL_RENDER_TYPE.ON_CASTER
         this.atkOrDef = 'def'
         break
       case SKILLS.ProofOfReserve:
-        this.params = {
-          reflection_probability: 33, //0.33
-          reflection_proportion: 100, //1
-          //   reflect_damage: 0,
-        }
+        this.params = {}
         frame = 12
         renderType = SKILL_RENDER_TYPE.ON_CASTER
         this.atkOrDef = 'def'
         break
       case SKILLS.BTCArmor:
         this.params = {
-          available_turn_seq: 2,
-          defence_probability: 33, //0.33
-          defence_proportion: 100, //1
+          available_turn_seq: 4,
+          defence_probability: 50,
+          defence_proportion: 100,
         }
         frame = 8
         renderType = SKILL_RENDER_TYPE.ON_CASTER
         this.atkOrDef = 'def'
         break
       case SKILLS.SelfCustody:
-        this.params = {
-          defence_probability: 33, //1
-          defence_proportion: 100, //1
-          recovery_lp: 10,
-        }
+        this.params = {}
         frame = 7
         renderType = SKILL_RENDER_TYPE.ON_CASTER
         this.atkOrDef = 'def'
@@ -378,123 +401,129 @@ export class Skill {
     return true
   }
 
-  create_lasting_effect(caster_idx) {
+  create_lasting_effect() {
     switch (this.type) {
-      case SKILLS.CelsiusExplosion:
+      case SKILLS.DeathSpiral:
+      case SKILLS.FallOfVoyager:
         return [
           new LastingEffect(LASTINGEFFECT.DamageMultiple, {
             multiplier: 2,
-            remain_turn: 2,
-            caster_idx,
+            remain_turn: 3,
+            effect_on_caster: true,
+          }),
+          new LastingEffect(LASTINGEFFECT.DamageMultiple, {
+            multiplier: 2,
+            remain_turn: 3,
+            effect_on_caster: false,
           }),
         ]
       case SKILLS.ShortSelling:
         return [
           new LastingEffect(LASTINGEFFECT.ContinuousAttack, {
-            damage: 15,
-            remain_turn: 2,
-            caster_idx,
+            damage: this.params.lasting_damage_on_op,
+            remain_turn: 3,
+            effect_on_caster: false,
           }),
-          new LastingEffect(LASTINGEFFECT.NullifySkill, {
-            probability: 50,
-            remain_turn: 2,
-            caster_idx,
+        ]
+      case SKILLS.FTTTsunami:
+      case SKILLS.WithdrawalCloak:
+        return [
+          new LastingEffect(LASTINGEFFECT.ContinuousAttack, {
+            damage: this.params.lasting_damage_on_me,
+            remain_turn: 3,
+            effect_on_caster: true,
+          }),
+          new LastingEffect(LASTINGEFFECT.ContinuousAttack, {
+            damage: this.params.lasting_damage_on_op,
+            remain_turn: 3,
+            effect_on_caster: false,
           }),
         ]
       default:
-        return undefined
+        return []
     }
   }
-  create_special_effects(caster_idx) {
+  create_special_effect() {
     switch (this.type) {
+      case SKILLS.BlockOfFud:
+        return [
+          new SpecialEffect(SPECIALEFFECT.NullifyIfSkillIsIn, {
+            skill_list: [SKILLS.GraceOfCz, SKILLS.ProofOfReserve],
+            effect_on_caster: true
+          }),
+          new SpecialEffect(SPECIALEFFECT.NullifyIfSkillIsIn, {
+            skill_list: [SKILLS.BTCArmor, SKILLS.WithdrawalCloak],
+            effect_on_caster: false
+          }),
+        ]
       case SKILLS.Hacked:
         return [
-          new SpecialEffect('SelfHealing', {
-            recovery_lp: this.params.recovery_lp,
+          new SpecialEffect(SPECIALEFFECT.NullifyIfSkillIsIn, {
+            skill_list: [SKILLS.BTCArmor, SKILLS.WithdrawalCloak],
+            effect_on_caster: true
+          }),
+          new SpecialEffect(SPECIALEFFECT.NullifyIfSkillIsIn, {
+            skill_list: [SKILLS.GraceOfCz, SKILLS.ProofOfReserve],
+            effect_on_caster: false
+          }),
+        ]
+      case SKILLS.HardForkArrow:
+        return [
+          new SpecialEffect(SPECIALEFFECT.Critical, {
+            probability: this.params.critical_probability,
+            multiplier: this.params.critical_multiplier,
+            effect_on_caster: true
+          }),
+        ]
+      case SKILLS.CelsiusExplosion:
+        return [
+          new SpecialEffect(SPECIALEFFECT.Critical, {
+            probability: this.params.critical_probability,
+            multiplier: this.params.critical_multiplier,
+            effect_on_caster: true
           }),
         ]
       case SKILLS.GraceOfCz:
-        return [new SpecialEffect('Cleanse', {})]
+        return [
+          new SpecialEffect(SPECIALEFFECT.Cleanse, { effect_on_caster: true }),
+          new SpecialEffect(SPECIALEFFECT.Cleanse, { effect_on_caster: false })
+        ]
+      case SKILLS.ProofOfReserve:
+        return [
+          new SpecialEffect(SPECIALEFFECT.ReflectIfOpSkillIsIn, {
+            op_skills: [SKILLS.FTTTsunami, SKILLS.FallOfVoyager],
+            effect_on_caster: true
+          }),
+        ]
       case SKILLS.SelfCustody:
         return [
-          new SpecialEffect('SelfHealing', {
-            recovery_lp: this.params.recovery_lp,
+          new SpecialEffect(SPECIALEFFECT.Cleanse, {
+            effect_on_caster: true,
           }),
         ]
       default:
-        return undefined
+        return []
     }
   }
 
   calculate_attack_damage() {
-    if (this.type === 'DeathSpiral') {
-      if (this.params.success_count === 3) {
-        battleLog(`multiplied by ${this.params.multiplier}`)
-        return Math.floor(
-          (this.params.base_damage * this.params.multiplier) / 100
-        )
-      }
-    } else if (this.type === 'HardForkArrow') {
-      battleLog(`return last turn damage ${this.params.last_turn_damage}`)
-      return this.params.last_turn_damage + this.params.base_damage
-    }
     return this.params.base_damage
   }
 
   calculate_damage(attack_skill_damage, random_number) {
-    if (this.type === 'PowShield') {
-      this.params.absorbed_damage = Math.min(
-        attack_skill_damage,
-        this.params.base_shield
-      )
-      battleLog(`absorb damage ${this.params.absorbed_damage}`)
-      return Math.max(attack_skill_damage - this.params.base_shield, 0)
-    } else if (this.type === 'MergeWall') {
-      return probabilitic_damage(
-        attack_skill_damage,
-        this.params.defence_probability,
-        this.params.defence_proportion,
-        random_number
-      )
-    } else if (this.type === 'AuditField') {
-      return probabilitic_damage(
-        attack_skill_damage,
-        this.params.defence_probability,
-        this.params.defence_proportion,
-        random_number
-      )
-    } else if (this.type === 'GraceOfCz') {
-      return probabilitic_damage(
-        attack_skill_damage,
-        this.params.defence_probability,
-        this.params.defence_proportion,
-        random_number
-      )
-    } else if (this.type === 'WithdrawalCloak') {
-      return attack_skill_damage
-    } else if (this.type === 'ProofOfReserve') {
-      //   if (random_number < this.params.reflection_probability)
-      // this.params.reflect_damage = multPercentage(
-      //   this.params.reflection_proportion,
-      //   attack_skill_damage
-      // )
-      //   else this.params.reflect_damage = 0
-      //   return attack_skill_damage - this.params.reflect_damage
-      return attack_skill_damage
-    } else if (this.type === 'BTCArmor') {
-      return probabilitic_damage(
-        attack_skill_damage,
-        this.params.defence_probability,
-        this.params.defence_proportion,
-        random_number
-      )
-    } else if (this.type === 'SelfCustody') {
-      return probabilitic_damage(
-        attack_skill_damage,
-        this.params.defence_probability,
-        this.params.defence_proportion,
-        random_number
-      )
+    switch (this.type) {
+      case SKILLS.PowShield:
+        return Math.max(attack_skill_damage - this.params.defence_ad, 0)
+      case SKILLS.MergeWall:
+      case SKILLS.AuditField:
+      case SKILLS.GraceOfCz:
+      case SKILLS.BTCArmor:
+        return probabilitic_damage(attack_skill_damage, this.params.defence_probability, this.params.defence_proportion, random_number)
+
+      case SKILLS.WithdrawalCloak:
+      case SKILLS.ProofOfReserve:
+      case SKILLS.SelfCustody:
+        return attack_skill_damage
     }
   }
 

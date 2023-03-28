@@ -5,7 +5,7 @@ import { wallet } from '../wallet/multi-wallet'
 import { getCurrentTime, hashMessage, randInt, signMessage, verifyMessage } from './utils'
 import { ethers } from 'ethers'
 
-export const BATTLE_CONTRACT = 'game.web3mon.testnet'
+const BATTLE_CONTRACT = 'game-v1.web3mon.testnet'
 const FT_CONTRACT = 'usdc.web3mon.testnet' // USDC.e contract ID
 const resume_data = {
   battle_data: {},
@@ -309,7 +309,7 @@ export class ChannelHandler {
   sendState() {
     if (this.battle_state.sequence === 0)
       this.battle_state.setPlayerSkills(this.actions)
-    else if (!this.battle_state.doNext(this.actions)) {
+    else if (!this.battle_state.do_next(this.actions)) {
       console.log('problem computing state')
       return false
     }

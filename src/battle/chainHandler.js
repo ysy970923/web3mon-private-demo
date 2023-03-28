@@ -20,7 +20,7 @@ import { hashMessage, signMessage, verifyMessage } from './utils'
 import { startLoadingScreen } from '../web/loading'
 import { battle } from './battleClient'
 
-export const BATTLE_CONTRACT = 'game.web3mon.testnet'
+export const BATTLE_CONTRACT = 'game-v1.web3mon.testnet'
 const FT_CONTRACT = 'usdc.web3mon.testnet' // USDC.e contract ID
 const resume_data = {
   battle_data: {},
