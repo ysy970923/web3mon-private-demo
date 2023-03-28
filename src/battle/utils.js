@@ -37,8 +37,8 @@ export function hashMessage(msg) {
 }
 
 export function randInt() {
-  // return Math.floor(Math.random() * 1000000)
-  return 0
+  return Math.floor(Math.random() * 1000000)
+  // return 0
 }
 
 export function getCurrentTime() {
