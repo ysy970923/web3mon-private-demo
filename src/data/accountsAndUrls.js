@@ -30,7 +30,7 @@ var partner_nfts_list = {
     ],
 
     mainnet: [
-        { account_id: 'nearnauts.near', base_uri: 'https://nearnaut.mypinata.cloud/ipfs/' },
+        { account_id: 'nearnautnft.near', base_uri: 'https://nearnaut.mypinata.cloud/ipfs/' },
         { account_id: 'asac.near', base_uri: 'https://ipfs.io/ipfs/bafybeicj5zfhe3ytmfleeiindnqlj7ydkpoyitxm7idxdw2kucchojf7v4/' },
         { account_id: 'tinkerunion_nft.enleapnear', base_uri: 'https://ipfs.fleek.co/ipfs/' },
         { account_id: 'v0.apemetaerror.near', base_uri: 'https://bafybeih2466d6jhz62i6oll22iwshi3adkuym6qk4kbvm7qzxwwjllhoay.ipfs.dweb.link/' },
