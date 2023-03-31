@@ -1,44 +1,10 @@
+import { accounts } from '../data/accountsAndUrls'
 import { ethers } from 'ethers'
-import { playerUrl, selectedClothId, tokenId } from '../user/logIn'
-import {
-  endBattle,
-  initBattle,
-  renderState,
-  setBattleBackground,
-  setUpNextSetting,
-} from './battleScene'
-import { safe_send } from '../network/websocket'
-import { selectedSkill, selectedDefenceSkills } from './initialSetting'
-import { BattleState } from './battleState'
-import { animateBattle, enterBattle } from './enterBattle'
 import { wallet } from '../wallet/multi-wallet'
-import { Skill, SKILL_DESCRIPTIONS } from './skills'
-import { player } from '../js/global'
-import { betAmount } from '../data/betAmount'
-import { closeSelectCard, showSelectCard } from '../web/battleCard'
-import { hashMessage, signMessage, verifyMessage } from './utils'
-import { startLoadingScreen } from '../web/loading'
-import { battle } from './battleClient'
-
-export const BATTLE_CONTRACT = 'game-v1.web3mon.testnet'
-const FT_CONTRACT = 'usdc.web3mon.testnet' // USDC.e contract ID
-const resume_data = {
-  battle_data: {},
-  jwt: '',
-  playerUrl: '',
-  token_id: '',
-  clothId: '',
-  opponentId: '',
-}
-
-function randInt() {
-  // return Math.floor(Math.random() * 1000000)
-  return 0
-}
-
-function getCurrentTime() {
-  return Math.floor(Date.now() / 1000)
-}
+import { SKILL_INFOS } from '../data/skill'
+import { hashMessage, signMessage, randInt } from './utils'
+import { Skill } from './skills'
+import { closeCard, showCard } from '../web/battleCard'
 
 export class ChainHandler {
   battle_id
@@ -108,8 +74,9 @@ export class ChainHandler {
     msg.player_skills.forEach((e) => {
       var skill = new Skill(e.type)
       for (var key in skill.params) {
-        skill.params[key] = e.params[key]
+        skill.params[key] = e[key]
       }
+      this.player_skills.push(skill)
     })
     this.last_sequence = msg.last_sequence
     this.last_attacker_index = msg.last_attacker_index
@@ -133,7 +100,7 @@ export class ChainHandler {
           document.getElementById(`chosen-${e.currentTarget.value}`).innerHTML = ''
         }
       }
-      div.append(doc)
+      div.append(actionBox)
 
       if (i < 4) {
         var arrow = document.createElement('span')
@@ -142,12 +109,15 @@ export class ChainHandler {
         div.append(arrow)
       }
     }
+    document.getElementById('multipleActionCard').style.display = 'block'
   }
 
   chooseSkills(skills) {
   }
 
   chooseAction(action) {
+    console.log(this.player_skills)
+    console.log(action)
     var skill = this.player_skills[action]
     if (
       !skill.check_availability(
@@ -166,7 +136,7 @@ export class ChainHandler {
     var skillType = this.player_skills[action].type
     document.getElementById(
       `chosen-${this.selectedSequence}`
-    ).innerHTML = `<img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />`
+    ).innerHTML = `<img src="../../img/skillThumbnails/${SKILL_INFOS[skillType].img}" />`
   }
 
   handle(current_time) {
@@ -194,34 +164,34 @@ export class ChainHandler {
     }
     var signingKey = this.keyManager._signingKey()
     var signature = signMessage(signingKey, JSON.stringify(message))
-
-    this.save()
-    window.alert('send commit to chain')
-
-    await wallet.callMethod({
-      contractId: BATTLE_CONTRACT,
-      method: 'commit',
-      args: {
-        battle_id: this.battle_id,
-        player_index: this.my_index,
-        commit: hashed_message,
-        sig: signature,
-      },
-    })
+    var yes = async () => {
+      closeCard()
+      await wallet.callMethod({
+        contractId: accounts.BATTLE_CONTRACT,
+        method: 'commit',
+        args: {
+          battle_id: this.battle_id,
+          player_index: this.my_index,
+          commit: hashed_message,
+          sig: signature,
+        },
+      })
+    }
+    showCard('Send Commit Tx', '<p>Send Commit Tx To Chain</p>', yes)
   }
 
   async sendReveal() {
-    this.save()
     window.alert('send reveal to chain')
 
     await wallet.callMethod({
-      contractId: BATTLE_CONTRACT,
+      contractId: accounts.BATTLE_CONTRACT,
       method: 'reveal',
       args: {
         battle_id: this.battle_id,
         player_index: this.my_index,
         actions: this.action,
       },
+      deposit: 1,
     })
   }
 }

@@ -5,17 +5,6 @@ import { wallet } from '../wallet/multi-wallet'
 import { getCurrentTime, hashMessage, randInt, signMessage, verifyMessage } from './utils'
 import { ethers } from 'ethers'
 
-const BATTLE_CONTRACT = 'game-v1.web3mon.testnet'
-const FT_CONTRACT = 'usdc.web3mon.testnet' // USDC.e contract ID
-const resume_data = {
-  battle_data: {},
-  jwt: '',
-  playerUrl: '',
-  token_id: '',
-  clothId: '',
-  opponentId: '',
-}
-
 export class ChannelHandler {
   battle_id
   key_manager
@@ -343,26 +332,12 @@ export class ChannelHandler {
     if (msg.type === 'ConsensusState') {
       return false
     }
-    // var signature = '0x' + this.data.manager_signature
-    // console.log(signature)
-    // var expires_at = msg.expires_at
-
-    // var message = await ethers.utils.keccak256(
-    //   ethers.utils.toUtf8Bytes(JSON.stringify(battle_state))
-    // )
-    // var addr = ethers.utils.verifyMessage(message, signature)
-    // var manager_addr = ethers.utils.computeAddress('0x' + this.data.manager_pk)
-    // if (addr === manager_addr) {
-    // var match = await this.verifyMessage(
-    //   this.data.manager_pk,
-    //   JSON.stringify(this.battle_state.write()),
-    //   commit.signature
-    // )
-    var match = true
+    var state_string = this.battle_state.write()
+    var match = verifyMessage(this.manager_pk, JSON.stringify(state_string), msg.manager_signature)
     if (match) {
       this.manager_signature = msg.manager_signature
 
-      this.last_consensus_state = JSON.stringify(this.battle_state.write())
+      this.last_consensus_state = JSON.stringify(state_string)
       this.next_turn_expired_at = msg.next_turn_expired_at
       this.battle_state.expires_at = this.next_turn_expired_at
       this.chose_action = false

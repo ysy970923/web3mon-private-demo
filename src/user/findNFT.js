@@ -1,3 +1,4 @@
+import { partner_nfts } from '../data/accountsAndUrls'
 import { wallet } from '../wallet/multi-wallet'
 import { collection, setClothId, setNFTInfo, setPlayerUrl } from './logIn'
 
@@ -13,60 +14,35 @@ export async function findMyNFT() {
 
   // 체인이 니어일 때
   if (wallet.selectedChain === 'NEAR') {
-    var nft_contract_list = [
-      'asac.web3mon.testnet',
-      'nearnauts.web3mon.testnet',
-      'nftv1.web3mon.testnet',
-      // 'near-punks.near',
-      // 'nearnautnft.near',
-      // 'asac.near',
-      // 'nftv1.web3mon.near',
-      //   'tinkerunion_nft.enleap.near',
-      //   'v0.apemetaerror.near',
-      //   'cartelgen1.neartopia.near',
-      //   'realbirds.near',
-      //   'mrbrownproject.near',
-    ]
     var args = {
       account_id: wallet.getAccountId(),
       from_index: '0',
       limit: 50,
     }
 
-    for (var contract_id of nft_contract_list) {
-      var metadata = await wallet.viewMethod({
-        contractId: contract_id,
-        method: 'nft_metadata',
-      })
+    for (var collection of partner_nfts) {
       var data = await wallet.viewMethod({
-        contractId: contract_id,
+        contractId: collection.account_id,
         method: 'nft_tokens_for_owner',
         args: args,
       })
 
       if (data.length !== 0) {
         data.forEach((nft) => {
-          if (nft.token_id !== 'terra' && nft.token_id !== 'polygon') {
-            //   if (true) {
-            let img = document.createElement('img')
-            if (nft.metadata.media.includes('https://'))
-              img.src = nft.metadata.media
-            else img.src = metadata.base_uri + '/' + nft.metadata.media
+          let img = document.createElement('img')
+          if (nft.metadata.media.includes('https://'))
+            img.src = nft.metadata.media
+          else img.src = collection.base_uri + '/' + nft.metadata.media
 
-            const name = `${metadata.name} #${nft.metadata.title}`
-
-            img.style = 'width: min(100px, 15%); opacity: 0.5;'
-            img.setAttribute('collection', contract_id)
-            img.setAttribute('asset_id', nft.token_id)
-            img.setAttribute('name', name)
-            // if (contract_id === 'nftv1.web3mon.testnet') {
-            if (contract_id === 'nftv1.web3mon.testnet') {
-              clothes.push(img)
-              img.onclick = onClothClick
-            } else {
-              imgs.push(img)
-              img.onclick = onImgClick
-            }
+          img.style = 'width: min(100px, 15%); opacity: 0.5;'
+          img.setAttribute('collection', collection.account_id)
+          img.setAttribute('asset_id', nft.token_id)
+          if (collection.account_id.includes('nftv1')) {
+            clothes.push(img)
+            img.onclick = onClothClick
+          } else {
+            imgs.push(img)
+            img.onclick = onImgClick
           }
         })
       }

@@ -1,3 +1,4 @@
+import { accounts, network } from '../data/accountsAndUrls'
 import { NearWallet } from './near-wallet'
 import { PolygonWallet } from './polygon-wallet'
 import { TerraWallet } from './terra-wallet'
@@ -9,10 +10,8 @@ class MultiWallet {
   constructor() {
     this.wallets = {}
     this.wallets['NEAR'] = new NearWallet({
-      // createAccessKeyFor: 'game-v1.web3mon.near',
-      createAccessKeyFor: 'web3mon.testnet',
-      // network: 'mainnet',
-      network: 'testnet',
+      createAccessKeyFor: accounts.BATTLE_CONTRACT,
+      network: network,
     })
     this.wallets['terra'] = new TerraWallet()
     // this.wallets['polygon'] = new PolygonWallet()

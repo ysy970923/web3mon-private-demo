@@ -2,14 +2,11 @@ import { setBattleBackground } from './battleScene'
 import {
   ATTACKS,
   DEFENCES,
-  LastingEffect,
   LASTINGEFFECT,
-  Skill,
-  SKILLS,
   SPECIALEFFECT,
-} from './skills'
-import { battle } from './battleClient'
-import { random_success_nullify_defence, battleLog, random_success_critical } from './utils'
+} from '../data/skill'
+import { Skill, LastingEffect } from './skills'
+import { battleLog, random_success_critical } from './utils'
 
 export class BattleState {
   expires_at

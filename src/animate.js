@@ -3,9 +3,8 @@ import { stopAllPlay } from './js/index'
 import { sendPosition } from './control/move'
 import { movePlayer } from './control/move'
 import { battle } from './battle/battleClient'
-import { player, users } from './js/global'
+import { fixedObjects, player, users } from './js/global'
 import { background } from './js/global'
-import { setRenderables, setMovables, renderables } from './js/renderables'
 
 export const npcId = '250'
 
@@ -27,6 +26,10 @@ export const animate = () => {
   ctx.fillStyle = 'rgb(41,46,104)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  for (var key in fixedObjects) {
+    fixedObjects[key].draw(passedTime)
+  }
+
   background.draw()
 
   //   foreground.draw()
@@ -36,7 +39,7 @@ export const animate = () => {
 
   joyToKey()
 
-  if (battle.started) return
+  if (battle.playing) return
 
   // 아래부터는 나의 이동
   var newTime = performance.now()

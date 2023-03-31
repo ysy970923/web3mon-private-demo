@@ -13,6 +13,7 @@ import { turnToGameScreen } from '../user/logIn'
 import { moveUser } from '../control/move'
 import { transferMapTo } from '../control/map'
 import { users } from '../js/global'
+import { websocketUrl } from '../data/accountsAndUrls'
 
 export let ws = null
 const wsQueue = []
@@ -169,7 +170,7 @@ function onmessage(type, data) {
 
     case NETWORK.BATTLE_REJECT:
       console.log('누가 내 배틀 거절함!', data.reason)
-      if (!battle.started) {
+      if (!battle.playing) {
         if (data.reason === 0) window.alert('Opponent is already on Battle')
         else if (data.reason === 1) window.alert('Opponent Refused to Battle')
       }
@@ -265,10 +266,7 @@ export function connect() {
     ws.close()
   }
 
-  serverUrl = 'wss://dev-server.web3mon.io/ws-login?token='
-  // serverUrl = 'wss://real-server.web3mon.io/ws-login?token='
-  serverUrl = serverUrl + sessionStorage.getItem('jwt')
-  log(`Connecting to server: ${serverUrl}`)
+  serverUrl = websocketUrl + sessionStorage.getItem('jwt')
 
   ws = new WebSocket(serverUrl)
 

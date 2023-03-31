@@ -1,7 +1,7 @@
 import { stopAllPlay } from '../js/index'
 import { battle } from './battleClient'
 import { myID, users, player } from '../js/global'
-import { showCard, showSelectCard } from '../web/battleCard'
+import { showCard } from '../web/battleCard'
 
 /**
  * check whether click another player to battle.
@@ -10,7 +10,7 @@ export function clickEvent() {
   const canvas = document.getElementById('game_canvas')
   canvas.addEventListener('click', (e) => {
     // need to be ready and not currently battling and in BATTLE map
-    if (battle.started) return
+    if (battle.playing) return
     if (stopAllPlay) return
     // I should be ready
     // if (!player.readyForBattle) return
@@ -73,6 +73,5 @@ export function setUpBattleCard(type, key, battle_id) {
     document.getElementById('battleCard').style.display = 'none'
     document.getElementById('battleCard').innerHTML = ''
   }
-  showSelectCard(title, content, yes, no)
-
+  showCard(title, content, yes, no)
 }

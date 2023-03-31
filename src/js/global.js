@@ -22,3 +22,4 @@ export function setMyID(id) {
 
 export let selectedSkill = []
 export let selectedDefenceSkills = []
+export const fixedObjects = {}

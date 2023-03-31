@@ -4,26 +4,21 @@ import {
   endBattle,
   initBattle,
   renderState,
-  setBattleBackground,
-  setUpNextSetting,
 } from './battleScene'
 import { safe_send } from '../network/websocket'
 import { selectedSkill, selectedDefenceSkills, myID, users, battleRenderedSprites } from '../js/global'
-import { BattleState } from './battleState'
 import { animateBattle, enterBattle } from './enterBattle'
 import { wallet } from '../wallet/multi-wallet'
-import { SKILL_DESCRIPTIONS } from './skills'
 import { player } from '../js/global'
-import { betAmount } from '../data/betAmount'
-import { closeCard, showSelectCard } from '../web/battleCard'
-import { getCurrentTime, signMessage, verifyMessage } from './utils'
+import { BetAmount } from '../data/betAmount'
+import { closeCard, showCard } from '../web/battleCard'
+import { getCurrentTime } from './utils'
 import { startLoadingScreen } from '../web/loading'
 import { ChannelHandler } from './channelHandler'
 import { ChainHandler } from './chainHandler'
 import { startGame } from '../user/user'
+import { accounts } from '../data/accountsAndUrls'
 
-export const BATTLE_CONTRACT = 'game-v1.web3mon.testnet'
-const FT_CONTRACT = 'usdc.web3mon.testnet' // USDC.e contract ID
 const resume_data = {
   battle_data: {},
   jwt: '',
@@ -39,7 +34,7 @@ class BattleClient {
   timerId
   my_index
   bet_amount
-  started
+  playing
   opponent_id
   mode
   channelHandler
@@ -50,7 +45,7 @@ class BattleClient {
     this.keyManager = ethers.Wallet.createRandom()
     this.channelHandler = new ChannelHandler()
     this.chainHandler = new ChainHandler()
-    this.started = false
+    this.playing = false
     this.mode = 'channel'
     this.get_result_at = 0
   }
@@ -102,9 +97,9 @@ class BattleClient {
   }
 
   async init(battle_id, next_turn_expired_at) {
-    this.bet_amount = betAmount[player.map]
+    this.bet_amount = BetAmount[player.map]
     var battleInfo = await wallet.viewMethod({
-      contractId: BATTLE_CONTRACT,
+      contractId: accounts.BATTLE_CONTRACT,
       method: 'get_battle',
       args: { battle_id: battle_id },
     })
@@ -140,10 +135,10 @@ class BattleClient {
       startLoadingScreen()
       // moving funds to battle contract
       await wallet.callMethod({
-        contractId: FT_CONTRACT,
+        contractId: accounts.FT_CONTRACT,
         method: 'ft_transfer_call',
         args: {
-          receiver_id: BATTLE_CONTRACT,
+          receiver_id: accounts.BATTLE_CONTRACT,
           amount: this.bet_amount,
           msg: JSON.stringify({
             battle_id: this.battle_id,
@@ -160,7 +155,7 @@ class BattleClient {
       this.start()
     }
 
-    showSelectCard('Send Bet', '<p>Send Bet to Opponent</p>', yes, () => { })
+    showCard('Send Bet', '<p>Send Bet to Opponent</p>', yes)
   }
 
   save() {
@@ -172,7 +167,9 @@ class BattleClient {
       my_index: this.my_index,
       bet_amount: this.bet_amount,
       opponent_id: this.opponent_id,
-      mode: this.mode
+      mode: this.mode,
+      playing: this.playing,
+      get_result_at: this.get_result_at,
     }
     resume_data.playerUrl = playerUrl
     resume_data.clothId = selectedClothId
@@ -183,7 +180,7 @@ class BattleClient {
 
   start() {
     this.timerId = setInterval(() => this.timer(), 1000)
-    this.started = true
+    this.playing = true
     document.getElementById('battle_banner').style.display = 'block'
     document.getElementById('atk_or_def').innerText = 'CHOOSE'
     document.querySelector(
@@ -223,6 +220,8 @@ class BattleClient {
     this.chainHandler.resume(msg.chainHandler)
     this.keyManager = new ethers.Wallet(msg.sk)
     this.mode = msg.mode
+    this.playing = msg.playing
+    this.get_result_at = msg.get_result_at
 
     this.start()
   }
@@ -277,19 +276,18 @@ class BattleClient {
         break
       case 'time-over':
         this.close('LOSE')
-        window.alert('Time is Over.')
         break
       case 'switch-to-chain':
         this.mode = 'chain'
         var send_at = this.channelHandler.battle_state.expires_at + 60
-        this.chainHandler.init(this.battle_id, this.keyManager.privateKey, this.my_index, send_at)
+        this.chainHandler.init(this.battle_id, this.keyManager.privateKey, this.my_index, send_at, this.channelHandler.battle_state.player_skills[this.my_index], this.channelHandler.battle_state.sequence, this.channelHandler.battle_state.attacker_index)
         break
       case 'wait-finalize':
         document.getElementById('atk_or_def').innerText = 'Finalizing...'
         if (current_time > this.get_result_at) {
-          this.get_result_at += 10
+          this.get_result_at += 20
           wallet.viewMethod({
-            contractId: BATTLE_CONTRACT,
+            contractId: accounts.BATTLE_CONTRACT,
             method: 'get_result',
             args: { battle_id: this.battle_id },
           }).then((res) => {
@@ -322,6 +320,7 @@ class BattleClient {
     clearInterval(this.timerId)
     sessionStorage.removeItem('resume-data')
     document.getElementById('battle_banner').style.display = 'none'
+    this.playing = false
     endBattle(result, this.bet_amount)
   }
 }

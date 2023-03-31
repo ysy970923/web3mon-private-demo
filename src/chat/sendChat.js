@@ -18,7 +18,7 @@ export function sendChat() {
 
   const chat = document.querySelector('#chat').value
 
-  if (!battle.started) {
+  if (!battle.playing) {
     player.showChat(chat)
 
     safe_send({

@@ -1,7 +1,7 @@
 import { player, setPlayer, users } from '../user/user'
 import { battle } from './battleClient'
 import { initBattle } from './battleScene'
-import { ATTACKS, DEFENCES, SKILL_DESCRIPTIONS } from './skills'
+import { ATTACKS, DEFENCES, SKILL_INFOS } from '../data/skill'
 import { selectedSkill, selectedDefenceSkills } from '../js/global'
 /**
  * Choose which skill to bring in battle
@@ -20,7 +20,7 @@ const skillBoxAdd = () => {
     var skillType = ATTACKS[i]
     skillBox.className = 'one_atk_skill_box'
     skillBox.innerHTML = `
-      <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />
+      <img src="../../img/skillThumbnails/${SKILL_INFOS[skillType].img}" />
     `
     skillBox.id = skillType
 
@@ -70,7 +70,7 @@ const skillBoxAdd = () => {
 
     skillBox.className = 'one_atk_skill_box'
     skillBox.innerHTML = `
-    <img src=".././../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />
+    <img src=".././../img/skillThumbnails/${SKILL_INFOS[skillType].img}" />
     `
 
     skillBox.id = skillType
@@ -134,19 +134,20 @@ export const addBattleSkillBox = (battleState, my_index) => {
       battleState.player_skills[my_index][i].type
     skillBox.className = `battle_one_skill a${i} atk_skill_buttons`
     skillBox.innerHTML = `
-    <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />
+    <img src="../../img/skillThumbnails/${SKILL_INFOS[skillType].img}" />
     `
     skillBox.id = `Box-${skillType}`
-    skillBox.value = i
+    skillBox.setAttribute('value', i)
+    skillBox.setAttribute('skill_type', skillType)
     skillBox.onmouseover = (e) => {
-      hoverBattleToolTip(e.currentTarget.value, tooltip, skillBox)
+      hoverTooltip(e.currentTarget.getAttribute('skill_type'), tooltip, skillBox)
     }
     skillBox.onmouseleave = (e) => {
       tooltip.style.display = 'none'
     }
     skillBox.onclick = (e) => {
       // 스킬 사용
-      battle.chooseAction(e.currentTarget.value)
+      battle.chooseAction(e.currentTarget.getAttribute('value'))
       document.querySelector('#actionContent').innerText =
         'Used ' + e.currentTarget.id.substring(4)
       document.querySelector('#battlePopUpCard').style.display = 'block'
@@ -165,19 +166,20 @@ export const addBattleSkillBox = (battleState, my_index) => {
       battleState.player_skills[my_index][i + 3].type
     skillBox.className = `battle_one_skill a${i} def_skill_buttons`
     skillBox.innerHTML = `
-    <img src="../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}" />
+    <img src="../../img/skillThumbnails/${SKILL_INFOS[skillType].img}" />
     `
     skillBox.id = `Box-${skillType}`
-    skillBox.value = i + 3
+    skillBox.setAttribute('value', i + 3)
+    skillBox.setAttribute('skill_type', skillType)
     skillBox.onmouseover = (e) => {
-      hoverBattleToolTip(e.currentTarget.value, tooltip, skillBox)
+      hoverTooltip(e.currentTarget.getAttribute('skill_type'), tooltip, skillBox)
     }
     skillBox.onmouseleave = (e) => {
       tooltip.style.display = 'none'
     }
     skillBox.onclick = (e) => {
       // 스킬 사용
-      battle.chooseAction(e.currentTarget.value)
+      battle.chooseAction(e.currentTarget.getAttribute('value'))
       document.querySelector('#actionContent').innerText =
         'Used ' + e.currentTarget.id.substring(4)
       document.querySelector('#battlePopUpCard').style.display = 'block'
@@ -198,28 +200,19 @@ export const addBattleSkillBox = (battleState, my_index) => {
 }
 
 const hoverTooltip = (skillType, tooltip, skillBox) => {
-  var skillDesc = SKILL_DESCRIPTIONS[skillType]
-  tooltip.innerHTML = `
-    <p><strong>${skillDesc.name}</strong></p>
-    <p>${skillDesc.desc}</p>
-  `
+  var skill_info = SKILL_INFOS[skillType]
+  tooltip.innerHTML = `<p><strong>${skill_info.name}</strong></p>`
+  if (skill_info.atk)
+    tooltip.innerHTML += `<p>ATK: ${skill_info.atk}</p>`
+  if (skill_info.def)
+    tooltip.innerHTML += `<p>DEF (Rate): ${skill_info.def}</p>`
+  if (skill_info.effect) {
+    tooltip.innerHTML += `<p>Effect: ${skill_info.effect}</p>`
+    tooltip.innerHTML += `<p>${skill_info.effect_desc}</p>`
+  }
   tooltip.style.display = 'flex'
   // if (type === 'defense') tooltip.style.bottom = '73px'
   // else tooltip.style.top = '73px'
-
-  skillBox.append(tooltip)
-}
-
-const hoverBattleToolTip = (i, tooltip, skillBox) => {
-  var skill = battle.channelHandler.battle_state.player_skills[battle.my_index][i]
-  var skillDesc = SKILL_DESCRIPTIONS[skill.type]
-
-  tooltip.innerHTML = `
-    <p><strong>${skillDesc.name}</strong></p>
-    <p>${JSON.stringify(skill.write())}</p>
-    <p>${skillDesc.desc}</p>
-  `
-  tooltip.style.display = 'flex'
 
   skillBox.append(tooltip)
 }

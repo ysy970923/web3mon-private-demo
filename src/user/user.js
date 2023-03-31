@@ -1,6 +1,5 @@
 import { Sprite } from '../object/Sprite'
 import { local_position, setRenderables } from '../js/index'
-import { selectedClothId, playerUrl } from './logIn'
 import { animate } from '../animate'
 import { adjustMapPosition, background, foreground, transferMapTo } from '../control/map'
 import { battle } from '../battle/battleClient'
@@ -120,10 +119,6 @@ export class User {
     this.nftUrl = nftUrl
     this.clothId = clothId
     this.map = map
-
-    if (nftCollection === 'asac.web3mon.testnet') nftCollection = 'ASAC'
-    else if (nftCollection === 'nearnauts.web3mon.testnet')
-      nftCollection = 'Nearnauts'
 
     this.name = `${nftCollection} #${tokenId}`
 

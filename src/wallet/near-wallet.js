@@ -20,6 +20,7 @@ import { sha256 } from 'js-sha256'
 import axios from 'axios'
 import { wallet } from './multi-wallet'
 import { ethers } from 'ethers'
+import { loginUrl } from '../data/accountsAndUrls'
 
 const THREEHUN_TGAS = '300000000000000'
 const NO_DEPOSIT = '0'
@@ -32,7 +33,7 @@ export class NearWallet {
   createAccessKeyFor
   accountId
 
-  constructor({ createAccessKeyFor = undefined, network = 'testnet' }) {
+  constructor({ createAccessKeyFor, network}) {
     this.createAccessKeyFor = createAccessKeyFor
     this.network = network
     this.accountId = undefined
@@ -171,7 +172,7 @@ export class NearWallet {
     console.log(JSON.stringify(body))
 
     var res = await axios.post(
-      'https://dev-server.web3mon.io/login',
+      loginUrl,
       body,
       {
         headers: {

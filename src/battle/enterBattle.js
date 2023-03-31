@@ -5,8 +5,7 @@ import {
 } from './battleScene'
 import { animate } from '../animate'
 import { addBattleSkillBox } from './initialSetting'
-import { battle } from './battleClient'
-import { SKILL_DESCRIPTIONS } from './skills'
+import { SKILL_INFOS } from '../data/skill'
 import { users, player, battleRenderedSprites } from '../js/global'
 
 export let battleAnimationId
@@ -91,7 +90,7 @@ const enterImageAnimation = (opponent_id, my_index, battleState) => {
     skill_img_container.setAttribute('class', 'skill_img_container')
     var skill_img = document.createElement('img')
     skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}`
+    skill_img.src = `../../img/skillThumbnails/${SKILL_INFOS[skillType].img}`
     skill_img_container.append(skill_img)
     desc_item.append(skill_img_container)
     document.getElementById('selected_attack_skills').append(desc_item)
@@ -107,7 +106,7 @@ const enterImageAnimation = (opponent_id, my_index, battleState) => {
     skill_img_container.setAttribute('class', 'skill_img_container')
     var skill_img = document.createElement('img')
     skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}`
+    skill_img.src = `../../img/skillThumbnails/${SKILL_INFOS[skillType].img}`
     skill_img_container.append(skill_img)
     desc_item.append(skill_img_container)
     document.getElementById('selected_defence_skills').append(desc_item)
@@ -125,7 +124,7 @@ const enterImageAnimation = (opponent_id, my_index, battleState) => {
     skill_img_container.setAttribute('class', 'skill_img_container')
     var skill_img = document.createElement('img')
     skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}`
+    skill_img.src = `../../img/skillThumbnails/${SKILL_INFOS[skillType].img}`
     skill_img_container.append(skill_img)
     desc_item.append(skill_img_container)
     document.getElementById('op_selected_attack_skills').append(desc_item)
@@ -141,7 +140,7 @@ const enterImageAnimation = (opponent_id, my_index, battleState) => {
     skill_img_container.setAttribute('class', 'skill_img_container')
     var skill_img = document.createElement('img')
     skill_img.setAttribute('class', 'skill_img')
-    skill_img.src = `../../img/skillThumbnails/${SKILL_DESCRIPTIONS[skillType].img}`
+    skill_img.src = `../../img/skillThumbnails/${SKILL_INFOS[skillType].img}`
     skill_img_container.append(skill_img)
     desc_item.append(skill_img_container)
     document.getElementById('op_selected_defence_skills').append(desc_item)

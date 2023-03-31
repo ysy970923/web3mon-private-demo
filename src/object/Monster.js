@@ -1,7 +1,8 @@
 import { Sprite } from './Sprite'
 import { gsap } from 'gsap'
-import { LASTINGEFFECT } from '../battle/skills'
 import { addEffect } from '../web/battleNameTag'
+import { LASTINGEFFECT } from '../data/skill'
+
 
 const canvas = document.getElementById('game_canvas')
 

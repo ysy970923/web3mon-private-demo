@@ -3,7 +3,6 @@ import { ws } from '../network/websocket'
 import { characters, local_position } from '../js/index'
 import { movePlayerToPosition } from './move'
 import { background, player, users } from '../js/global'
-import { setMovables, setRenderables } from '../js/renderables'
 import { wallet } from '../wallet/multi-wallet'
 import { endLoadingScreen, startLoadingScreen } from '../web/loading'
 
@@ -48,29 +47,6 @@ export function transferMapTo(toMap) {
   // map에 존재하는 유저들 변경
 
   var newBackgroundImage = new Image()
-  console.log(wallet.selectedChain)
-  if (wallet.selectedChain === 'terra') {
-    if (!(toMap === 'MAIN' || toMap === 'BATTLE0')) {
-      document.querySelector('#actionContent').innerText =
-        'Terra Players not Allowed to Bet yet!'
-      document.querySelector('#battlePopUpCard').style.display = 'block'
-      setTimeout(() => {
-        document.querySelector('#battlePopUpCard').style.display = 'none'
-      }, 5000)
-      return
-    }
-  }
-  if (wallet.selectedChain === 'polygon') {
-    if (!(toMap === 'MAIN' || toMap === 'BATTLE0')) {
-      document.querySelector('#actionContent').innerText =
-        'Polygon Players not Allowed to Bet yet!'
-      document.querySelector('#battlePopUpCard').style.display = 'block'
-      setTimeout(() => {
-        document.querySelector('#battlePopUpCard').style.display = 'none'
-      }, 5000)
-      return
-    }
-  }
   startLoadingScreen()
   endLoadingScreen()
 
@@ -93,6 +69,7 @@ export function transferMapTo(toMap) {
 
       document.getElementById('readyButtonContainer').style.display = 'block'
 
+      
       player.setPosition({ x: 1720, y: 850 }, true)
       break
 

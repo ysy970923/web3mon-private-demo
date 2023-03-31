@@ -1,11 +1,6 @@
 import { JoyStick } from './joystick'
 import { ws } from '../network/websocket'
 import { adjustMapPosition, transferMapTo } from './map'
-import {
-  checkForCharacterCollision,
-  userBoundaryCollision,
-} from './checkCollision'
-import { movables } from '../js/renderables'
 import { users, myID, player, background } from '../js/global'
 import { allowedBlocks } from '../data/collisions'
 import { portals } from '../data/portals'
