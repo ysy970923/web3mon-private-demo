@@ -26,10 +26,6 @@ export const animate = () => {
   ctx.fillStyle = 'rgb(41,46,104)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  for (var key in fixedObjects) {
-    fixedObjects[key].draw(passedTime)
-  }
-
   background.draw()
 
   //   foreground.draw()
@@ -45,6 +41,10 @@ export const animate = () => {
   var newTime = performance.now()
   var passedTime = newTime - previousTime
   previousTime = newTime
+
+  for (var key in fixedObjects) {
+    fixedObjects[key].draw(passedTime)
+  }
 
   for (var key in users) {
     users[key].draw(passedTime)

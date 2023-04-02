@@ -40,6 +40,7 @@ class BattleClient {
   channelHandler
   chainHandler
   get_result_at
+  selectedSkills
 
   constructor() {
     this.keyManager = ethers.Wallet.createRandom()
@@ -48,6 +49,10 @@ class BattleClient {
     this.playing = false
     this.mode = 'channel'
     this.get_result_at = 0
+    this.selectedSkills = {
+      attacks: [],
+      defences: [],
+    }
   }
 
   // battle request to opponent
@@ -192,18 +197,15 @@ class BattleClient {
       document
         .getElementById('selectTypeBtn')
         .addEventListener('click', (e) => {
-          if (selectedSkill.length !== 3 || selectedDefenceSkills.length !== 3) {
+          if (this.selectedSkills.attacks.length !== 3 || this.selectedSkills.defences.length !== 3) {
             alert('You have to choose 3 skills each.')
             return
           }
           document.getElementById('skill_box_temp').style.display = 'none'
           // 내 스킬타입 확정
-          selectedSkill.sort()
-          selectedDefenceSkills.sort()
-          this.chooseSkills({
-            attacks: selectedSkill,
-            defences: selectedDefenceSkills,
-          })
+          this.selectedSkills.attacks.sort()
+          this.selectedSkills.defences.sort()
+          this.chooseSkills(this.selectedSkills)
         })
     } else {
       initBattle(this.opponent_id, this.channelHandler.battle_state, this.my_index)
@@ -230,6 +232,19 @@ class BattleClient {
     return this.battleState.player_skills[index][
       this.data.actions[index].action_index
     ]
+  }
+
+  selectSkillBox(skillBox, type) {
+    var index = parseInt(skillBox.getAttribute('skill_index'))
+    if (this.selectedSkills[type].includes(index)) {
+      this.selectedSkills[type] = this.selectedSkills[type].filter(
+        (skill) => skill !== index
+      )
+      skillBox.style.background = null
+    } else {
+      this.selectedSkills[type].push(index)
+      skillBox.style.background = 'var(--primary-color01)'
+    }
   }
 
   chooseSkills(skills) {

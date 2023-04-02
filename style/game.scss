@@ -54,8 +54,7 @@
     justify-content: center;
 
     .desc_row {
-      padding: 5px 0px;
-      margin-top: 10px;
+      margin-top: 5px;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -106,13 +105,13 @@
   }
 
   .img_container {
-    width: 300px;
-    height: 315px;
+    width: 200px;
+    height: 200px;
     display: flex;
     align-items: flex-end;
     img {
-      width: 300px;
-      height: 300px;
+      width: 200px;
+      height: 200px;
     }
   }
 }

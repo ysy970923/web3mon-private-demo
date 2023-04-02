@@ -34,7 +34,7 @@ export async function findMyNFT() {
             img.src = nft.metadata.media
           else img.src = collection.base_uri + '/' + nft.metadata.media
 
-          img.style = 'width: min(100px, 15%); opacity: 0.5;'
+          img.style = 'width: min(70px, 15%); opacity: 0.5;'
           img.setAttribute('collection', collection.account_id)
           img.setAttribute('asset_id', nft.token_id)
           if (collection.account_id.includes('nftv1')) {

@@ -7,13 +7,14 @@ import { selectedSkill, selectedDefenceSkills } from '../js/global'
  * Choose which skill to bring in battle
  */
 const skillBoxAdd = () => {
-  let div = document.querySelector('.attack_skill_box')
-  div.innerHTML = ''
-  let attackSkills = []
 
   let tooltip = document.createElement('div')
   tooltip.className = 'skill_hover_tooltip'
   tooltip.id = 'tooltip'
+
+  let div = document.querySelector('.attack_skill_box')
+  div.innerHTML = ''
+  let attackSkills = []
 
   for (let i = 0; i < ATTACKS.length; i++) {
     let skillBox = document.createElement('div')
@@ -22,31 +23,18 @@ const skillBoxAdd = () => {
     skillBox.innerHTML = `
       <img src="../../img/skillThumbnails/${SKILL_INFOS[skillType].img}" />
     `
-    skillBox.id = skillType
+    skillBox.setAttribute('skill_index', i)
+    skillBox.setAttribute('skill_type', skillType)
 
     skillBox.onmouseover = (e) => {
-      hoverTooltip(e.currentTarget.id, tooltip, skillBox)
+      hoverTooltip(e.currentTarget, tooltip)
     }
     skillBox.onmouseleave = (e) => {
       tooltip.style.display = 'none'
     }
 
     skillBox.onclick = (e) => {
-      if (selectedSkill.includes(i)) {
-        skillBox.style.background = null
-        for (let j = 0; i < selectedSkill.length; i++) {
-          if (selectedSkill[i] === j) {
-            people.splice(j, 1);
-            j--; // Adjust the index to account for the removed element
-          }
-        }
-      } else {
-        console.log(selectedSkill, 'Qq')
-        if (selectedSkill.length < 3) {
-          selectedSkill.push(i)
-          skillBox.style.background = 'var(--primary-color01)'
-        }
-      }
+      battle.selectSkillBox(e.currentTarget, 'attacks')
     }
 
     attackSkills.push(skillBox)
@@ -60,10 +48,6 @@ const skillBoxAdd = () => {
   defdiv.innerHTML = ''
   let defenceSkills = []
 
-  let tooltip2 = document.createElement('div')
-  tooltip2.className = 'skill_hover_tooltip'
-  tooltip2.id = 'tooltip'
-
   for (let i = 0; i < DEFENCES.length; i++) {
     let skillBox = document.createElement('div')
     var skillType = DEFENCES[i]
@@ -73,30 +57,18 @@ const skillBoxAdd = () => {
     <img src=".././../img/skillThumbnails/${SKILL_INFOS[skillType].img}" />
     `
 
-    skillBox.id = skillType
+    skillBox.setAttribute('skill_index', i)
+    skillBox.setAttribute('skill_type', skillType)
 
     skillBox.onmouseover = (e) => {
-      hoverTooltip(e.currentTarget.id, tooltip2, skillBox)
+      hoverTooltip(e.currentTarget, tooltip)
     }
     skillBox.onmouseleave = (e) => {
-      tooltip2.style.display = 'none'
+      tooltip.style.display = 'none'
     }
 
     skillBox.onclick = (e) => {
-      if (selectedDefenceSkills.includes(i)) {
-        skillBox.style.background = null
-        for (let j = 0; i < selectedDefenceSkills.length; i++) {
-          if (selectedDefenceSkills[i] === j) {
-            people.splice(j, 1);
-            j--; // Adjust the index to account for the removed element
-          }
-        }
-      } else {
-        if (selectedDefenceSkills.length < 3) {
-          selectedDefenceSkills.push(i)
-          skillBox.style.background = 'var(--primary-color01)'
-        }
-      }
+      battle.selectSkillBox(e.currentTarget, 'defences')
     }
 
     defenceSkills.push(skillBox)
@@ -140,7 +112,7 @@ export const addBattleSkillBox = (battleState, my_index) => {
     skillBox.setAttribute('value', i)
     skillBox.setAttribute('skill_type', skillType)
     skillBox.onmouseover = (e) => {
-      hoverTooltip(e.currentTarget.getAttribute('skill_type'), tooltip, skillBox)
+      hoverTooltip(e.currentTarget, tooltip)
     }
     skillBox.onmouseleave = (e) => {
       tooltip.style.display = 'none'
@@ -172,7 +144,7 @@ export const addBattleSkillBox = (battleState, my_index) => {
     skillBox.setAttribute('value', i + 3)
     skillBox.setAttribute('skill_type', skillType)
     skillBox.onmouseover = (e) => {
-      hoverTooltip(e.currentTarget.getAttribute('skill_type'), tooltip, skillBox)
+      hoverTooltip(e.currentTarget, tooltip)
     }
     skillBox.onmouseleave = (e) => {
       tooltip.style.display = 'none'
@@ -199,7 +171,8 @@ export const addBattleSkillBox = (battleState, my_index) => {
   })
 }
 
-const hoverTooltip = (skillType, tooltip, skillBox) => {
+const hoverTooltip = (skillBox, tooltip) => {
+  var skillType = skillBox.getAttribute('skill_type')
   var skill_info = SKILL_INFOS[skillType]
   tooltip.innerHTML = `<p><strong>${skill_info.name}</strong></p>`
   if (skill_info.atk)

@@ -176,7 +176,6 @@ export function movePlayer(num = 1, passedTime) {
       true
     )
     adjustMapPosition()
-    // movePlayerToPosition(deltaX, deltaY, true)
   }
 }
 

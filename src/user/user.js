@@ -5,7 +5,7 @@ import { adjustMapPosition, background, foreground, transferMapTo } from '../con
 import { battle } from '../battle/battleClient'
 import { safe_send } from '../network/websocket'
 import { myID, setPlayer, users } from '../js/global'
-import { endLoadingScreen } from '../web/loading'
+import { endLoadingScreen, startLoadingScreen } from '../web/loading'
 
 const clothStorageLink = 'https://web3mon.s3.amazonaws.com/nftv1/'
 
@@ -54,6 +54,7 @@ worker.onmessage = function (event) {
     resume_data = JSON.parse(resume_data)
     var opponent_id = resume_data.battle_data.opponent_id
     transferMapTo(resume_data.map)
+    startLoadingScreen()
     if (event.data.id === myID || event.data.id === opponent_id)
       if (myID in users && opponent_id in users) {
         if (users[myID].made && users[opponent_id].made) {

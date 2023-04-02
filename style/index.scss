@@ -38,6 +38,18 @@ canvas {
   overflow: hidden;
 }
 
+#map_identifier {
+  top: 0;
+  left: 0;
+  position: absolute;
+  color: white;
+  font-size: x-large;
+  background: rgba(23, 23, 23, 0.89);
+  padding: 20px;
+  border-radius: 10px;
+  margin: 10px;
+}
+
 #login_screen {
   height: max(100%, 1500px);
   min-height: 100vh;

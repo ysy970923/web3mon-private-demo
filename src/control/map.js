@@ -2,7 +2,7 @@ import { Sprite } from '../object/Sprite'
 import { ws } from '../network/websocket'
 import { characters, local_position } from '../js/index'
 import { movePlayerToPosition } from './move'
-import { background, player, users } from '../js/global'
+import { background, fixedObjects, player, users } from '../js/global'
 import { wallet } from '../wallet/multi-wallet'
 import { endLoadingScreen, startLoadingScreen } from '../web/loading'
 
@@ -11,6 +11,9 @@ mainBackgroundImage.src = '../img/Island.png'
 
 const foregroundImage = new Image()
 foregroundImage.src = '../img/Island.png'
+
+const portalImage = new Image()
+portalImage.src = '../img/portal.png'
 
 const MAP = {
   MAIN: 'MAIN',
@@ -39,6 +42,19 @@ export function adjustMapPosition() {
   var deltaY = window.innerHeight / 2 - playerLocalPosition.y
   background.position.x += deltaX
   background.position.y += deltaY
+
+  for (var key in fixedObjects) {
+    fixedObjects[key].position.x += deltaX
+    fixedObjects[key].position.y += deltaY
+  }
+}
+
+function makePortal() {
+  var portal = new Sprite({ position: local_position({ x: 1550, y: 600 }), frames: { max: 6, fps: 10 } })
+  portal.setImage(portalImage)
+  portal.animate = true
+  portal.setScale(1.5)
+  fixedObjects['portal'] = portal
 }
 
 export function transferMapTo(toMap) {
@@ -48,7 +64,6 @@ export function transferMapTo(toMap) {
 
   var newBackgroundImage = new Image()
   startLoadingScreen()
-  endLoadingScreen()
 
   switch (toMap) {
     case MAP.MAIN:
@@ -59,6 +74,7 @@ export function transferMapTo(toMap) {
 
       newBackgroundImage.src = '../img/Island.png'
 
+      delete fixedObjects['portal']
       player.setPosition({ x: 1500, y: 350 }, true)
       break
 
@@ -68,8 +84,7 @@ export function transferMapTo(toMap) {
         'BATTLE map : you can fight here!\r\nBET amount : 0$'
 
       document.getElementById('readyButtonContainer').style.display = 'block'
-
-      
+      makePortal()
       player.setPosition({ x: 1720, y: 850 }, true)
       break
 
@@ -79,8 +94,9 @@ export function transferMapTo(toMap) {
         'BATTLE map : you can fight here!\r\nBET amount : 10$'
 
       document.getElementById('readyButtonContainer').style.display = 'block'
-
+      makePortal()
       player.setPosition({ x: 1720, y: 850 }, true)
+
       break
 
     case MAP.BATTLE2:
@@ -89,8 +105,9 @@ export function transferMapTo(toMap) {
         'BATTLE map : you can fight here!\r\nBET amount : 20$'
 
       document.getElementById('readyButtonContainer').style.display = 'block'
-
+      makePortal()
       player.setPosition({ x: 1720, y: 850 }, true)
+
       break
 
     case MAP.BATTLE3:
@@ -99,8 +116,9 @@ export function transferMapTo(toMap) {
         'BATTLE map : you can fight here!\r\nBET amount : 40$'
 
       document.getElementById('readyButtonContainer').style.display = 'block'
-
+      makePortal()
       player.setPosition({ x: 1720, y: 850 }, true)
+
       break
 
     case MAP.BATTLE4:
@@ -110,8 +128,9 @@ export function transferMapTo(toMap) {
         'BATTLE map : you can fight here!\r\nBET amount : 80$'
 
       document.getElementById('readyButtonContainer').style.display = 'block'
-
+      makePortal()
       player.setPosition({ x: 1720, y: 850 }, true)
+
       break
   }
   background.setImage(newBackgroundImage)
@@ -124,9 +143,8 @@ export function transferMapTo(toMap) {
     },
   }
 
-  // moveToPosition(200, -100)
-
   const msg = JSON.stringify(body)
   ws.send(msg)
   player.map = toMap
+  endLoadingScreen()
 }
