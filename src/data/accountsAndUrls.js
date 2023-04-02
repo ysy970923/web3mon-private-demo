@@ -42,7 +42,7 @@ var partner_nfts_list = {
         { account_id: 'rocketbois.neartopia.near', base_uri: 'https://bafybeibrteurbwo76af6c4l4jc3k5dvjd7f73l62peonbsni4qibkk27hq.ipfs.dweb.link/' },
         { account_id: 'lacrove.near', base_uri: 'https://bafybeicbqphe6h6axkkbfh2wlfo2cs5sy46cnh24csfepgtmlz7hrgyzzu.ipfs.dweb.link/' },
         { account_id: 'near_starter.near', base_uri: 'https://bafybeibaz6uuzo4rd3q75fljyka6rdzrymtklqovllkcgvnajirkdz7d44.ipfs.nftstorage.link/' },
-        { account_id: 'nearcrashnft.near', base_uri: 'nearcrash.io/' },
+        { account_id: 'nearcrashnft.near', base_uri: '' },
         { account_id: 'classykangaroos1.near', base_uri: '' },
         { account_id: 'nft.classykangaroosv2.near', base_uri: '' },
         { account_id: 'nft.goodfortunefelines.near', base_uri: 'https://ewtd.mypinata.cloud/ipfs/QmNtWmU8LuNNexpcw3djhGcdudkUarX8oiovGCZrwrhYR4/' },
@@ -52,6 +52,28 @@ var partner_nfts_list = {
         { account_id: 'nftv1.web3mon.near', base_uri: 'https://bafybeihppeux4ojitk5nii4znq4t4vw6oa26arg2u7tv276vnhsklibpgy.ipfs.dweb.link/' },
 
     ]
+}
+
+export const collectionIdToName = {
+    'asac.web3mon.testnet': 'ASAC',
+    'nearnauts.web3mon.testnet': 'Nearnauts',
+    'nearnautnft.near': 'Nearnauts',
+    'asac.near': 'ASAC',
+    'near-punks.near': 'Near Punks',
+    'tinkerunion_nft.enleap.near': 'Tinker Union',
+    'v0.apemetaerror.near': 'Ape Meta Error',
+    'cartelgen1.neartopia.near': 'El Café Cartel - Gen 1',
+    'realbirds.near': 'Real Birds',
+    'mrbrownproject.near': 'Mr. Brown',
+    'rocketbois.neartopia.near': 'RocketBois',
+    'lacrove.near': 'Lacrove',
+    'near_starter.near': 'Vicious Fishes',
+    'nearcrashnft.near': 'NearCrash',
+    'classykangaroos1.near': 'Classy Kangaroos',
+    'nft.classykangaroosv2.near': 'Classy Kangaroos V2',
+    'nft.goodfortunefelines.near': 'Good Fortune Felines',
+    'ff.nekotoken.near': 'Freaky Felines',
+    'mmc-pups.nfts.fewandfar.near': 'Murder Mystery Collective',
 }
 
 export const accounts = accounts_list[network]

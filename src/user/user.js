@@ -6,6 +6,7 @@ import { battle } from '../battle/battleClient'
 import { safe_send } from '../network/websocket'
 import { myID, setPlayer, users } from '../js/global'
 import { endLoadingScreen, startLoadingScreen } from '../web/loading'
+import { collectionIdToName } from '../data/accountsAndUrls'
 
 const clothStorageLink = 'https://web3mon.s3.amazonaws.com/nftv1/'
 
@@ -121,7 +122,7 @@ export class User {
     this.clothId = clothId
     this.map = map
 
-    this.name = `${nftCollection} #${tokenId}`
+    this.name = `${collectionIdToName[nftCollection]} #${tokenId.substring(0, 2)}...${tokenId.substring(tokenId.length - 2)}`
 
     this.sprite = new Sprite({
       position: this.position,
