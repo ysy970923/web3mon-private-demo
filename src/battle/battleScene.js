@@ -41,12 +41,12 @@ export function renderState(battleState, actions, my_index) {
       opSkill.type
     )
 
-  myMonster.adjustHealth(battleState.player_lp[my_index])
-  opponent.adjustHealth(battleState.player_lp[1 - my_index])
   mySkill.render(myMonster, opponent, battleRenderedSprites)
   opSkill.render(opponent, myMonster, battleRenderedSprites)
   myMonster.addEffects(battleState.lasting_effect[my_index])
   opponent.addEffects(battleState.lasting_effect[1 - my_index])
+  myMonster.adjustHealth(battleState.player_lp[my_index])
+  opponent.adjustHealth(battleState.player_lp[1 - my_index])
 
   if (myMonster.health <= 0) {
     myMonster.faint()

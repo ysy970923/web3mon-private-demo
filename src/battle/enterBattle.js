@@ -63,6 +63,7 @@ export function animateBattle() {
   }
 
   var newTime = performance.now()
+  if (previousTime === undefined) previousTime = newTime
   var passedTime = newTime - previousTime
   previousTime = newTime
 

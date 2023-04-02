@@ -11,11 +11,15 @@ const canva = canvas.getContext('2d')
 const chatBubble = new Image()
 chatBubble.src = './../img/chatBubble2.png'
 
+const bleedingImage = new Image()
+bleedingImage.src = '../img/bleeding/near.png'
+
 export class Monster extends Sprite {
   name
   me_or_op
   chat
   chatShowTime
+  bleeding
   constructor({
     frames = { max: 1, fps: 6 },
     animate = false,
@@ -49,6 +53,19 @@ export class Monster extends Sprite {
     this.skills = skills
     this.chat = ''
     this.chatShowTime = 0
+    this.bleeding = new Sprite({
+      position: {
+        x: this.position.x,
+        y: this.position.y,
+      },
+      frames: {
+        max: 19,
+        fps: 6,
+      },
+      animate: true,
+    })
+    this.bleeding.setImage(bleedingImage)
+    this.bleeding.opacity = 0
   }
 
   faint() {
@@ -66,12 +83,24 @@ export class Monster extends Sprite {
   }
 
   adjustHealth(health) {
+    console.log(this.bleeding)
     let healthBar = `#${this.me_or_op}HealthBar`
 
-    this.health = health
-    gsap.to(healthBar, {
-      width: (100 * this.health) / this.initialHealth + '%',
-    })
+    if (this.health > health) {
+      this.bleeding.opacity = 1
+
+      gsap.to(this.bleeding, {
+        duration: 10.0,
+        opacity: 0,
+      })
+
+      this.health = Math.max(health, 0)
+      gsap.to(healthBar, {
+        duration: 5.0,
+        width: (100 * this.health) / this.initialHealth + '%',
+      })
+    }
+
   }
 
   addEffects(effects) {
@@ -102,7 +131,7 @@ export class Monster extends Sprite {
     })
   }
 
-  draw() {
+  draw(passedTime) {
     if (this.me_or_op === 'OP')
       super.position = {
         x: window.innerWidth * 0.7 - 96 * 1.5,
@@ -135,6 +164,9 @@ export class Monster extends Sprite {
 
       if (this.chatShowTime > 600) this.chat = ''
     }
-    super.draw()
+
+    super.draw(passedTime)
+    this.bleeding.draw(passedTime)
+
   }
 }
