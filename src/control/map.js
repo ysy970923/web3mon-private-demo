@@ -5,6 +5,7 @@ import { movePlayerToPosition } from './move'
 import { background, fixedObjects, player, users } from '../js/global'
 import { wallet } from '../wallet/multi-wallet'
 import { endLoadingScreen, startLoadingScreen } from '../web/loading'
+import { BetAmount } from '../data/betAmount'
 
 const mainBackgroundImage = new Image()
 mainBackgroundImage.src = '../img/Island.png'
@@ -57,7 +58,7 @@ function makePortal() {
   fixedObjects['portal'] = portal
 }
 
-export function transferMapTo(toMap) {
+export function transferMapTo(toMap, endLoadingInstantly = true) {
   // map 이동의 효과 : 뭐가 있을까?
   // map UI 자체 변경 -> renderables, movables 가 바뀌는 것
   // map에 존재하는 유저들 변경
@@ -81,7 +82,7 @@ export function transferMapTo(toMap) {
     case MAP.BATTLE0:
       newBackgroundImage.src = '../img/waitMap/1.png'
       document.getElementById('map_identifier').innerText =
-        'BATTLE map : you can fight here!\r\nBET amount : 0$'
+        `Game Size: ${BetAmount[MAP.BATTLE0]}$`
 
       document.getElementById('readyButtonContainer').style.display = 'block'
       makePortal()
@@ -91,7 +92,7 @@ export function transferMapTo(toMap) {
     case MAP.BATTLE1:
       newBackgroundImage.src = '../img/waitMap/2.png'
       document.getElementById('map_identifier').innerText =
-        'BATTLE map : you can fight here!\r\nBET amount : 10$'
+        `Game Size: ${BetAmount[MAP.BATTLE1]}$`
 
       document.getElementById('readyButtonContainer').style.display = 'block'
       makePortal()
@@ -102,7 +103,7 @@ export function transferMapTo(toMap) {
     case MAP.BATTLE2:
       newBackgroundImage.src = '../img/waitMap/3.png'
       document.getElementById('map_identifier').innerText =
-        'BATTLE map : you can fight here!\r\nBET amount : 20$'
+        `Game Size: ${BetAmount[MAP.BATTLE2]}$`
 
       document.getElementById('readyButtonContainer').style.display = 'block'
       makePortal()
@@ -113,7 +114,7 @@ export function transferMapTo(toMap) {
     case MAP.BATTLE3:
       newBackgroundImage.src = '../img/waitMap/4.png'
       document.getElementById('map_identifier').innerText =
-        'BATTLE map : you can fight here!\r\nBET amount : 40$'
+        `Game Size: ${BetAmount[MAP.BATTLE3]}$`
 
       document.getElementById('readyButtonContainer').style.display = 'block'
       makePortal()
@@ -125,7 +126,7 @@ export function transferMapTo(toMap) {
       newBackgroundImage.src = '../img/waitMap/1.png'
 
       document.getElementById('map_identifier').innerText =
-        'BATTLE map : you can fight here!\r\nBET amount : 80$'
+        `Game Size: ${BetAmount[MAP.BATTLE4]}$`
 
       document.getElementById('readyButtonContainer').style.display = 'block'
       makePortal()
@@ -146,5 +147,8 @@ export function transferMapTo(toMap) {
   const msg = JSON.stringify(body)
   ws.send(msg)
   player.map = toMap
-  endLoadingScreen()
+
+  if (endLoadingInstantly) {
+    endLoadingScreen()
+  }
 }

@@ -6,7 +6,7 @@ import { battle } from '../battle/battleClient'
 import { safe_send } from '../network/websocket'
 import { myID, setPlayer, users } from '../js/global'
 import { endLoadingScreen, startLoadingScreen } from '../web/loading'
-import { collectionIdToName } from '../data/accountsAndUrls'
+import { partner_nfts } from '../data/accountsAndUrls'
 
 const clothStorageLink = 'https://web3mon.s3.amazonaws.com/nftv1/'
 
@@ -54,8 +54,7 @@ worker.onmessage = function (event) {
   if (resume_data !== null) {
     resume_data = JSON.parse(resume_data)
     var opponent_id = resume_data.battle_data.opponent_id
-    transferMapTo(resume_data.map)
-    startLoadingScreen()
+    transferMapTo(resume_data.map, false)
     if (event.data.id === myID || event.data.id === opponent_id)
       if (myID in users && opponent_id in users) {
         if (users[myID].made && users[opponent_id].made) {
@@ -118,11 +117,18 @@ export class User {
     this.nftCollection = nftCollection
     this.tokenId = tokenId
     this.chain = chain
+    if (nftCollection === 'tinkerunion_nft.enleap.near') {
+      nftUrl = nftUrl.replace('https://ipfs.fleek.co/ipfs', 'https://ipfs.io/ipfs')
+    }
+    console.log(nftUrl)
     this.nftUrl = nftUrl
     this.clothId = clothId
     this.map = map
 
-    this.name = `${collectionIdToName[nftCollection]} #${tokenId.substring(0, 2)}...${tokenId.substring(tokenId.length - 2)}`
+    if (tokenId.length > 4)
+      this.name = `${partner_nfts[nftCollection].name} #${tokenId.substring(0, 2)}...${tokenId.substring(tokenId.length - 2)}`
+    else
+      this.name = `${partner_nfts[nftCollection].name} #${tokenId}`
 
     this.sprite = new Sprite({
       position: this.position,

@@ -20,9 +20,9 @@ export async function findMyNFT() {
       limit: 50,
     }
 
-    for (var collection of partner_nfts) {
+    for (var collection in partner_nfts) {
       var data = await wallet.viewMethod({
-        contractId: collection.account_id,
+        contractId: collection,
         method: 'nft_tokens_for_owner',
         args: args,
       })
@@ -32,12 +32,12 @@ export async function findMyNFT() {
           let img = document.createElement('img')
           if (nft.metadata.media.includes('https://'))
             img.src = nft.metadata.media
-          else img.src = collection.base_uri + '/' + nft.metadata.media
+          else img.src = partner_nfts[collection].base_uri + '/' + nft.metadata.media
 
           img.style = 'width: min(70px, 15%); opacity: 0.5;'
-          img.setAttribute('collection', collection.account_id)
+          img.setAttribute('collection', collection)
           img.setAttribute('asset_id', nft.token_id)
-          if (collection.account_id.includes('nftv1')) {
+          if (collection.includes('nftv1')) {
             clothes.push(img)
             img.onclick = onClothClick
           } else {

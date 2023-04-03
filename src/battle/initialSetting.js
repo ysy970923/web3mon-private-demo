@@ -86,6 +86,7 @@ export const removeBattleSkillBox = () => {
   box2.innerHTML = ''
 }
 
+// in game battle skill box
 export const addBattleSkillBox = (battleState, my_index) => {
   let box = document.getElementById('battle_skills_attack')
   let box2 = document.getElementById('battle_skills_defense')

@@ -236,7 +236,7 @@ export class Skill {
       type: renderType,
     }
     this.renderParam.sprite.setImage(spriteImg)
-    this.renderParam.sprite.setScale(1.5)
+    this.renderParam.sprite.setScale(1.2)
   }
 
   check_availability(sequence, caster_idx, last_attacker_index, last_sequence) {
@@ -395,17 +395,17 @@ export class Skill {
       case SKILL_RENDER_TYPE.ON_CASTER:
         this.renderParam.sprite.position = {
           x:
-            caster.position.x + 96 * 1.5 -
-            this.renderParam.sprite.image.width / this.renderParam.frame / 2 - 80,
-          y: caster.position.y + 96 * 1.5 - this.renderParam.sprite.image.height / 2 - 240,
+            caster.position.x + 96 * 1.2 -
+            this.renderParam.sprite.image.width / this.renderParam.frame / 2 - 60,
+          y: caster.position.y + 96 * 1.2 - this.renderParam.sprite.image.height / 2 - 200,
         }
         break
       case SKILL_RENDER_TYPE.ON_RECEIVER:
         this.renderParam.sprite.position = {
           x:
-            receiver.position.x + 96 * 1.5 -
-            this.renderParam.sprite.image.width / this.renderParam.frame / 2 - 80,
-          y: receiver.position.y + 96 * 1.5 - this.renderParam.sprite.image.height / 2 - 240,
+            receiver.position.x + 96 * 1.2 -
+            this.renderParam.sprite.image.width / this.renderParam.frame / 2 - 60,
+          y: receiver.position.y + 96 * 1.2 - this.renderParam.sprite.image.height / 2 - 200,
         }
         break
     }

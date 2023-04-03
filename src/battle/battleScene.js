@@ -7,6 +7,7 @@ import { users, player, battleRenderedSprites } from '../js/global'
 import { removeBattleSkillBox } from './initialSetting'
 import { adjustMapPosition } from '../control/map'
 import { battleNameTagMaker } from '../web/battleNameTag'
+import { showCard, closeCard } from '../web/battleCard'
 
 export const battleBackground = new Sprite({
   position: {
@@ -87,13 +88,12 @@ export function endBattle(result, bet_amount) {
       cancelAnimationFrame(battleAnimationId)
       animate()
       document.querySelector('#userInterface').style.display = 'none'
-      document.getElementById('battleResultCard').style.display = 'block'
-      document.getElementById(
-        'battleResult'
-      ).innerText = `You ${result}!\r\n${bet_amount.substring(
-        0,
-        2
-      )}$ MOVE To WINNER!`
+      if (result === 'WIN') {
+        showCard('You WIN!', `You Earn ${bet_amount}$`, closeCard)
+      }
+      if (result === 'LOSE') {
+        showCard('You LOSE!', `You Lose ${bet_amount}$`, closeCard)
+      }
       document.querySelector('#joyDiv').style.display = 'block'
       gsap.to('#overlappingDiv', {
         opacity: 0,

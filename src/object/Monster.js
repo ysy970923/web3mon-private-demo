@@ -55,8 +55,8 @@ export class Monster extends Sprite {
     this.chatShowTime = 0
     this.bleeding = new Sprite({
       position: {
-        x: this.position.x,
-        y: this.position.y,
+        x: this.position.x - 40,
+        y: this.position.y - 30,
       },
       frames: {
         max: 19,
@@ -87,7 +87,7 @@ export class Monster extends Sprite {
     let healthBar = `#${this.me_or_op}HealthBar`
 
     if (this.health > health) {
-      this.bleeding.opacity = 1
+      this.bleeding.opacity = 1.5
 
       gsap.to(this.bleeding, {
         duration: 10.0,
