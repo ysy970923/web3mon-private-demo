@@ -1,5 +1,26 @@
 importScripts('https://unpkg.com/jimp@0.14.0/browser/lib/jimp.js')
 
+const nftCropOffsets = {
+  'nearnautnft.near': { x: 25, y: 0, w: 150, h: 150 },
+  'near-punks.near': { x: 0, y: 40, w: 140, h: 150 },
+  'asac.near': { x: 15, y: 15, w: 145, h: 145 },
+  'tinkerunion_nft.enleap.near': { x: 27, y: 20, w: 140, h: 127 },
+  'v0.apemetaerror.near': { x: 10, y: 0, w: 170, h: 170 },
+  'cartelgen1.neartopia.near': { x: 30, y: 0, w: 115, h: 115 },
+  'realbirds.near': { x: 27, y: 0, w: 127, h: 127 },
+  'mrbrownproject.near': { x: 0, y: 0, w: 180, h: 180 },
+  'rocketbois.neartopia.near': { x: 0, y: 0, w: 180, h: 180 },
+  'lacrove.near': { x: 0, y: 0, w: 180, h: 180 },
+  'near_starter.near': { x: 0, y: 0, w: 180, h: 180 },
+  'nearcrashnft.near': { x: 0, y: 0, w: 180, h: 180 },
+  'classykangaroos1.near': { x: 0, y: 0, w: 180, h: 180 },
+  'nft.classykangaroosv2.near': { x: 0, y: 0, w: 180, h: 180 },
+  'nft.goodfortunefelines.near': { x: 0, y: 0, w: 180, h: 180 },
+  'ff.nekotoken.near': { x: 0, y: 0, w: 180, h: 180 },
+  'mmc-pups.nfts.fewandfar.near': { x: 0, y: 0, w: 180, h: 180 },
+  'nftv1.web3mon.near': { x: 0, y: 0, w: 180, h: 180 },
+}
+
 onmessage = function (event) {
   var data = event.data
   makeChracterImage(
@@ -18,9 +39,9 @@ onmessage = function (event) {
 const colorDistance = (c1, c2) =>
   Math.sqrt(
     Math.pow(c1.r - c2.r, 2) +
-      Math.pow(c1.g - c2.g, 2) +
-      Math.pow(c1.b - c2.b, 2) +
-      Math.pow(c1.a - c2.a, 2)
+    Math.pow(c1.g - c2.g, 2) +
+    Math.pow(c1.b - c2.b, 2) +
+    Math.pow(c1.a - c2.a, 2)
   )
 
 async function makeChracterImage(url, contractAddress, lis, ris, ups, downs) {
@@ -65,23 +86,8 @@ async function makeChracterImage(url, contractAddress, lis, ris, ups, downs) {
 
   sprite.base = await image.getBase64Async('image/png')
 
-  if (contractAddress === 'nearnautnft.near')
-    image = image.crop(25, 0, 150, 150)
-  else if (contractAddress === 'near-punks.near')
-    image = image.crop(0, 40, 140, 150)
-  else if (contractAddress === 'asac.near') image = image.crop(15, 15, 145, 145)
-  else if (contractAddress === 'tinkerunion_nft.enleap.near')
-    image = image.crop(27, 20, 140, 127)
-  else if (contractAddress === 'v0.apemetaerror.near')
-    image = image.crop(10, 0, 170, 170)
-  else if (contractAddress === 'cartelgen1.neartopia.near')
-    image = image.crop(30, 0, 115, 115)
-  else if (contractAddress === 'realbirds.near')
-    image = image.crop(27, 0, 127, 127)
-  else if (contractAddress === 'mrbrownproject.near') image = image
-  else if (contractAddress === 'PUFF') image = image.crop(25, 0, 150, 150)
-  else image = image.crop(27, 24, 127, 127)
-
+  var cropOffsets = nftCropOffsets[contractAddress]
+  image = image.crop(cropOffsets.x, cropOffsets.y, cropOffsets.w, cropOffsets.h)
   image = image.resize(46, 48)
 
   var downImage = await Jimp.read({ url: downs })
