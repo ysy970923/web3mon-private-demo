@@ -144,7 +144,7 @@ class BattleClient {
         method: 'ft_transfer_call',
         args: {
           receiver_id: accounts.BATTLE_CONTRACT,
-          amount: (this.bet_amount * 10000000).toString(),
+          amount: (this.bet_amount * 1000000).toString(),
           msg: JSON.stringify({
             battle_id: this.battle_id,
             player_index: this.my_index,
