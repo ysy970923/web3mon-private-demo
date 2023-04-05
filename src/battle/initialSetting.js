@@ -2,7 +2,6 @@ import { player, setPlayer, users } from '../user/user'
 import { battle } from './battleClient'
 import { initBattle } from './battleScene'
 import { ATTACKS, DEFENCES, SKILL_INFOS } from '../data/skill'
-import { selectedSkill, selectedDefenceSkills } from '../js/global'
 /**
  * Choose which skill to bring in battle
  */
@@ -121,12 +120,11 @@ export const addBattleSkillBox = (battleState, my_index) => {
     skillBox.onclick = (e) => {
       // 스킬 사용
       battle.chooseAction(e.currentTarget.getAttribute('value'))
-      document.querySelector('#actionContent').innerText =
-        'Used ' + e.currentTarget.id.substring(4)
-      document.querySelector('#battlePopUpCard').style.display = 'block'
+      document.querySelector('#actionContent').innerText = SKILL_INFOS[e.currentTarget.getAttribute('skill_type')].name
+      document.querySelector('#battlePopUpCard').style.display = 'flex'
       setTimeout(() => {
         document.querySelector('#battlePopUpCard').style.display = 'none'
-      }, 5000)
+      }, 3000)
     }
 
     attackSkills.push(skillBox)
@@ -153,12 +151,11 @@ export const addBattleSkillBox = (battleState, my_index) => {
     skillBox.onclick = (e) => {
       // 스킬 사용
       battle.chooseAction(e.currentTarget.getAttribute('value'))
-      document.querySelector('#actionContent').innerText =
-        'Used ' + e.currentTarget.id.substring(4)
-      document.querySelector('#battlePopUpCard').style.display = 'block'
+      document.querySelector('#actionContent').innerText = SKILL_INFOS[e.currentTarget.getAttribute('skill_type')].name
+      document.querySelector('#battlePopUpCard').style.display = 'flex'
       setTimeout(() => {
         document.querySelector('#battlePopUpCard').style.display = 'none'
-      }, 5000)
+      }, 3000)
     }
 
     defenseSkills.push(skillBox)

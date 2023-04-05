@@ -7,6 +7,7 @@ import { safe_send } from '../network/websocket'
 import { myID, setPlayer, users } from '../js/global'
 import { endLoadingScreen, startLoadingScreen } from '../web/loading'
 import { partner_nfts } from '../data/accountsAndUrls'
+import { playMusic } from '../control/audio'
 
 const clothStorageLink = 'https://web3mon.s3.amazonaws.com/nftv1/'
 
@@ -34,6 +35,8 @@ export function startGame() {
   adjustMapPosition()
   endLoadingScreen()
   animate()
+  // start music
+  playMusic('villageAudio')
 }
 
 worker.onmessage = function (event) {

@@ -6,6 +6,7 @@ import { background, fixedObjects, player, users } from '../js/global'
 import { wallet } from '../wallet/multi-wallet'
 import { endLoadingScreen, startLoadingScreen } from '../web/loading'
 import { BetAmount } from '../data/betAmount'
+import { playMusic } from './audio'
 
 const mainBackgroundImage = new Image()
 mainBackgroundImage.src = '../img/Island.png'
@@ -87,6 +88,9 @@ export function transferMapTo(toMap, endLoadingInstantly = true) {
       document.getElementById('readyButtonContainer').style.display = 'block'
       makePortal()
       player.setPosition({ x: 1720, y: 850 }, true)
+
+      // play music
+      playMusic('battleMapAudio')
       break
 
     case MAP.BATTLE1:

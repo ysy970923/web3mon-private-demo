@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html class="no-js" lang="">
+<audio id="villageAudio" src="./audio/village.mp3" controls style="display: none;"></audio>
+<audio id="battleMapAudio" src="./audio/map.wav" controls style="display: none;"></audio>
+<audio id="battleAudio" src="./audio/battle.mp3" controls style="display: none;"></audio>
 
 <head>
   <link rel="shortcut icon" type="image/x-icon" href="./img/favicon.png" />
@@ -156,14 +159,16 @@
           <div class="defense_skill_box"></div>
         </div>
         <button id="selectTypeBtn">Choosen All</button>
-      </div>
-      <div id="battleResultCard" class="card" style="padding: 20px">
-        <h2 id="battleResult"></h2>
-        <button id="closeResultBtn" class="nes-btn">YES</button>
+        <div>
+          You have to choose three attacks and three defenses each. <br />
+          The top line is the attack skill and the bottom line is the defense skill.
+        </div>
       </div>
 
-      <div id="battlePopUpCard" class="card" style="z-index: 150;">
-        <h2 id="actionContent"></h2>
+      <div id="battlePopUpCard" class="popup-card">
+        <div class="popup-content">
+          <h2 id="actionContent"></h2>
+        </div>
       </div>
 
       <div id="battleHistoryCard" class="card">

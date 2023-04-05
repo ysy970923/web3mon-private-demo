@@ -8,10 +8,6 @@ function addBtnClickEvent(btnID, func) {
   document.getElementById(btnID).addEventListener('click', func)
 }
 
-addBtnClickEvent('closeResultBtn', (e) => {
-  document.getElementById('battleResultCard').style.display = 'none'
-})
-
 addBtnClickEvent('openButtonBtn', (e) => {
   var currentText = document.getElementById('openButtonBtn').innerText
   if (currentText === '▲') {

@@ -8,6 +8,7 @@ import { removeBattleSkillBox } from './initialSetting'
 import { adjustMapPosition } from '../control/map'
 import { battleNameTagMaker } from '../web/battleNameTag'
 import { showCard, closeCard } from '../web/battleCard'
+import { playMusic } from '../control/audio'
 
 export const battleBackground = new Sprite({
   position: {
@@ -142,4 +143,6 @@ export function initBattle(opponent_id, battleState, my_index) {
   battleRenderedSprites['me'] = myMonster
 
   document.getElementById('battle_skills').style.display = 'block'
+
+  playMusic('battleAudio')
 }
